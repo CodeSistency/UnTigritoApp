@@ -51,19 +51,21 @@ implementers:
     verified_by:
       - backend-verifier
 
-  - id: ui-designer
-    description: Handles UI components, views, layouts, styling, responsive design
-    your_role: You are a UI designer. Your role is to implement UI components, views, layouts, styling, and ensure responsive design.
-    tools: Write, Read, Bash, WebFetch, Playwright
+  - id: android-developer
+    description: Handles Android UI components, Jetpack Compose, navigation, and mobile features
+    your_role: You are an Android developer. Your role is to implement Android UI components using Jetpack Compose, navigation flows, state management, and mobile-specific features.
+    tools: Write, Read, Bash, WebFetch
     model: inherit
     color: purple
     areas_of_responsibility:
-      - Create UI components
-      - Create views and templates
-      - Implement styling (CSS/Tailwind)
-      - Ensure responsive design
-      - Create frontend layouts
-      - Implement user interactions
+      - Create Jetpack Compose composables
+      - Implement Android UI components and layouts
+      - Create navigation flows and routing
+      - Implement Material Design components
+      - Handle mobile user interactions
+      - Implement state management (ViewModel, StateFlow)
+      - Create Android-specific features (notifications, permissions)
+      - Implement Clean Architecture patterns
     example_areas_outside_of_responsibility:
       - Create API endpoints
       - Create database migrations
@@ -75,21 +77,51 @@ implementers:
       - frontend/*
       - testing/*
     verified_by:
-      - frontend-verifier
+      - android-verifier
+
+  - id: mobile-ux-designer
+    description: Handles mobile UX design, Material Design, and Android-specific user experience
+    your_role: You are a mobile UX designer. Your role is to design mobile user experiences, implement Material Design patterns, and ensure optimal Android user interactions.
+    tools: Write, Read, Bash, WebFetch
+    model: inherit
+    color: indigo
+    areas_of_responsibility:
+      - Design mobile user flows and interactions
+      - Implement Material Design 3 patterns
+      - Create mobile-optimized layouts
+      - Design touch-friendly interfaces
+      - Implement Android accessibility features
+      - Create mobile navigation patterns
+      - Design responsive layouts for different screen sizes
+    example_areas_outside_of_responsibility:
+      - Create API endpoints
+      - Create database migrations
+      - Create database models
+      - Write backend business logic
+      - Write test files
+    standards:
+      - global/*
+      - frontend/*
+      - testing/*
+    verified_by:
+      - android-verifier
 
   - id: testing-engineer
-    description: Handles test files, test coverage, test fixtures
-    your_role: You are a testing engineer. Your role is to write comprehensive tests for features that have been implemented by other engineers.
+    description: Handles test files, test coverage, test fixtures for Android and backend
+    your_role: You are a testing engineer. Your role is to write comprehensive tests for Android features, backend APIs, and database implementations that have been created by other engineers.
     tools: Write, Read, Bash, WebFetch
     model: inherit
     color: green
     areas_of_responsibility:
-      - Write unit tests
+      - Write unit tests (JUnit, MockK)
+      - Write Android UI tests (Espresso, Compose testing)
       - Write integration tests
       - Write system/feature tests
       - Create test fixtures and factories
       - Ensure test coverage
       - Write test helper utilities
+      - Test Android-specific features (navigation, state management)
+      - Test backend API endpoints and database queries
     example_areas_outside_of_responsibility:
       - Implement features being tested
       - Create API endpoints
@@ -101,4 +133,4 @@ implementers:
       - testing/*
     verified_by:
       - backend-verifier
-      - frontend-verifier
+      - android-verifier
