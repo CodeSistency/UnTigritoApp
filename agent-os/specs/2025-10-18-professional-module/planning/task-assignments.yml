@@ -1,0 +1,477 @@
+# Asignaciones de Tareas - Módulo de Profesional
+
+# Configuración del Proyecto
+project:
+  name: "Módulo de Profesional - UnTigrito"
+  start_date: "2025-10-18"
+  estimated_duration: "6 semanas"
+  team_size: "2-3 desarrolladores"
+
+# Roles y Responsabilidades
+roles:
+  lead_developer:
+    name: "Desarrollador Principal"
+    responsibilities:
+      - Arquitectura y diseño técnico
+      - Configuración inicial del proyecto
+      - Code review y estándares
+      - Integración con backend
+      - Testing de integración
+
+  ui_developer:
+    name: "Desarrollador UI/UX"
+    responsibilities:
+      - Implementación de pantallas
+      - Componentes reutilizables
+      - Testing de UI
+      - Optimización de performance
+      - Accesibilidad
+
+  backend_integration:
+    name: "Especialista en Integración"
+    responsibilities:
+      - Servicios de API
+      - Modelos de datos
+      - Base de datos local
+      - Notificaciones push
+      - Testing de API
+
+# Asignaciones por Fase
+phases:
+  phase_1_configuration:
+    name: "Configuración y Estructura Base"
+    duration: "Semana 1"
+    tasks:
+      - task_id: "TASK-001"
+        assignee: "lead_developer"
+        priority: "high"
+        estimated_hours: 8
+        dependencies: []
+        
+      - task_id: "TASK-002"
+        assignee: "lead_developer"
+        priority: "high"
+        estimated_hours: 6
+        dependencies: ["TASK-001"]
+        
+      - task_id: "TASK-003"
+        assignee: "lead_developer"
+        priority: "high"
+        estimated_hours: 8
+        dependencies: ["TASK-001"]
+        
+      - task_id: "TASK-004"
+        assignee: "backend_integration"
+        priority: "high"
+        estimated_hours: 6
+        dependencies: ["TASK-001"]
+        
+      - task_id: "TASK-005"
+        assignee: "backend_integration"
+        priority: "medium"
+        estimated_hours: 4
+        dependencies: ["TASK-004"]
+        
+      - task_id: "TASK-006"
+        assignee: "backend_integration"
+        priority: "medium"
+        estimated_hours: 6
+        dependencies: ["TASK-004"]
+        
+      - task_id: "TASK-007"
+        assignee: "backend_integration"
+        priority: "high"
+        estimated_hours: 8
+        dependencies: ["TASK-004"]
+        
+      - task_id: "TASK-008"
+        assignee: "backend_integration"
+        priority: "medium"
+        estimated_hours: 6
+        dependencies: ["TASK-007"]
+
+  phase_2_jobs:
+    name: "Subflujo Trabajos"
+    duration: "Semana 2"
+    tasks:
+      - task_id: "TASK-009"
+        assignee: "ui_developer"
+        priority: "high"
+        estimated_hours: 8
+        dependencies: ["TASK-002", "TASK-003"]
+        
+      - task_id: "TASK-010"
+        assignee: "ui_developer"
+        priority: "high"
+        estimated_hours: 6
+        dependencies: ["TASK-009"]
+        
+      - task_id: "TASK-011"
+        assignee: "ui_developer"
+        priority: "high"
+        estimated_hours: 8
+        dependencies: ["TASK-009"]
+        
+      - task_id: "TASK-012"
+        assignee: "backend_integration"
+        priority: "high"
+        estimated_hours: 6
+        dependencies: ["TASK-007"]
+        
+      - task_id: "TASK-013"
+        assignee: "ui_developer"
+        priority: "high"
+        estimated_hours: 6
+        dependencies: ["TASK-010"]
+        
+      - task_id: "TASK-014"
+        assignee: "ui_developer"
+        priority: "high"
+        estimated_hours: 4
+        dependencies: ["TASK-013"]
+        
+      - task_id: "TASK-015"
+        assignee: "ui_developer"
+        priority: "high"
+        estimated_hours: 8
+        dependencies: ["TASK-013"]
+        
+      - task_id: "TASK-016"
+        assignee: "ui_developer"
+        priority: "high"
+        estimated_hours: 6
+        dependencies: ["TASK-015"]
+        
+      - task_id: "TASK-017"
+        assignee: "backend_integration"
+        priority: "high"
+        estimated_hours: 4
+        dependencies: ["TASK-012"]
+
+  phase_3_proposals:
+    name: "Subflujo Propuestas"
+    duration: "Semana 3"
+    tasks:
+      - task_id: "TASK-018"
+        assignee: "ui_developer"
+        priority: "high"
+        estimated_hours: 6
+        dependencies: ["TASK-002"]
+        
+      - task_id: "TASK-019"
+        assignee: "ui_developer"
+        priority: "high"
+        estimated_hours: 6
+        dependencies: ["TASK-018"]
+        
+      - task_id: "TASK-020"
+        assignee: "ui_developer"
+        priority: "high"
+        estimated_hours: 6
+        dependencies: ["TASK-018"]
+        
+      - task_id: "TASK-021"
+        assignee: "ui_developer"
+        priority: "medium"
+        estimated_hours: 6
+        dependencies: ["TASK-019"]
+        
+      - task_id: "TASK-022"
+        assignee: "ui_developer"
+        priority: "medium"
+        estimated_hours: 4
+        dependencies: ["TASK-021"]
+        
+      - task_id: "TASK-023"
+        assignee: "backend_integration"
+        priority: "high"
+        estimated_hours: 6
+        dependencies: ["TASK-007"]
+
+  phase_4_messages:
+    name: "Subflujo Mensajes"
+    duration: "Semana 4"
+    tasks:
+      - task_id: "TASK-024"
+        assignee: "ui_developer"
+        priority: "high"
+        estimated_hours: 6
+        dependencies: ["TASK-002"]
+        
+      - task_id: "TASK-025"
+        assignee: "ui_developer"
+        priority: "high"
+        estimated_hours: 4
+        dependencies: ["TASK-024"]
+        
+      - task_id: "TASK-026"
+        assignee: "ui_developer"
+        priority: "high"
+        estimated_hours: 6
+        dependencies: ["TASK-024"]
+        
+      - task_id: "TASK-027"
+        assignee: "ui_developer"
+        priority: "high"
+        estimated_hours: 8
+        dependencies: ["TASK-025"]
+        
+      - task_id: "TASK-028"
+        assignee: "ui_developer"
+        priority: "high"
+        estimated_hours: 6
+        dependencies: ["TASK-027"]
+        
+      - task_id: "TASK-029"
+        assignee: "ui_developer"
+        priority: "high"
+        estimated_hours: 8
+        dependencies: ["TASK-027"]
+        
+      - task_id: "TASK-030"
+        assignee: "backend_integration"
+        priority: "high"
+        estimated_hours: 8
+        dependencies: ["TASK-007"]
+        
+      - task_id: "TASK-031"
+        assignee: "backend_integration"
+        priority: "high"
+        estimated_hours: 6
+        dependencies: ["TASK-030"]
+
+  phase_5_services:
+    name: "Subflujo Mis Servicios"
+    duration: "Semana 5"
+    tasks:
+      - task_id: "TASK-032"
+        assignee: "ui_developer"
+        priority: "high"
+        estimated_hours: 6
+        dependencies: ["TASK-002"]
+        
+      - task_id: "TASK-033"
+        assignee: "ui_developer"
+        priority: "high"
+        estimated_hours: 6
+        dependencies: ["TASK-032"]
+        
+      - task_id: "TASK-034"
+        assignee: "ui_developer"
+        priority: "high"
+        estimated_hours: 6
+        dependencies: ["TASK-032"]
+        
+      - task_id: "TASK-035"
+        assignee: "ui_developer"
+        priority: "high"
+        estimated_hours: 8
+        dependencies: ["TASK-033"]
+        
+      - task_id: "TASK-036"
+        assignee: "ui_developer"
+        priority: "high"
+        estimated_hours: 6
+        dependencies: ["TASK-035"]
+        
+      - task_id: "TASK-037"
+        assignee: "ui_developer"
+        priority: "medium"
+        estimated_hours: 8
+        dependencies: ["TASK-035"]
+        
+      - task_id: "TASK-038"
+        assignee: "ui_developer"
+        priority: "medium"
+        estimated_hours: 6
+        dependencies: ["TASK-033"]
+        
+      - task_id: "TASK-039"
+        assignee: "ui_developer"
+        priority: "medium"
+        estimated_hours: 4
+        dependencies: ["TASK-038"]
+        
+      - task_id: "TASK-040"
+        assignee: "backend_integration"
+        priority: "high"
+        estimated_hours: 6
+        dependencies: ["TASK-007"]
+
+  phase_6_testing:
+    name: "Testing y Refinamiento"
+    duration: "Semana 6"
+    tasks:
+      - task_id: "TASK-041"
+        assignee: "ui_developer"
+        priority: "high"
+        estimated_hours: 8
+        dependencies: ["TASK-011", "TASK-020", "TASK-026", "TASK-034"]
+        
+      - task_id: "TASK-042"
+        assignee: "backend_integration"
+        priority: "high"
+        estimated_hours: 8
+        dependencies: ["TASK-012", "TASK-017", "TASK-023", "TASK-031", "TASK-040"]
+        
+      - task_id: "TASK-043"
+        assignee: "backend_integration"
+        priority: "high"
+        estimated_hours: 6
+        dependencies: ["TASK-007"]
+        
+      - task_id: "TASK-044"
+        assignee: "ui_developer"
+        priority: "high"
+        estimated_hours: 8
+        dependencies: ["TASK-009", "TASK-018", "TASK-024", "TASK-032"]
+        
+      - task_id: "TASK-045"
+        assignee: "ui_developer"
+        priority: "medium"
+        estimated_hours: 6
+        dependencies: ["TASK-010", "TASK-019", "TASK-028", "TASK-033"]
+        
+      - task_id: "TASK-046"
+        assignee: "lead_developer"
+        priority: "high"
+        estimated_hours: 4
+        dependencies: ["TASK-002"]
+        
+      - task_id: "TASK-047"
+        assignee: "backend_integration"
+        priority: "high"
+        estimated_hours: 8
+        dependencies: ["TASK-007"]
+        
+      - task_id: "TASK-048"
+        assignee: "backend_integration"
+        priority: "medium"
+        estimated_hours: 6
+        dependencies: ["TASK-003"]
+        
+      - task_id: "TASK-049"
+        assignee: "ui_developer"
+        priority: "medium"
+        estimated_hours: 8
+        dependencies: ["TASK-044"]
+        
+      - task_id: "TASK-050"
+        assignee: "ui_developer"
+        priority: "medium"
+        estimated_hours: 6
+        dependencies: ["TASK-044"]
+        
+      - task_id: "TASK-051"
+        assignee: "lead_developer"
+        priority: "high"
+        estimated_hours: 8
+        dependencies: ["TASK-041", "TASK-042", "TASK-043", "TASK-044", "TASK-045", "TASK-046", "TASK-047", "TASK-048"]
+
+# Criterios de Aceptación por Rol
+acceptance_criteria:
+  lead_developer:
+    - Arquitectura implementada correctamente
+    - Navegación funcionando sin errores
+    - Integración con backend estable
+    - Code review completado
+    - Testing de integración pasando
+
+  ui_developer:
+    - Todas las pantallas implementadas
+    - Componentes reutilizables creados
+    - Testing de UI pasando
+    - Performance optimizada
+    - Accesibilidad implementada
+
+  backend_integration:
+    - Servicios de API funcionando
+    - Modelos de datos implementados
+    - Base de datos local configurada
+    - Notificaciones push funcionando
+    - Testing de API pasando
+
+# Métricas de Seguimiento
+metrics:
+  completion_rate:
+    target: "100%"
+    measurement: "Tareas completadas / Total de tareas"
+    
+  quality_score:
+    target: "> 90%"
+    measurement: "Testing pasando / Total de tests"
+    
+  performance_score:
+    target: "< 2 segundos"
+    measurement: "Tiempo de carga promedio"
+    
+  bug_rate:
+    target: "< 5%"
+    measurement: "Bugs encontrados / Total de funcionalidades"
+
+# Riesgos y Mitigaciones
+risks:
+  technical_risks:
+    - risk: "Complejidad de navegación"
+      mitigation: "Arquitectura modular y testing exhaustivo"
+      owner: "lead_developer"
+      
+    - risk: "Performance con listas grandes"
+      mitigation: "Paginación y lazy loading"
+      owner: "ui_developer"
+      
+    - risk: "Sincronización de datos"
+      mitigation: "Cache local y refresh strategies"
+      owner: "backend_integration"
+
+  business_risks:
+    - risk: "Cambios en API"
+      mitigation: "Versionado y adaptadores"
+      owner: "backend_integration"
+      
+    - risk: "Requisitos cambiantes"
+      mitigation: "Arquitectura flexible"
+      owner: "lead_developer"
+      
+    - risk: "Integración compleja"
+      mitigation: "Testing exhaustivo"
+      owner: "lead_developer"
+
+# Comunicación y Reportes
+communication:
+  daily_standups:
+    frequency: "Diario"
+    participants: ["lead_developer", "ui_developer", "backend_integration"]
+    duration: "15 minutos"
+    
+  weekly_reviews:
+    frequency: "Semanal"
+    participants: ["lead_developer", "ui_developer", "backend_integration"]
+    duration: "1 hora"
+    
+  milestone_reviews:
+    frequency: "Al final de cada fase"
+    participants: ["lead_developer", "ui_developer", "backend_integration"]
+    duration: "2 horas"
+
+# Herramientas y Recursos
+tools:
+  development:
+    - "Android Studio"
+    - "Kotlin"
+    - "Jetpack Compose"
+    - "Hilt"
+    - "Room"
+    - "Retrofit"
+    
+  testing:
+    - "JUnit"
+    - "MockK"
+    - "Compose Testing"
+    - "Espresso"
+    
+  collaboration:
+    - "Git"
+    - "GitHub"
+    - "Slack/Teams"
+    - "Jira/Trello"

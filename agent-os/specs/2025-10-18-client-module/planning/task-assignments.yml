@@ -1,0 +1,24 @@
+task_assignments:
+  - task_group: "Task Group 1: Data Models and Local Storage"
+    assigned_subagent: "android-developer"
+    verified_by: 
+      - "android-verifier"
+    description: "Create database models (User, ServicePosting, Professional, Request, Transaction), implement Room database entities, DAOs, and local cache"
+
+  - task_group: "Task Group 2: API Services and Repositories"
+    assigned_subagent: "android-developer"
+    verified_by:
+      - "android-verifier"
+    description: "Create API services (Auth, User, Professional, ServicePosting, Request, Payment), implement repository pattern, error handling, and offline sync"
+
+  - task_group: "Task Group 3: Mobile UI Implementation"
+    assigned_subagent: "mobile-ux-designer"
+    verified_by:
+      - "android-verifier"
+    description: "Implement all UI screens (Home, Services, CreateRequest, ServiceDetail, Requests, Profile, Payment) with Material Design 3, navigation, and state management"
+
+  - task_group: "Task Group 4: Test Review & Integration Testing"
+    assigned_subagent: "testing-engineer"
+    verified_by:
+      - "android-verifier"
+    description: "Review existing tests from task groups 1-3, fill critical gaps, and ensure comprehensive coverage of client module workflows"

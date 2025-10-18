@@ -1,0 +1,49 @@
+task_assignments:
+  - task_group: "Task Group 1: Pantallas de Autenticación"
+    assigned_subagent: "android-developer"
+    description: "Implementar SplashScreen, ForgotPasswordScreen, GoogleSignInButton y pruebas de navegación"
+    dependencies: []
+    priority: 1
+
+  - task_group: "Task Group 2: Pantallas de Verificación"
+    assigned_subagent: "android-developer"
+    description: "Implementar VerificationIntroductionScreen, CedulaVerificationScreen, PhoneRegistrationScreen, PhoneValidationScreen"
+    dependencies:
+      - "Task Group 1: Pantallas de Autenticación"
+    priority: 2
+
+  - task_group: "Task Group 3: Componentes Reutilizables y UX"
+    assigned_subagent: "mobile-ux-designer"
+    description: "Crear LoadingIndicator, ErrorSnackbar, componentes de accesibilidad y layouts responsivos"
+    dependencies:
+      - "Task Group 1: Pantallas de Autenticación"
+      - "Task Group 2: Pantallas de Verificación"
+    priority: 3
+
+  - task_group: "Task Group 4: Testing y Integración"
+    assigned_subagent: "testing-engineer"
+    description: "Revisar tests de grupos 1-3, identificar gaps, agregar máximo 10 tests adicionales"
+    dependencies:
+      - "Task Group 1: Pantallas de Autenticación"
+      - "Task Group 2: Pantallas de Verificación"
+      - "Task Group 3: Componentes Reutilizables y UX"
+    priority: 4
+
+verification_plan:
+  - implementer: "android-developer"
+    verified_by: "android-verifier"
+    task_groups:
+      - "Task Group 1: Pantallas de Autenticación"
+      - "Task Group 2: Pantallas de Verificación"
+
+  - implementer: "mobile-ux-designer"
+    verified_by: "android-verifier"
+    task_groups:
+      - "Task Group 3: Componentes Reutilizables y UX"
+
+  - implementer: "testing-engineer"
+    verified_by:
+      - "android-verifier"
+      - "backend-verifier"
+    task_groups:
+      - "Task Group 4: Testing y Integración"

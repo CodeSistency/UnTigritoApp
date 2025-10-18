@@ -1,141 +1,193 @@
 package com.example.vibecoding3.auth.ui.forgotpassword
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.vibecoding3.auth.ui.login.AuthViewModel
+import androidx.compose.ui.unit.sp
+import com.example.vibecoding3.R
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 /**
- * Pantalla de recuperación de contraseña
+ * ForgotPasswordScreen composable
+ * 
+ * Pantalla para solicitar recuperación de contraseña con validación de email
+ * y envío de código de restablecimiento por email o SMS.
+ * 
+ * @param onNavigateBack Callback para navegar atrás
+ * @param onSendCode Callback cuando se envía el código
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ForgotPasswordScreen(
-    viewModel: AuthViewModel,
-    onNavigateToLogin: () -> Unit
+    onNavigateBack: () -> Unit,
+    onSendCode: (email: String) -> Unit = {}
 ) {
     var email by remember { mutableStateOf("") }
-    var showMessage by remember { mutableStateOf(false) }
-    
-    val emailError by viewModel.emailError.collectAsState()
-    
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        // Título
-        Text(
-            text = "Recuperar Contraseña",
-            style = MaterialTheme.typography.headlineSmall,
-            modifier = Modifier
-                .align(Alignment.Start)
-                .padding(bottom = 24.dp)
-        )
-        
-        // Descripción
-        Text(
-            text = "Ingresa tu email para recibir instrucciones de recuperación",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier
-                .align(Alignment.Start)
-                .padding(bottom = 24.dp)
-        )
-        
-        // Email field
-        OutlinedTextField(
-            value = email,
-            onValueChange = {
-                email = it
-                viewModel.validateEmail(it)
-            },
-            label = { Text("Email") },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 8.dp),
-            isError = emailError != null,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
-        )
-        if (emailError != null) {
-            Text(
-                text = emailError ?: "",
-                color = MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.bodySmall,
-                modifier = Modifier
-                    .align(Alignment.Start)
-                    .padding(bottom = 8.dp)
+    var isLoading by remember { mutableStateOf(false) }
+    var emailError by remember { mutableStateOf<String?>(null) }
+
+    Scaffold(
+        topBar = {
+            CenterAlignedTopAppBar(
+                title = { Text("", color = Color.Black) },
+                navigationIcon = {
+                    IconButton(onClick = onNavigateBack) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Atrás")
+                    }
+                }
             )
-        } else {
-            androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(8.dp))
         }
-        
-        // Información
-        Text(
-            text = "Se enviará un enlace de recuperación a tu correo",
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+    ) { paddingValues ->
+        Column(
             modifier = Modifier
-                .align(Alignment.Start)
-                .padding(bottom = 32.dp)
-        )
-        
-        // Send button
-        Button(
-            onClick = { 
-                viewModel.forgotPassword(email)
-                showMessage = true
-            },
-            modifier = Modifier.fillMaxWidth(),
-            enabled = emailError == null && email.isNotBlank()
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(horizontal = 24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Top
         ) {
-            Text("Enviar Instrucciones")
-        }
-        
-        // Back link
-        TextButton(
-            onClick = onNavigateToLogin,
-            modifier = Modifier.padding(top = 16.dp)
-        ) {
-            Text(
-                text = "Volver al Inicio de Sesión",
-                color = MaterialTheme.colorScheme.primary,
-                textDecoration = TextDecoration.Underline
+            Image(
+                painter = painterResource(id = R.drawable.ic_launcher_foreground),
+                contentDescription = "Logo de la aplicación",
+                modifier = Modifier.size(96.dp)
             )
-        }
-        
-        // Success message
-        if (showMessage) {
-            androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(24.dp))
+
+            Spacer(modifier = Modifier.height(16.dp))
+
             Text(
-                text = "Se ha enviado un enlace de recuperación a tu email.",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.align(Alignment.Start)
+                text = "Recuperar Contraseña",
+                style = MaterialTheme.typography.headlineMedium,
+                fontSize = 28.sp,
+                color = Color.Black
             )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = "Ingresa tu correo para recibir instrucciones de recuperación",
+                style = MaterialTheme.typography.bodyLarge,
+                color = Color.Gray,
+                modifier = Modifier.padding(horizontal = 16.dp),
+                textAlign = TextAlign.Center
+            )
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            OutlinedTextField(
+                value = email,
+                onValueChange = {
+                    email = it
+                    emailError = if (isValidEmail(it)) null else "Email inválido"
+                },
+                label = { Text("Correo") },
+                modifier = Modifier.fillMaxWidth(),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                isError = emailError != null
+            )
+
+            if (emailError != null) {
+                Text(
+                    text = emailError ?: "",
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier
+                        .align(Alignment.Start)
+                        .padding(start = 16.dp, top = 4.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            Button(
+                onClick = {
+                    if (isValidEmail(email)) {
+                        isLoading = true
+                        onSendCode(email)
+                        // Simular delay de envío
+                        GlobalScope.launch {
+                            delay(1500)
+                            isLoading = false
+                        }
+                    }
+                },
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE67822)),
+                contentPadding = PaddingValues(vertical = 12.dp),
+                enabled = !isLoading && email.isNotEmpty()
+            ) {
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(20.dp),
+                        color = Color.White,
+                        strokeWidth = 2.dp
+                    )
+                    Spacer(modifier = Modifier.size(8.dp))
+                }
+                Text(
+                    text = if (isLoading) "Enviando..." else "Enviar Código",
+                    fontSize = 18.sp,
+                    color = Color.White
+                )
+            }
+
+            Spacer(modifier = Modifier.weight(1f))
         }
+    }
+}
+
+/**
+ * Valida el formato del email
+ */
+private fun isValidEmail(email: String): Boolean {
+    return email.matches(Regex("^[A-Za-z0-9+_.-]+@(.+)$"))
+}
+
+@Preview(showBackground = true)
+@Composable
+fun PreviewForgotPasswordScreen() {
+    MaterialTheme {
+        ForgotPasswordScreen(
+            onNavigateBack = {},
+            onSendCode = {}
+        )
     }
 }
 
