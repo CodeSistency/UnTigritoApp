@@ -26,7 +26,8 @@ import androidx.compose.ui.unit.sp
 @Composable
 fun SplashScreen(
     viewModel: SplashViewModel,
-    onNavigateToHome: () -> Unit
+    onNavigateToHome: () -> Unit,
+    onNavigateToLogin: () -> Unit
 ) {
     val uiState = viewModel.uiState.collectAsState()
 
@@ -34,7 +35,13 @@ fun SplashScreen(
     LaunchedEffect(uiState.value) {
         when (uiState.value) {
             is SplashUiState.NavigateToHome -> onNavigateToHome()
+            is SplashUiState.NavigateToLogin -> onNavigateToLogin()
             SplashUiState.Loading -> {} // Stay on splash screen
+            is SplashUiState.Error -> {
+                // TODO: Show error dialog or retry mechanism
+                // For now, navigate to login as fallback
+                onNavigateToLogin()
+            }
         }
     }
 

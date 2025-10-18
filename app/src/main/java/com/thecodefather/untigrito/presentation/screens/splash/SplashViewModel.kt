@@ -16,6 +16,8 @@ import javax.inject.Inject
 sealed class SplashUiState {
     data object Loading : SplashUiState()
     data object NavigateToHome : SplashUiState()
+    data object NavigateToLogin : SplashUiState()
+    data class Error(val message: String) : SplashUiState()
 }
 
 /**
@@ -36,15 +38,29 @@ class SplashViewModel @Inject constructor() : ViewModel() {
 
     private fun initializeApp() {
         viewModelScope.launch {
-            // Simulate initialization tasks
-            delay(2000)
-            
-            // TODO: Perform actual initialization:
-            // - Check if user is authenticated
-            // - Load app configuration
-            // - Initialize other services
-            
-            _uiState.value = SplashUiState.NavigateToHome
+            try {
+                // Simulate initialization tasks
+                delay(2000)
+                
+                // TODO: Perform actual initialization:
+                // - Check if user is authenticated (AuthRepository.getCurrentUser())
+                // - Load app configuration from SharedPreferences
+                // - Initialize other services (Analytics, Crashlytics, etc.)
+                // - Check network connectivity
+                // - Load user preferences
+                
+                // For now, always navigate to login
+                // TODO: Implement proper authentication check:
+                // val currentUser = authRepository.getCurrentUser()
+                // _uiState.value = if (currentUser != null) {
+                //     SplashUiState.NavigateToHome
+                // } else {
+                //     SplashUiState.NavigateToLogin
+                // }
+                _uiState.value = SplashUiState.NavigateToLogin
+            } catch (e: Exception) {
+                _uiState.value = SplashUiState.Error("Error initializing app: ${e.message}")
+            }
         }
     }
 }
