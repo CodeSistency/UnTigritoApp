@@ -1,20 +1,21 @@
 [versions]
 # Core Android
-androidGradlePlugin = "8.1.4"
+androidGradlePlugin = "8.11.2"
 kotlin = "2.0.0"
+ksp = "2.0.0-1.0.21"
 kotlinxSerializationJson = "1.6.0"
 
 # Jetpack Compose
 compose = "1.6.0"
 composeMaterial3 = "1.2.1"
-composeCompiler = "2.0.0"
+
 
 # Jetpack Libraries
 lifecycle = "2.6.2"
 activity = "1.8.0"
 navigation = "2.7.5"
-hilt = "2.48"
-hiltNavigationCompose = "1.1.0"
+hilt = "2.51.1"
+hiltNavigationCompose = "1.2.0"
 room = "2.6.1"
 
 # Networking
@@ -37,6 +38,7 @@ turbine = "1.0.0"
 espresso = "3.5.1"
 testExt = "1.1.5"
 androidxTestRules = "1.5.0"
+
 
 [libraries]
 # Core Android
@@ -156,5 +158,6 @@ android-application = { id = "com.android.application", version.ref = "androidGr
 android-library = { id = "com.android.library", version.ref = "androidGradlePlugin" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
-
+compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }

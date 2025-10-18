@@ -1,12 +1,14 @@
+
+
 plugins {
-    alias(libs.plugins.android.application)
+    alias(libs.plugins.android.application) 
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.hilt)
-    alias(libs.plugins.kotlin.serialization)
-    kotlin("kapt")
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.compose.compiler)
 }
 
-android {
+android{
     namespace = "com.thecodefather.untigrito"
     compileSdk = 36
 
@@ -38,32 +40,29 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
     }
 
     kotlinOptions {
-        jvmTarget = "17"
-        freeCompilerArgs += listOf(
-            "-opt-in=androidx.compose.material3.ExperimentalMaterial3Api",
-            "-opt-in=androidx.compose.foundation.ExperimentalFoundationApi",
-            "-J--add-opens=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED"
-        )
+        jvmTarget = "1.8"
+
     }
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
-
     composeOptions {
-        kotlinCompilerExtensionVersion = libs.versions.composeCompiler.get()
+        kotlinCompilerExtensionVersion = "1.5.8"
     }
-
-    packagingOptions {
+    packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+
+
 }
 
 dependencies {
@@ -84,12 +83,12 @@ dependencies {
     // Hilt
     implementation(libs.hilt.android)
     implementation(libs.hilt.navigation.compose)
-    kapt(libs.hilt.android.compiler)
+    ksp(libs.hilt.android.compiler)
 
     // Room (for local persistence)
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
-    kapt(libs.androidx.room.compiler)
+    ksp(libs.androidx.room.compiler)
 
     // Networking
     implementation(libs.bundles.networking)
