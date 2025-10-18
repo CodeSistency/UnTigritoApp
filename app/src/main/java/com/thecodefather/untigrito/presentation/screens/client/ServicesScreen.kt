@@ -50,6 +50,7 @@ import com.thecodefather.untigrito.domain.model.Professional
 import com.thecodefather.untigrito.presentation.components.ClientBottomNavBar
 import com.thecodefather.untigrito.presentation.navigation.Routes
 import com.thecodefather.untigrito.presentation.screens.client.components.HomeHeader
+import com.thecodefather.untigrito.presentation.viewmodel.ServicesUiState
 import com.thecodefather.untigrito.presentation.viewmodel.ServicesViewModel
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -71,8 +72,7 @@ fun ServicesScreen(
 
     val contentTypeTabs = listOf("Servicios", "Profesionales")
 
-    val professionals by viewModel.professionals.collectAsState(initial = emptyList())
-    val loading by viewModel.loading.collectAsState()
+    val uiState by viewModel.professionals.collectAsState(initial = ServicesUiState())
 
     LazyColumn(
         modifier = Modifier
@@ -175,7 +175,7 @@ fun ServicesScreen(
                 Spacer(modifier = Modifier.height(12.dp))
             }
         } else { // Pestaña de Profesionales
-            items(professionals) { professional ->
+            items(uiState.professional) { professional ->
                 ProfessionalCard(
                     professional = professional,
                     onClick = {
@@ -186,7 +186,7 @@ fun ServicesScreen(
             }
 
             // Empty state for Professionals
-            if (professionals.isEmpty() && !loading) {
+            if (uiState.professional.isEmpty() && !uiState.isLoading) {
                 item {
                     Box(
                         modifier = Modifier
