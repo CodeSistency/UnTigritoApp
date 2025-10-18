@@ -45,15 +45,5 @@ object AppModule {
             EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
         ) as EncryptedSharedPreferences
     }
-
-    /**
-     * Provides the application context
-     *
-     * @param context The application context
-     * @return Application context singleton
-     */
-    @Provides
-    @Singleton
-    @ApplicationContext
-    fun provideApplicationContext(@ApplicationContext context: Context): Context = context
 }
+

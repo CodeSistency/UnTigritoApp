@@ -2,9 +2,9 @@ package com.thecodefather.untigrito.auth.data.repository
 
 import com.thecodefather.untigrito.domain.model.User
 import com.thecodefather.untigrito.auth.domain.repository.IAuthRepository
+import com.thecodefather.untigrito.domain.model.UserType
 import kotlinx.coroutines.delay
 import java.util.UUID
-import com.thecodefather.untigrito.domain.model.UserType
 
 /**
  * Implementación del repositorio de autenticación (simulado)
@@ -23,9 +23,7 @@ class AuthRepositoryImpl : IAuthRepository {
                     id = UUID.randomUUID().toString(),
                     name = email.substringBefore("@"),
                     email = email,
-                    userType = UserType.CLIENT, // Asumiendo CLIENT por defecto
-                    phoneNumber = "", // Puedes obtener esto de alguna fuente si está disponible
-                    cedula = "" // Puedes obtener esto de alguna fuente si está disponible
+                    userType = UserType.CLIENT
                 )
                 currentUser = user
                 Result.success(user)
@@ -48,9 +46,7 @@ class AuthRepositoryImpl : IAuthRepository {
                     id = UUID.randomUUID().toString(),
                     name = name,
                     email = email,
-                    userType = UserType.CLIENT, // Asumiendo CLIENT por defecto
-                    phoneNumber = "", // Puedes obtener esto de alguna fuente si está disponible
-                    cedula = "" // Puedes obtener esto de alguna fuente si está disponible
+                    userType = UserType.CLIENT
                 )
                 currentUser = user
                 Result.success(user)

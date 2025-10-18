@@ -120,3 +120,4 @@ app/src/main/java/com/thecodefather/untigrito/
 - Consistent code organization
 - Proper documentation
 - Easy to add new features
+

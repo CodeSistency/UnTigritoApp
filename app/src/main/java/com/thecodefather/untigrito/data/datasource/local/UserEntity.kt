@@ -24,3 +24,4 @@ data class UserEntity(
     val userType: String, // CLIENT or PROFESSIONAL
     val createdAt: Long
 )
+

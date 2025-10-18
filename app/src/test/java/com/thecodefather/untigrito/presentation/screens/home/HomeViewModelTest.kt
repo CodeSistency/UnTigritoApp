@@ -49,3 +49,4 @@ class HomeViewModelTest {
         assertEquals("Welcome to UnTigritoApp", state.data)
     }
 }
+

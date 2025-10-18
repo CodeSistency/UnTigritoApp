@@ -62,3 +62,4 @@ interface UserApiService {
     @DELETE("/api/v1/users/{id}")
     suspend fun deleteUser(@Path("id") userId: String)
 }
+

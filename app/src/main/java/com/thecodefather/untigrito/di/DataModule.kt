@@ -7,6 +7,9 @@ import com.thecodefather.untigrito.data.database.dao.ClientRequestDao
 import com.thecodefather.untigrito.data.database.dao.ClientUserDao
 import com.thecodefather.untigrito.data.database.dao.ServicePostingDao
 import com.thecodefather.untigrito.data.database.dao.TransactionDao
+import com.thecodefather.untigrito.data.repository.ClientRepositoryImpl
+import com.thecodefather.untigrito.domain.repository.ClientRepository
+import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -28,38 +31,51 @@ import javax.inject.Singleton
  */
 @Module
 @InstallIn(SingletonComponent::class)
-object DataModule {
+abstract class DataModule {
 
-    // Networking clients (Retrofit/Ktor) will be provided here
-    // TODO: Implement actual API client and its dependencies
-
-    @Provides
+    @Binds
     @Singleton
-    fun provideAppDatabase(@ApplicationContext context: Context): AppDatabase {
-        return Room.databaseBuilder(
-            context,
-            AppDatabase::class.java,
-            "untigrito_database"
-        ).build()
-    }
+    abstract fun bindClientRepository(impl: ClientRepositoryImpl): ClientRepository
 
-    @Provides
-    fun provideClientUserDao(appDatabase: AppDatabase): ClientUserDao {
-        return appDatabase.clientUserDao()
-    }
+    companion object {
 
-    @Provides
-    fun provideClientRequestDao(appDatabase: AppDatabase): ClientRequestDao {
-        return appDatabase.clientRequestDao()
-    }
+        // Networking clients (Retrofit/Ktor) will be provided here
+        // TODO: Implement actual API client and its dependencies
 
-    @Provides
-    fun provideServicePostingDao(appDatabase: AppDatabase): ServicePostingDao {
-        return appDatabase.servicePostingDao()
-    }
+        @Provides
+        @Singleton
+        @JvmStatic
+        fun provideAppDatabase(@ApplicationContext context: Context): AppDatabase {
+            return Room.databaseBuilder(
+                context,
+                AppDatabase::class.java,
+                "untigrito_database"
+            ).build()
+        }
 
-    @Provides
-    fun provideTransactionDao(appDatabase: AppDatabase): TransactionDao {
-        return appDatabase.transactionDao()
+        @Provides
+        @JvmStatic
+        fun provideClientUserDao(appDatabase: AppDatabase): ClientUserDao {
+            return appDatabase.clientUserDao()
+        }
+
+        @Provides
+        @JvmStatic
+        fun provideClientRequestDao(appDatabase: AppDatabase): ClientRequestDao {
+            return appDatabase.clientRequestDao()
+        }
+
+        @Provides
+        @JvmStatic
+        fun provideServicePostingDao(appDatabase: AppDatabase): ServicePostingDao {
+            return appDatabase.servicePostingDao()
+        }
+
+        @Provides
+        @JvmStatic
+        fun provideTransactionDao(appDatabase: AppDatabase): TransactionDao {
+            return appDatabase.transactionDao()
+        }
     }
 }
+

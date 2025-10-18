@@ -46,3 +46,4 @@ class HomeViewModel @Inject constructor(
         loadData()
     }
 }
+

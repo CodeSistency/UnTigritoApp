@@ -23,3 +23,4 @@ class App : Application() {
 //        Timber.d("Application initialized")
     }
 }
+
