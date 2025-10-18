@@ -101,6 +101,10 @@ dependencies {
 
     // Security
     implementation(libs.androidx.security.crypto)
+    implementation(libs.jwt)
+
+    // Google Sign-In
+    implementation(libs.google.auth)
 
     // Logging
     implementation(libs.timber)

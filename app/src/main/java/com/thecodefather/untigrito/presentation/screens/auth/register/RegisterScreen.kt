@@ -24,6 +24,7 @@ import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -32,11 +33,17 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -52,20 +59,50 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.thecodefather.untigrito.R
+import com.thecodefather.untigrito.auth.domain.model.AuthState
+import com.thecodefather.untigrito.presentation.screens.auth.login.AuthViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegisterScreen(
+    viewModel: AuthViewModel = hiltViewModel(),
     onNavigateToLogin: () -> Unit,
-    onNavigateToHome: () -> Unit
+    onRegisterSuccess: () -> Unit
 ) {
     var name by remember { mutableStateOf("Luis jose") }
-    var email by remember { mutableStateOf("luisjose@gmail.com") }
+    var identifier by remember { mutableStateOf("luisjose@gmail.com") } // Can be email or phone
     var password by remember { mutableStateOf("1234567") }
     var confirmPassword by remember { mutableStateOf("1234567") }
     var passwordVisible by remember { mutableStateOf(false) }
     var confirmPasswordVisible by remember { mutableStateOf(false) }
+
+    val authState by viewModel.authState.collectAsState()
+    val emailError by viewModel.emailError.collectAsState()
+    val phoneError by viewModel.phoneError.collectAsState()
+    val passwordError by viewModel.passwordError.collectAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    // Google Sign-In launcher
+    val googleSignInLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        viewModel.handleGoogleSignInResult(result.data)
+    }
+
+    // Handle authentication state changes
+    LaunchedEffect(authState) {
+        when (authState) {
+            is AuthState.Authenticated -> {
+                onRegisterSuccess()
+            }
+            is AuthState.Error -> {
+                snackbarHostState.showSnackbar((authState as AuthState.Error).message)
+            }
+            else -> {}
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -77,7 +114,8 @@ fun RegisterScreen(
                     }
                 }
             )
-        }
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { paddingValues ->
         Column(
             modifier =
@@ -121,28 +159,44 @@ fun RegisterScreen(
                 onValueChange = { name = it },
                 label = { Text("Nombre y apellido") },
                 modifier = Modifier.fillMaxWidth(),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
-                            )
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
+            )
 
             Spacer(modifier = Modifier.height(16.dp))
 
             OutlinedTextField(
-                value = email,
-                onValueChange = { email = it },
-                label = { Text("Correo") },
+                value = identifier,
+                onValueChange = {
+                    identifier = it
+                    viewModel.validateEmail(it) // Validate in real-time
+                    viewModel.validatePhone(it) // Validate in real-time
+                },
+                label = { Text("Correo o teléfono") },
                 modifier = Modifier.fillMaxWidth(),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-                            )
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+                isError = (emailError != null || phoneError != null),
+                supportingText = {
+                    emailError?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+                    phoneError?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+                }
+            )
 
             Spacer(modifier = Modifier.height(16.dp))
 
             OutlinedTextField(
                 value = password,
-                onValueChange = { password = it },
+                onValueChange = {
+                    password = it
+                    viewModel.validatePassword(it) // Validate in real-time
+                },
                 label = { Text("Contraseña") },
                 modifier = Modifier.fillMaxWidth(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                isError = passwordError != null,
+                supportingText = {
+                    passwordError?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+                },
                 trailingIcon = {
                     val image = if (passwordVisible)
                         Icons.Filled.Visibility
@@ -175,12 +229,22 @@ fun RegisterScreen(
             Spacer(modifier = Modifier.height(32.dp))
 
             Button(
-                onClick = onNavigateToHome,
+                onClick = {
+                    viewModel.register(name, identifier, password, confirmPassword)
+                },
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE67822)),
-                contentPadding = PaddingValues(vertical = 12.dp)
+                contentPadding = PaddingValues(vertical = 12.dp),
+                enabled = authState != AuthState.Loading
             ) {
-                Text(text = "Registrarse", fontSize = 18.sp, color = Color.White)
+                if (authState == AuthState.Loading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(24.dp),
+                        color = Color.White
+                    )
+                } else {
+                    Text(text = "Registrarse", fontSize = 18.sp, color = Color.White)
+                }
             }
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -201,10 +265,14 @@ fun RegisterScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             OutlinedButton(
-                onClick = { /* Handle Google login click */ },
+                onClick = {
+                    val signInIntent = viewModel.getGoogleSignInIntent()
+                    googleSignInLauncher.launch(signInIntent)
+                },
                 modifier = Modifier.fillMaxWidth(),
                 border = BorderStroke(1.dp, Color.LightGray),
-                contentPadding = PaddingValues(vertical = 12.dp)
+                contentPadding = PaddingValues(vertical = 12.dp),
+                enabled = authState != AuthState.Loading
             ) {
                 Icon(
                     imageVector = Icons.Default.Home, // Usar un icono de Material Design para simular el logo de Google
@@ -212,7 +280,7 @@ fun RegisterScreen(
                     modifier = Modifier.size(24.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
-                Text(text = "Iniciar sesión con Google", color = Color.DarkGray, fontSize = 16.sp)
+                Text(text = "Registrarse con Google", color = Color.DarkGray, fontSize = 16.sp)
             }
 
             Spacer(modifier = Modifier.weight(1f))
@@ -237,6 +305,9 @@ fun RegisterScreen(
 @Composable
 fun PreviewRegisterScreen() {
     MaterialTheme {
-        RegisterScreen(onNavigateToLogin = {}, onNavigateToHome = {}) // Proporcionar un lambda vacío para la vista previa
+        RegisterScreen(
+            onNavigateToLogin = {},
+            onRegisterSuccess = {}
+        )
     }
 }

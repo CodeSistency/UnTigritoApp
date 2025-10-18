@@ -15,6 +15,9 @@ import com.thecodefather.untigrito.presentation.screens.auth.register.RegisterSc
 import com.thecodefather.untigrito.presentation.screens.auth.forgotpassword.ForgotPasswordScreen
 import com.thecodefather.untigrito.presentation.screens.auth.forgotpassword.ForgotPasswordViewModel
 import com.thecodefather.untigrito.presentation.screens.auth.login.AuthViewModel
+import com.thecodefather.untigrito.presentation.screens.auth.verification.introduction.VerificationIntroductionScreen
+import com.thecodefather.untigrito.presentation.screens.auth.verification.phone.PhoneVerificationScreen
+import com.thecodefather.untigrito.presentation.screens.auth.verification.cedula.CedulaVerificationScreen
 import com.thecodefather.untigrito.presentation.screens.client.ClientHomeScreen
 
 /**
@@ -25,6 +28,9 @@ object Routes {
     const val LOGIN = "login"
     const val REGISTER = "register"
     const val FORGOT_PASSWORD = "forgot_password"
+    const val VERIFICATION_INTRO = "verification_intro"
+    const val PHONE_VERIFICATION = "phone_verification"
+    const val CEDULA_VERIFICATION = "cedula_verification"
     const val HOME = "home"
     const val CLIENT_FLOW = "client_flow"
 }
@@ -63,7 +69,6 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
 
         // Auth Screens
         composable(Routes.LOGIN) {
-            val viewModel: AuthViewModel = hiltViewModel()
             LoginScreen(
                 onNavigateToRegister = {
                     navController.navigate(Routes.REGISTER)
@@ -71,7 +76,7 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
                 onNavigateToForgotPassword = {
                     navController.navigate(Routes.FORGOT_PASSWORD)
                 },
-                onNavigateToClientFlow = { // Cambiado de onNavigateToHome
+                onLoginSuccess = {
                     navController.navigate(Routes.CLIENT_FLOW) {
                         popUpTo(Routes.LOGIN) { inclusive = true }
                     }
@@ -86,8 +91,8 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
                         popUpTo(Routes.REGISTER) { inclusive = true }
                     }
                 },
-                onNavigateToHome = {
-                    navController.navigate(Routes.HOME) {
+                onRegisterSuccess = {
+                    navController.navigate(Routes.VERIFICATION_INTRO) {
                         popUpTo(Routes.REGISTER) { inclusive = true }
                     }
                 }
@@ -100,6 +105,52 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
                 onNavigateToLogin = {
                     navController.navigate(Routes.LOGIN) {
                         popUpTo(Routes.FORGOT_PASSWORD) { inclusive = true }
+                    }
+                }
+            )
+        }
+
+        // Verification Screens
+        composable(Routes.VERIFICATION_INTRO) {
+            VerificationIntroductionScreen(
+                onNavigateBack = {
+                    navController.popBackStack()
+                },
+                onStartPhoneVerification = {
+                    navController.navigate(Routes.PHONE_VERIFICATION)
+                },
+                onStartIdVerification = {
+                    navController.navigate(Routes.CEDULA_VERIFICATION)
+                },
+                onSkipForNow = {
+                    navController.navigate(Routes.CLIENT_FLOW) {
+                        popUpTo(Routes.VERIFICATION_INTRO) { inclusive = true }
+                    }
+                }
+            )
+        }
+
+        composable(Routes.PHONE_VERIFICATION) {
+            PhoneVerificationScreen(
+                onNavigateBack = {
+                    navController.popBackStack()
+                },
+                onVerificationSuccess = {
+                    navController.navigate(Routes.CEDULA_VERIFICATION) {
+                        popUpTo(Routes.PHONE_VERIFICATION) { inclusive = true }
+                    }
+                }
+            )
+        }
+
+        composable(Routes.CEDULA_VERIFICATION) {
+            CedulaVerificationScreen(
+                onNavigateBack = {
+                    navController.popBackStack()
+                },
+                onVerificationSuccess = {
+                    navController.navigate(Routes.CLIENT_FLOW) {
+                        popUpTo(Routes.CEDULA_VERIFICATION) { inclusive = true }
                     }
                 }
             )
