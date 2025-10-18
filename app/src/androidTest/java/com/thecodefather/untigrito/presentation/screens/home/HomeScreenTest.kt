@@ -44,3 +44,4 @@ class HomeScreenTest {
         composeTestRule.onNodeWithText("UnTigritoApp").assertIsDisplayed()
     }
 }
+

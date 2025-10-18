@@ -11,10 +11,10 @@ import com.thecodefather.untigrito.presentation.screens.home.HomeViewModel
 import com.thecodefather.untigrito.presentation.screens.splash.SplashScreen
 import com.thecodefather.untigrito.presentation.screens.splash.SplashViewModel
 import com.thecodefather.untigrito.presentation.screens.auth.login.LoginScreen
-import com.thecodefather.untigrito.presentation.screens.auth.login.LoginViewModel
 import com.thecodefather.untigrito.presentation.screens.auth.register.RegisterScreen
 import com.thecodefather.untigrito.presentation.screens.auth.forgotpassword.ForgotPasswordScreen
 import com.thecodefather.untigrito.presentation.screens.auth.forgotpassword.ForgotPasswordViewModel
+import com.thecodefather.untigrito.presentation.screens.auth.login.AuthViewModel
 
 /**
  * Route definitions for navigation
@@ -61,7 +61,7 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
 
         // Auth Screens
         composable(Routes.LOGIN) {
-            val viewModel: LoginViewModel = hiltViewModel()
+            val viewModel: AuthViewModel = hiltViewModel()
             LoginScreen(
                 onNavigateToRegister = {
                     navController.navigate(Routes.REGISTER)

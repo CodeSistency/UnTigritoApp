@@ -2,6 +2,7 @@ package com.thecodefather.untigrito.auth.data.repository
 
 import com.thecodefather.untigrito.domain.model.User
 import com.thecodefather.untigrito.auth.domain.repository.IAuthRepository
+import com.thecodefather.untigrito.domain.model.UserType
 import kotlinx.coroutines.delay
 import java.util.UUID
 
@@ -21,7 +22,8 @@ class AuthRepositoryImpl : IAuthRepository {
                 val user = User(
                     id = UUID.randomUUID().toString(),
                     name = email.substringBefore("@"),
-                    email = email
+                    email = email,
+                    userType = UserType.CLIENT
                 )
                 currentUser = user
                 Result.success(user)
@@ -43,7 +45,8 @@ class AuthRepositoryImpl : IAuthRepository {
                 val user = User(
                     id = UUID.randomUUID().toString(),
                     name = name,
-                    email = email
+                    email = email,
+                    userType = UserType.CLIENT
                 )
                 currentUser = user
                 Result.success(user)

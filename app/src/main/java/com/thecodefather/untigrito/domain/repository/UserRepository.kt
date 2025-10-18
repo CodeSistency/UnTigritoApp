@@ -51,3 +51,4 @@ interface UserRepository {
      */
     fun userExists(userId: String): Flow<Boolean>
 }
+

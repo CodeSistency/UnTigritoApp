@@ -25,3 +25,4 @@ data class UserDto(
     @SerialName("created_at")
     val createdAt: Long
 )
+

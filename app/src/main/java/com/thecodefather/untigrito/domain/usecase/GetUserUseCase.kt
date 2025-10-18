@@ -28,3 +28,4 @@ class GetUserUseCase @Inject constructor(
         return userRepository.getUserById(userId)
     }
 }
+

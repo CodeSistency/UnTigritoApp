@@ -67,3 +67,4 @@ interface UserDao {
     @Query("SELECT EXISTS(SELECT 1 FROM users WHERE id = :userId)")
     fun userExists(userId: String): Flow<Boolean>
 }
+

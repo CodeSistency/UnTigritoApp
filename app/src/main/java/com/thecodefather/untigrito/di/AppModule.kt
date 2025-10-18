@@ -57,3 +57,4 @@ object AppModule {
     @ApplicationContext
     fun provideApplicationContext(@ApplicationContext context: Context): Context = context
 }
+

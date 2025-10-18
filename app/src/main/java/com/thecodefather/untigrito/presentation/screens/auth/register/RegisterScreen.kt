@@ -237,6 +237,6 @@ fun RegisterScreen(
 @Composable
 fun PreviewRegisterScreen() {
     MaterialTheme {
-        RegisterScreen(onNavigateToLogin = {}) // Proporcionar un lambda vacío para la vista previa
+        RegisterScreen(onNavigateToLogin = {}, onNavigateToHome = {}) // Proporcionar un lambda vacío para la vista previa
     }
 }
