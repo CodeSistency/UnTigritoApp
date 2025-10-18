@@ -1,9 +1,11 @@
 package com.thecodefather.untigrito.presentation.navigation
 
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.thecodefather.untigrito.presentation.screens.account.AccountDetailsScreen
 
 /**
  * Client Module Navigation Routes
@@ -16,6 +18,9 @@ object ClientRoutes {
     const val SERVICE_DETAIL = "service_detail/{serviceId}"
     const val CREATE_REQUEST = "create_request"
     const val PAYMENT = "payment"
+    const val ACCOUNT_DETAILS = "account_details"
+    const val RECHARGE = "recharge"
+    const val WITHDRAW = "withdraw"
 }
 
 /**
@@ -69,6 +74,21 @@ fun ClientNavGraph(navController: NavHostController) {
         composable(ClientRoutes.PAYMENT) {
             // PaymentScreen(navController = navController)
             // TODO: Implement PaymentScreen
+        }
+
+        // Account Details Screen
+        composable(ClientRoutes.ACCOUNT_DETAILS) {
+            AccountDetailsScreen(navController = navController)
+        }
+
+        // Recharge Screen (Placeholder)
+        composable(ClientRoutes.RECHARGE) {
+            Text(text = "Pantalla de Recarga") // TODO: Implement RechargeScreen
+        }
+
+        // Withdraw Screen (Placeholder)
+        composable(ClientRoutes.WITHDRAW) {
+            Text(text = "Pantalla de Retiro") // TODO: Implement WithdrawScreen
         }
     }
 }

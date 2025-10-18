@@ -29,6 +29,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import com.thecodefather.untigrito.presentation.screens.client.components.HomeHeader
 import com.thecodefather.untigrito.R
 import com.thecodefather.untigrito.presentation.components.ClientBottomNavBar
+import com.thecodefather.untigrito.presentation.navigation.ClientRoutes // Importar ClientRoutes
 import com.thecodefather.untigrito.presentation.navigation.Routes
 import com.thecodefather.untigrito.presentation.screens.client.components.RequestServiceCard
 import androidx.navigation.compose.rememberNavController
@@ -37,7 +38,7 @@ import androidx.navigation.compose.rememberNavController
 @Composable
 fun HomeScreenClient(
     navController: NavController,
-    onNavigateToRechargeMethods: () -> Unit
+    onNavigateToAccountDetails: () -> Unit // Cambiado de onNavigateToRechargeMethods
 ) {
     Column(
         modifier = Modifier
@@ -50,7 +51,7 @@ fun HomeScreenClient(
 
 
         // Tarjeta de historial
-        HistoryCard(onNavigateToRechargeMethods)
+        HistoryCard(onNavigateToAccountDetails) // Pasando la nueva lambda
 
         Spacer(modifier = Modifier.height(24.dp))
 
@@ -85,7 +86,7 @@ fun AppTopBar() {
 
 
 @Composable
-fun HistoryCard(onNavigateToRechargeMethods: () -> Unit) {
+fun HistoryCard(onNavigateToAccountDetails: () -> Unit) { // Cambiado el parámetro
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -97,7 +98,7 @@ fun HistoryCard(onNavigateToRechargeMethods: () -> Unit) {
         Column(
             modifier = Modifier
                 .padding(16.dp)
-                .clickable(onClick = onNavigateToRechargeMethods) // Hacer la tarjeta clickeable
+                .clickable(onClick = onNavigateToAccountDetails) // Usando la nueva lambda
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -354,7 +355,7 @@ fun ServiceItem(title: String, description: String, provider: String, rating: Fl
 @Composable
 fun PreviewHomeScreen() {
     val navController = rememberNavController()
-    HomeScreenClient(navController = navController, onNavigateToRechargeMethods = {})
+    HomeScreenClient(navController = navController, onNavigateToAccountDetails = {}) // Cambiado aquí
 }
 
 

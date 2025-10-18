@@ -99,6 +99,9 @@ dependencies {
     // Image Loading
     implementation(libs.coil.compose)
 
+    // Accompanist
+    implementation(libs.accompanist.swiperefresh)
+
     // Security
     implementation(libs.androidx.security.crypto)
 

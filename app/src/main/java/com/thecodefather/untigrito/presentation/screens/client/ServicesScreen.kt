@@ -45,10 +45,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import androidx.navigation.compose.currentBackStackEntryAsState
 import com.thecodefather.untigrito.domain.model.Professional
-import com.thecodefather.untigrito.presentation.components.ClientBottomNavBar
-import com.thecodefather.untigrito.presentation.navigation.Routes
 import com.thecodefather.untigrito.presentation.screens.client.components.HomeHeader
 import com.thecodefather.untigrito.presentation.viewmodel.ServicesViewModel
 import androidx.compose.foundation.clickable

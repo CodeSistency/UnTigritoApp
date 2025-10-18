@@ -12,7 +12,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.thecodefather.untigrito.presentation.components.ClientBottomNavBar
+import com.thecodefather.untigrito.presentation.navigation.ClientRoutes
 import com.thecodefather.untigrito.presentation.navigation.Routes
+import com.thecodefather.untigrito.presentation.screens.account.AccountDetailsScreen
 
 @Composable
 fun ClientMainScreen(mainNavController: NavHostController) {
@@ -46,7 +48,10 @@ fun ClientMainScreen(mainNavController: NavHostController) {
             modifier = Modifier.padding(paddingValues)
         ) {
             composable(Routes.CLIENT_HOME) {
-                HomeScreenClient(navController = mainNavController, onNavigateToRechargeMethods = {})
+                HomeScreenClient(
+                    navController = navController,
+                    onNavigateToAccountDetails = { navController.navigate(ClientRoutes.ACCOUNT_DETAILS) }
+                )
             }
             composable(Routes.CLIENT_SERVICES) {
                 ServicesScreen(navController = mainNavController)
@@ -56,6 +61,9 @@ fun ClientMainScreen(mainNavController: NavHostController) {
             }
             composable(Routes.CLIENT_PROFILE) {
                 ClientProfileScreen(navController = mainNavController)
+            }
+            composable(ClientRoutes.ACCOUNT_DETAILS) {
+                AccountDetailsScreen(navController = navController)
             }
         }
     }
