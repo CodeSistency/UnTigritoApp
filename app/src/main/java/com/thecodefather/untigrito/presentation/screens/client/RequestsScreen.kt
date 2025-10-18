@@ -68,7 +68,12 @@ fun RequestsScreen(
             .fillMaxSize()
             .background(Color(0xFFF5F5F5))
     ) {
-        HomeHeader(userName = "Juan Pérez")
+        HomeHeader(
+            userName = "Juan Pérez",
+            onMessageClick = {
+                navController.navigate(Routes.createChatRoute("test_conversation"))
+            }
+        )
         // Tab Row
         TabRow(
             selectedTabIndex = selectedTab,

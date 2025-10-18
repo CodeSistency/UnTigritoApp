@@ -46,8 +46,8 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.thecodefather.untigrito.domain.model.Professional
+import com.thecodefather.untigrito.presentation.navigation.Routes
 import com.thecodefather.untigrito.presentation.screens.client.components.HomeHeader
-import com.thecodefather.untigrito.presentation.viewmodel.ServicesUiState
 import com.thecodefather.untigrito.presentation.viewmodel.ServicesViewModel
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -69,135 +69,115 @@ fun ServicesScreen(
 
     val contentTypeTabs = listOf("Servicios", "Profesionales")
 
-    val uiState by viewModel.professionals.collectAsState(initial = ServicesUiState())
-
-    LazyColumn(
+    Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFFF5F5F5)),
-        contentPadding = PaddingValues(16.dp)
     ) {
-        item {
-            HomeHeader(userName = "Juan Pérez") // Integrar HomeHeader
-            Spacer(modifier = Modifier.height(16.dp))
-        }
-        // Search bar
-        item {
-            OutlinedTextField(
-                value = searchQuery,
-                onValueChange = { searchQuery = it },
-                modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text("Busca servicios o profesionales...") },
-                leadingIcon = {
-                    Icon(Icons.Default.Search, contentDescription = "Search")
-                },
-                shape = RoundedCornerShape(12.dp),
-                colors = TextFieldDefaults.colors().copy(
-                    focusedContainerColor = Color(0xFFF0F0F0),
-                    unfocusedContainerColor = Color(0xFFF0F0F0)
-                )
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-        }
-
-        // Category filter (siempre visible)
-        item {
-            Text(
-                text = "Categorías",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(bottom = 12.dp)
-            )
-            CategoryFilterRow { category ->
-                selectedCategory = if (selectedCategory == category) null else category
+        HomeHeader(
+            userName = "Juan Pérez",
+            onMessageClick = {
+                navController.navigate(Routes.createChatRoute("test_conversation"))
             }
-            Spacer(modifier = Modifier.height(16.dp))
-        }
+        ) // Integrar HomeHeader
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(top = 16.dp)
+                .background(Color(0xFFF5F5F5)),
+            contentPadding = PaddingValues(16.dp)
+        ) {
+            // Search bar
+            item {
+                OutlinedTextField(
+                    value = searchQuery,
+                    onValueChange = { searchQuery = it },
+                    modifier = Modifier.fillMaxWidth(),
+                    placeholder = { Text("Busca servicios o profesionales...") },
+                    leadingIcon = {
+                        Icon(Icons.Default.Search, contentDescription = "Search")
+                    },
+                    shape = RoundedCornerShape(12.dp),
+                    colors = TextFieldDefaults.colors().copy(
+                        focusedContainerColor = Color(0xFFF0F0F0),
+                        unfocusedContainerColor = Color(0xFFF0F0F0)
+                    )
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+            }
 
-        // Segmented control para Servicios/Profesionales
-        item {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(50.dp)
-                    .clip(RoundedCornerShape(25.dp)) // Esquinas redondeadas para todo el Row
-                    .background(Color(0xFFF0F0F0)), // Fondo para el control segmentado
-                horizontalArrangement = Arrangement.SpaceAround,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                contentTypeTabs.forEachIndexed { index, text ->
-                    val isSelected = selectedContentTypeIndex == index
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .fillMaxHeight()
-                            .clickable { selectedContentTypeIndex = index }
-                            .background(
-                                color = if (isSelected) Color(0xFFE67822) else Color.Transparent,
-                                shape = RoundedCornerShape(25.dp)
-                            ),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = text,
-                            color = if (isSelected) Color.White else Color.Gray,
-                            fontWeight = FontWeight.SemiBold,
-                            fontSize = 16.sp
-                        )
+            // Category filter (siempre visible)
+            item {
+                Text(
+                    text = "Categorías",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(bottom = 12.dp)
+                )
+                CategoryFilterRow { category ->
+                    selectedCategory = if (selectedCategory == category) null else category
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+            }
+
+            // Segmented control para Servicios/Profesionales
+            item {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(50.dp)
+                        .clip(RoundedCornerShape(25.dp)) // Esquinas redondeadas para todo el Row
+                        .background(Color(0xFFF0F0F0)), // Fondo para el control segmentado
+                    horizontalArrangement = Arrangement.SpaceAround,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    contentTypeTabs.forEachIndexed { index, text ->
+                        val isSelected = selectedContentTypeIndex == index
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxHeight()
+                                .clickable { selectedContentTypeIndex = index }
+                                .background(
+                                    color = if (isSelected) Color(0xFFE67822) else Color.Transparent,
+                                    shape = RoundedCornerShape(25.dp)
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = text,
+                                color = if (isSelected) Color.White else Color.Gray,
+                                fontWeight = FontWeight.SemiBold,
+                                fontSize = 16.sp
+                            )
+                        }
                     }
                 }
-            }
-            Spacer(modifier = Modifier.height(16.dp))
-        }
-
-        // Contenido dinámico basado en la pestaña seleccionada
-        if (selectedContentTypeIndex == 0) { // Pestaña de Servicios (placeholder)
-            items(5) { // 5 elementos de ejemplo para servicios
-                // Usamos ProfessionalCard como placeholder por ahora
-                // En una implementación real, sería una ServiceCard
-                ProfessionalCard(
-                    professional = Professional(
-                        id = "service_id_$it",
-                        userId = "Andrés Rodríguez",
-                        bio = "Servicio de plomería urgente 24/7",
-                        rating = 4.8,
-                        totalReviews = 120,
-                        yearsOfExperience = 5,
-                        specialties = listOf("Plomería"),
-                        hourlyRate = 45.0,
-                        imageUrl = "https://via.placeholder.com/150" // Imagen de ejemplo
-                    ),
-                    onClick = { /* TODO: Navegar al detalle del servicio */ }
-                )
-                Spacer(modifier = Modifier.height(12.dp))
-            }
-        } else { // Pestaña de Profesionales
-            items(uiState.professional) { professional ->
-                ProfessionalCard(
-                    professional = professional,
-                    onClick = {
-                        navController.navigate("professional_detail/${professional.id}")
-                    }
-                )
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(16.dp))
             }
 
-            // Empty state for Professionals
-            if (uiState.professional.isEmpty() && !uiState.isLoading) {
-                item {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(200.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "No hay profesionales disponibles",
-                            fontSize = 14.sp,
-                            color = Color.Gray
-                        )
-                    }
+            // Contenido dinámico basado en la pestaña seleccionada
+            if (selectedContentTypeIndex == 0) { // Pestaña de Servicios (placeholder)
+                items(5) { // 5 elementos de ejemplo para servicios
+                    // Usamos ProfessionalCard como placeholder por ahora
+                    // En una implementación real, sería una ServiceCard
+                    ProfessionalCard(
+                        professional = Professional(
+                            id = "service_id_$it",
+                            userId = "Andrés Rodríguez",
+                            bio = "Servicio de plomería urgente 24/7",
+                            rating = 4.8,
+                            totalReviews = 120,
+                            yearsOfExperience = 5,
+                            specialties = listOf("Plomería"),
+                            hourlyRate = 45.0,
+                            imageUrl = "https://via.placeholder.com/150" // Imagen de ejemplo
+                        ),
+                        onClick = { /* TODO: Navegar al detalle del servicio */ }
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
                 }
+            } else {
             }
         }
     }

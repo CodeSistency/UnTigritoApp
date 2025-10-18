@@ -17,6 +17,8 @@ import com.thecodefather.untigrito.presentation.screens.client.ClientProfileScre
 import com.thecodefather.untigrito.presentation.screens.client.RequestsScreen
 import com.thecodefather.untigrito.presentation.screens.client.ServicesScreen
 import com.thecodefather.untigrito.presentation.screens.client.ClientMainScreen
+import com.thecodefather.untigrito.presentation.screens.professional.messages.ChatScreen
+import com.thecodefather.untigrito.presentation.screens.professionals.profile.ProfessionalProfileScreen
 
 /**
  * Route definitions for navigation
@@ -32,6 +34,10 @@ object Routes {
     const val CLIENT_SERVICES = "client_services"
     const val CLIENT_REQUESTS = "client_requests"
     const val CLIENT_PROFILE = "client_profile"
+    const val CHAT = "chat/{conversationId}"
+    const val PROFESSIONAL_PROFILE = "professional_profile"
+
+    fun createChatRoute(conversationId: String) = "chat/$conversationId"
 }
 
 /**
@@ -131,6 +137,20 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
 
         composable(Routes.CLIENT_PROFILE) {
             ClientProfileScreen(navController = navController)
+        }
+
+        composable(Routes.CHAT) { backStackEntry ->
+            val conversationId = backStackEntry.arguments?.getString("conversationId") ?: ""
+            ChatScreen(
+                conversationId = conversationId,
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(Routes.PROFESSIONAL_PROFILE) {
+            ProfessionalProfileScreen(
+                onBackClick = { navController.popBackStack() }
+            )
         }
     }
 }

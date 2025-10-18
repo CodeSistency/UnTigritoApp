@@ -46,7 +46,7 @@ fun HomeScreenClient(
             .verticalScroll(rememberScrollState())
             .background(Color(0xFFF0F0F0)) // Fondo ligeramente gris
     ) {
-        AppTopBar()
+        AppTopBar(navController = navController)
         Spacer(modifier = Modifier.height(16.dp))
 
 
@@ -61,12 +61,21 @@ fun HomeScreenClient(
         Spacer(modifier = Modifier.height(24.dp))
 
         // Tigres mejor calificados
-        TopRatedTigersSection()
+        TopRatedTigersSection(
+            onTigerClick = {
+                // TODO: Eventualmente, pasar el ID del profesional. Por ahora, navega al perfil de ejemplo.
+                navController.navigate(Routes.PROFESSIONAL_PROFILE)
+            }
+        )
 
         Spacer(modifier = Modifier.height(24.dp))
 
         // Publica tu Solicitud
-        PublishRequestCard()
+        PublishRequestCard(
+            onNavigateToRequestService = {
+                navController.navigate(ClientRoutes.CREATE_REQUEST)
+            }
+        )
 
         Spacer(modifier = Modifier.height(24.dp))
 
@@ -79,9 +88,13 @@ fun HomeScreenClient(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AppTopBar() {
-    HomeHeader(userName = "Juan Pérez")
-
+fun AppTopBar(navController: NavController) {
+    HomeHeader(
+        userName = "Juan Pérez",
+        onMessageClick = {
+            navController.navigate(Routes.createChatRoute("test_conversation"))
+        }
+    )
 }
 
 
@@ -215,7 +228,7 @@ fun CategoryItem(name: String, iconRes: Int) {
 
 
 @Composable
-fun TopRatedTigersSection() {
+fun TopRatedTigersSection(onTigerClick: () -> Unit) {
     Column(modifier = Modifier.fillMaxWidth()) {
         Text(
             text = "Tigres mejor calificados",
@@ -231,16 +244,32 @@ fun TopRatedTigersSection() {
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             items(3) { index -> // 3 profesionales de ejemplo
-                TopRatedTigerItem(name = "Profesional ${index + 1}", rating = 4.8f, reviews = 120, profession = "Electricista", location = "Valencia")
+                TopRatedTigerItem(
+                    name = "Profesional ${index + 1}",
+                    rating = 4.8f,
+                    reviews = 120,
+                    profession = "Electricista",
+                    location = "Valencia",
+                    onClick = onTigerClick
+                )
             }
         }
     }
 }
 
 @Composable
-fun TopRatedTigerItem(name: String, rating: Float, reviews: Int, profession: String, location: String) {
+fun TopRatedTigerItem(
+    name: String,
+    rating: Float,
+    reviews: Int,
+    profession: String,
+    location: String,
+    onClick: () -> Unit
+) {
     Card(
-        modifier = Modifier.width(200.dp),
+        modifier = Modifier
+            .width(200.dp)
+            .clickable(onClick = onClick),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         shape = RoundedCornerShape(12.dp)
@@ -269,14 +298,15 @@ fun TopRatedTigerItem(name: String, rating: Float, reviews: Int, profession: Str
 }
 
 @Composable
-fun PublishRequestCard() {
+fun PublishRequestCard(onNavigateToRequestService: () -> Unit) {
     Card(
         modifier = Modifier
-            .fillMaxWidth(), // Color naranja
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         shape = RoundedCornerShape(12.dp)
     ) {
-        RequestServiceCard {  }
+        RequestServiceCard(onPublishServiceClick = onNavigateToRequestService)
     }
 }
 
@@ -291,19 +321,18 @@ fun ServicesSection() {
             modifier = Modifier.padding(horizontal = 24.dp)
         )
         Spacer(modifier = Modifier.height(16.dp))
-        LazyColumn(
-            modifier = Modifier.fillMaxWidth().height(300.dp), // Altura fija para el preview, ajustar si es necesario
-            contentPadding = PaddingValues(horizontal = 24.dp),
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            items(4) { index -> // 4 servicios de ejemplo
+            repeat(4) { index -> // 4 servicios de ejemplo
                 ServiceItem(
                     title = "Reparación de Fugas",
                     description = "Servicio de plomería urgente 24/7",
                     provider = "Andrés Rodríguez",
                     rating = 4.8f,
                     reviews = 120,
-                    distance = "\n$" + (index + 1) * 10 + " Km"
+                    price = "$${(index + 1) * 10}.00"
                 )
             }
         }
@@ -311,7 +340,7 @@ fun ServicesSection() {
 }
 
 @Composable
-fun ServiceItem(title: String, description: String, provider: String, rating: Float, reviews: Int, distance: String) {
+fun ServiceItem(title: String, description: String, provider: String, rating: Float, reviews: Int, price: String) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -345,7 +374,7 @@ fun ServiceItem(title: String, description: String, provider: String, rating: Fl
                     }
                 }
             }
-            Text(text = distance, style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+            Text(text = price, style = MaterialTheme.typography.bodySmall, color = Color.Gray)
         }
     }
 }

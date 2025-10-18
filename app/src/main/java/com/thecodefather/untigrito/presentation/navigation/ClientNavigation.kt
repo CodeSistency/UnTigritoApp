@@ -6,6 +6,8 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.thecodefather.untigrito.presentation.screens.account.AccountDetailsScreen
+import com.thecodefather.untigrito.presentation.screens.client.request.RequestServiceScreen
+import com.thecodefather.untigrito.presentation.screens.professionals.profile.ProfessionalProfileScreen
 
 /**
  * Client Module Navigation Routes
@@ -66,8 +68,7 @@ fun ClientNavGraph(navController: NavHostController) {
 
         // Create Request Screen
         composable(ClientRoutes.CREATE_REQUEST) {
-            // CreateRequestScreen(navController = navController)
-            // TODO: Implement CreateRequestScreen
+            RequestServiceScreen(navController = navController)
         }
 
         // Payment Screen

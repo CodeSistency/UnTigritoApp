@@ -49,7 +49,7 @@ fun ClientMainScreen(mainNavController: NavHostController) {
         ) {
             composable(Routes.CLIENT_HOME) {
                 HomeScreenClient(
-                    navController = navController,
+                    navController = mainNavController,
                     onNavigateToAccountDetails = { navController.navigate(ClientRoutes.ACCOUNT_DETAILS) }
                 )
             }
