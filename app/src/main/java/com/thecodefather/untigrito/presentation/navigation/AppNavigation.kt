@@ -15,6 +15,7 @@ import com.thecodefather.untigrito.presentation.screens.auth.register.RegisterSc
 import com.thecodefather.untigrito.presentation.screens.auth.forgotpassword.ForgotPasswordScreen
 import com.thecodefather.untigrito.presentation.screens.auth.forgotpassword.ForgotPasswordViewModel
 import com.thecodefather.untigrito.presentation.screens.auth.login.AuthViewModel
+import com.thecodefather.untigrito.presentation.screens.client.ClientHomeScreen
 
 /**
  * Route definitions for navigation
@@ -25,6 +26,7 @@ object Routes {
     const val REGISTER = "register"
     const val FORGOT_PASSWORD = "forgot_password"
     const val HOME = "home"
+    const val CLIENT_FLOW = "client_flow"
 }
 
 /**
@@ -69,8 +71,8 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
                 onNavigateToForgotPassword = {
                     navController.navigate(Routes.FORGOT_PASSWORD)
                 },
-                onNavigateToHome = {
-                    navController.navigate(Routes.HOME) {
+                onNavigateToClientFlow = { // Cambiado de onNavigateToHome
+                    navController.navigate(Routes.CLIENT_FLOW) {
                         popUpTo(Routes.LOGIN) { inclusive = true }
                     }
                 }
@@ -107,6 +109,10 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
         composable(Routes.HOME) {
             val viewModel: HomeViewModel = hiltViewModel()
             HomeScreen(viewModel = viewModel)
+        }
+
+        composable(Routes.CLIENT_FLOW) {
+            ClientHomeScreen()
         }
     }
 }

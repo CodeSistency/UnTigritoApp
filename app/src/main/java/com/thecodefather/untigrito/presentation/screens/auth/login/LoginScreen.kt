@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
@@ -47,14 +48,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.thecodefather.untigrito.R
-import androidx.compose.material.icons.filled.Home
+import com.thecodefather.untigrito.presentation.navigation.Routes
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(
     onNavigateToRegister: () -> Unit,
     onNavigateToForgotPassword: () -> Unit,
-    onNavigateToHome: () -> Unit
+    onNavigateToClientFlow: () -> Unit // Cambiado de onNavigateToHome
 ) {
     var email by remember { mutableStateOf("luisjose@gmail.com") }
     var password by remember { mutableStateOf("1234567") }
@@ -135,7 +136,7 @@ fun LoginScreen(
             Spacer(modifier = Modifier.height(32.dp))
 
             Button(
-                onClick = onNavigateToHome,
+                onClick = onNavigateToClientFlow, // Cambiado de onNavigateToHome
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE67822)),
                 contentPadding = PaddingValues(vertical = 12.dp)
@@ -197,6 +198,6 @@ fun LoginScreen(
 @Composable
 fun PreviewLoginScreen() {
     MaterialTheme {
-        LoginScreen(onNavigateToRegister = {}, onNavigateToForgotPassword = {}, onNavigateToHome = {}) // Proporcionar un lambda vacío para la vista previa
+        LoginScreen(onNavigateToRegister = {}, onNavigateToForgotPassword = {}, onNavigateToClientFlow = {}) // Actualizado para la vista previa
     }
 }
