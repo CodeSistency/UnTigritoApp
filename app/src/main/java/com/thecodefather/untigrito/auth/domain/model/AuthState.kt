@@ -1,5 +1,7 @@
 package com.thecodefather.untigrito.auth.domain.model
 
+import com.thecodefather.untigrito.domain.model.User
+
 /**
  * Estados posibles de autenticación
  */
