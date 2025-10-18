@@ -79,11 +79,9 @@ fun ServicesScreen(
                         Icon(Icons.Default.Search, contentDescription = "Search")
                     },
                     shape = RoundedCornerShape(12.dp),
-                    colors = TextFieldDefaults.colors(
+                    colors = TextFieldDefaults.colors().copy(
                         focusedContainerColor = Color.White,
                         unfocusedContainerColor = Color.White,
-                        focusedBorderColor = Color(0xFFE67822),
-                        unfocusedBorderColor = Color.LightGray
                     )
                 )
                 Spacer(modifier = Modifier.height(16.dp))

@@ -1,5 +1,6 @@
 package com.thecodefather.untigrito.presentation.components
 
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
@@ -11,6 +12,7 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
@@ -61,7 +63,7 @@ fun ClientBottomNavBar(
                     Icon(
                         imageVector = item.icon,
                         contentDescription = item.contentDescription,
-                        modifier = androidx.compose.ui.Modifier.size(24.dp)
+                        modifier = Modifier.size(24.dp)
                     )
                 },
                 label = { Text(item.label) },

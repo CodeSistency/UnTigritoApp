@@ -77,10 +77,9 @@ fun CreateRequestScreen(
                     modifier = Modifier.fillMaxWidth(),
                     label = { Text("Título del servicio") },
                     shape = RoundedCornerShape(12.dp),
-                    colors = TextFieldDefaults.colors(
+                    colors = TextFieldDefaults.colors().copy(
                         focusedContainerColor = Color.White,
                         unfocusedContainerColor = Color.White,
-                        focusedBorderColor = Color(0xFFE67822)
                     )
                 )
             }
@@ -96,10 +95,9 @@ fun CreateRequestScreen(
                     label = { Text("Descripción detallada") },
                     maxLines = 5,
                     shape = RoundedCornerShape(12.dp),
-                    colors = TextFieldDefaults.colors(
+                    colors = TextFieldDefaults.colors().copy(
                         focusedContainerColor = Color.White,
                         unfocusedContainerColor = Color.White,
-                        focusedBorderColor = Color(0xFFE67822)
                     )
                 )
             }
@@ -112,10 +110,9 @@ fun CreateRequestScreen(
                     modifier = Modifier.fillMaxWidth(),
                     label = { Text("Categoría") },
                     shape = RoundedCornerShape(12.dp),
-                    colors = TextFieldDefaults.colors(
+                    colors = TextFieldDefaults.colors().copy(
                         focusedContainerColor = Color.White,
                         unfocusedContainerColor = Color.White,
-                        focusedBorderColor = Color(0xFFE67822)
                     )
                 )
             }
@@ -128,10 +125,9 @@ fun CreateRequestScreen(
                     modifier = Modifier.fillMaxWidth(),
                     label = { Text("Presupuesto") },
                     shape = RoundedCornerShape(12.dp),
-                    colors = TextFieldDefaults.colors(
+                    colors = TextFieldDefaults.colors().copy(
                         focusedContainerColor = Color.White,
                         unfocusedContainerColor = Color.White,
-                        focusedBorderColor = Color(0xFFE67822)
                     )
                 )
             }

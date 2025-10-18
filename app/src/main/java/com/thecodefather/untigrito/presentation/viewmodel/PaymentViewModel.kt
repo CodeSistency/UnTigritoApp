@@ -2,6 +2,7 @@ package com.thecodefather.untigrito.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.thecodefather.untigrito.data.repository.ClientRepositoryImpl
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -13,7 +14,7 @@ import com.thecodefather.untigrito.domain.repository.ClientRepository
 
 @HiltViewModel
 class PaymentViewModel @Inject constructor(
-    private val repository: ClientRepository
+    private val repository: ClientRepositoryImpl
 ) : ViewModel() {
 
     private val _user = MutableStateFlow<ClientUser?>(null)
