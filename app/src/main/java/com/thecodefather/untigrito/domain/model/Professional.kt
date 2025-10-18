@@ -19,6 +19,7 @@ data class Professional(
     val bankAccount: String? = null,
     val taxId: String? = null,
     val isVerified: Boolean = false,
+    val imageUrl: String? = null, // Añadir esta propiedad para la imagen del profesional
     val createdAt: String = "",
     val updatedAt: String = ""
 )

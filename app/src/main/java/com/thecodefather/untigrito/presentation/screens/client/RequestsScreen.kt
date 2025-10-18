@@ -35,9 +35,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import androidx.navigation.compose.currentBackStackEntryAsState
 import com.thecodefather.untigrito.domain.model.ClientRequest
 import com.thecodefather.untigrito.presentation.components.ClientBottomNavBar
+import com.thecodefather.untigrito.presentation.navigation.Routes
 import com.thecodefather.untigrito.presentation.viewmodel.RequestsViewModel
+import com.thecodefather.untigrito.presentation.screens.client.components.HomeHeader
+import com.thecodefather.untigrito.presentation.screens.client.components.OrangeUntigrito
+import com.thecodefather.untigrito.presentation.screens.client.components.PrimaryTextColor
+import com.thecodefather.untigrito.presentation.screens.client.components.SecondaryTextColor
 
 /**
  * Requests Screen
@@ -57,100 +63,88 @@ fun RequestsScreen(
 
     val tabs = listOf("Pendientes", "Activas", "Historial")
 
-    Box(
+    Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFFF5F5F5))
     ) {
-        Column(
+        HomeHeader(userName = "Juan Pérez")
+        // Tab Row
+        TabRow(
+            selectedTabIndex = selectedTab,
+            containerColor = Color.White,
+            contentColor = OrangeUntigrito,
+            indicator = { tabPositions ->
+                TabRowDefaults.SecondaryIndicator(
+                    modifier = Modifier.tabIndicatorOffset(tabPositions[selectedTab]),
+                    height = 3.dp,
+                    color = OrangeUntigrito
+                )
+            }
+        ) {
+            tabs.forEachIndexed { index, title ->
+                Tab(
+                    selected = selectedTab == index,
+                    onClick = { selectedTab = index },
+                    text = {
+                        Text(
+                            title,
+                            fontSize = 14.sp,
+                            color = if (selectedTab == index) PrimaryTextColor else SecondaryTextColor,
+                            fontWeight = if (selectedTab == index) FontWeight.Bold else FontWeight.Normal
+                        )
+                    }
+                )
+            }
+        }
+
+        // Content based on selected tab
+        LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(bottom = 56.dp)
+                .padding(top = 16.dp),
+            contentPadding = PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // Tab Row
-            TabRow(
-                selectedTabIndex = selectedTab,
-                containerColor = Color.White,
-                contentColor = Color(0xFFE67822),
-                indicator = { tabPositions ->
-                    TabRowDefaults.SecondaryIndicator(
-                        modifier = Modifier.tabIndicatorOffset(tabPositions[selectedTab]),
-                        height = 3.dp,
-                        color = Color(0xFFE67822)
-                    )
+            when (selectedTab) {
+                0 -> items(pendingRequests) { request ->
+                    RequestCard(request, onStatusChange = { newStatus ->
+                        viewModel.updateRequestStatus(request.id, newStatus)
+                    })
                 }
-            ) {
-                tabs.forEachIndexed { index, title ->
-                    Tab(
-                        selected = selectedTab == index,
-                        onClick = { selectedTab = index },
-                        text = {
-                            Text(
-                                title,
-                                fontWeight = if (selectedTab == index) FontWeight.Bold else FontWeight.Normal
-                            )
-                        }
-                    )
+                1 -> items(activeRequests) { request ->
+                    RequestCard(request, onStatusChange = { newStatus ->
+                        viewModel.updateRequestStatus(request.id, newStatus)
+                    })
+                }
+                2 -> items(completedRequests) { request ->
+                    RequestCard(request, onStatusChange = { newStatus ->
+                        viewModel.updateRequestStatus(request.id, newStatus)
+                    })
                 }
             }
 
-            // Content based on selected tab
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(top = 16.dp),
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+            // Empty state
+            if ((selectedTab == 0 && pendingRequests.isEmpty()) ||
+                (selectedTab == 1 && activeRequests.isEmpty()) ||
+                (selectedTab == 2 && completedRequests.isEmpty())
             ) {
-                when (selectedTab) {
-                    0 -> items(pendingRequests) { request ->
-                        RequestCard(request, onStatusChange = { newStatus ->
-                            viewModel.updateRequestStatus(request.id, newStatus)
-                        })
-                    }
-                    1 -> items(activeRequests) { request ->
-                        RequestCard(request, onStatusChange = { newStatus ->
-                            viewModel.updateRequestStatus(request.id, newStatus)
-                        })
-                    }
-                    2 -> items(completedRequests) { request ->
-                        RequestCard(request, onStatusChange = { newStatus ->
-                            viewModel.updateRequestStatus(request.id, newStatus)
-                        })
-                    }
-                }
-
-                // Empty state
-                if ((selectedTab == 0 && pendingRequests.isEmpty()) ||
-                    (selectedTab == 1 && activeRequests.isEmpty()) ||
-                    (selectedTab == 2 && completedRequests.isEmpty())
-                ) {
-                    item {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(200.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = "No hay solicitudes en esta categoría",
-                                fontSize = 14.sp,
-                                color = Color.Gray
-                            )
-                        }
+                item {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(200.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "No hay solicitudes en esta categoría",
+                            fontSize = 16.sp,
+                            color = SecondaryTextColor
+                        )
                     }
                 }
             }
         }
-
-        ClientBottomNavBar(
-            currentRoute = "client_requests",
-            onNavigate = { route ->
-                if (route != "client_requests") {
-                    navController.navigate(route)
-                }
-            }
-        )
     }
 }
 
@@ -180,15 +174,15 @@ private fun RequestCard(
             ) {
                 Text(
                     text = "Solicitud #${request.id.take(8)}",
-                    fontSize = 14.sp,
+                    fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color.Black
+                    color = PrimaryTextColor
                 )
 
                 Box(
                     modifier = Modifier
                         .background(
-                            color = Color(0xFFE67822).copy(alpha = 0.1f),
+                            color = OrangeUntigrito.copy(alpha = 0.1f),
                             shape = RoundedCornerShape(8.dp)
                         )
                         .padding(horizontal = 12.dp, vertical = 4.dp),
@@ -196,48 +190,48 @@ private fun RequestCard(
                 ) {
                     Text(
                         text = request.status,
-                        fontSize = 11.sp,
+                        fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFFE67822)
+                        color = OrangeUntigrito
                     )
                 }
             }
 
             Text(
-                text = "Presupuesto propuesto: $${"%.2f".format(request.proposedPrice)}",
-                fontSize = 13.sp,
+                text = "Presupuesto propuesto: $${ "%.2f".format(request.proposedPrice)}",
+                fontSize = 14.sp,
                 fontWeight = FontWeight.SemiBold,
-                color = Color(0xFFE67822)
+                color = OrangeUntigrito
             )
 
             Text(
                 text = request.description.take(80) + "...",
-                fontSize = 12.sp,
-                color = Color.Gray
+                fontSize = 13.sp,
+                color = SecondaryTextColor
             )
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(12.dp) // Aumentar espacio entre botones
             ) {
                 if (request.status == ClientRequest.STATUS_PENDING) {
                     Text(
                         text = "Aceptar",
-                        fontSize = 11.sp,
+                        fontSize = 13.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.White,
                         modifier = Modifier
-                            .background(Color(0xFFE67822), RoundedCornerShape(6.dp))
-                            .padding(horizontal = 12.dp, vertical = 4.dp)
+                            .background(OrangeUntigrito, RoundedCornerShape(8.dp))
+                            .padding(horizontal = 16.dp, vertical = 8.dp) // Relleno más grande
                     )
                     Text(
                         text = "Rechazar",
-                        fontSize = 11.sp,
+                        fontSize = 13.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFFE67822),
+                        color = OrangeUntigrito,
                         modifier = Modifier
-                            .background(Color(0xFFE67822).copy(alpha = 0.1f), RoundedCornerShape(6.dp))
-                            .padding(horizontal = 12.dp, vertical = 4.dp)
+                            .background(OrangeUntigrito.copy(alpha = 0.1f), RoundedCornerShape(8.dp))
+                            .padding(horizontal = 16.dp, vertical = 8.dp) // Relleno más grande
                     )
                 }
             }

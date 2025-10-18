@@ -6,8 +6,6 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.thecodefather.untigrito.presentation.screens.home.HomeScreen
-import com.thecodefather.untigrito.presentation.screens.home.HomeViewModel
 import com.thecodefather.untigrito.presentation.screens.splash.SplashScreen
 import com.thecodefather.untigrito.presentation.screens.splash.SplashViewModel
 import com.thecodefather.untigrito.presentation.screens.auth.login.LoginScreen
@@ -15,7 +13,11 @@ import com.thecodefather.untigrito.presentation.screens.auth.register.RegisterSc
 import com.thecodefather.untigrito.presentation.screens.auth.forgotpassword.ForgotPasswordScreen
 import com.thecodefather.untigrito.presentation.screens.auth.forgotpassword.ForgotPasswordViewModel
 import com.thecodefather.untigrito.presentation.screens.auth.login.AuthViewModel
-import com.thecodefather.untigrito.presentation.screens.client.ClientHomeScreen
+import com.thecodefather.untigrito.presentation.screens.client.HomeScreenClient
+import com.thecodefather.untigrito.presentation.screens.client.ClientProfileScreen
+import com.thecodefather.untigrito.presentation.screens.client.RequestsScreen
+import com.thecodefather.untigrito.presentation.screens.client.ServicesScreen
+import com.thecodefather.untigrito.presentation.screens.client.ClientMainScreen
 
 /**
  * Route definitions for navigation
@@ -26,7 +28,11 @@ object Routes {
     const val REGISTER = "register"
     const val FORGOT_PASSWORD = "forgot_password"
     const val HOME = "home"
-    const val CLIENT_FLOW = "client_flow"
+    const val CLIENT_MAIN = "client_main" // Nueva ruta
+    const val CLIENT_HOME = "client_home"
+    const val CLIENT_SERVICES = "client_services"
+    const val CLIENT_REQUESTS = "client_requests"
+    const val CLIENT_PROFILE = "client_profile"
 }
 
 /**
@@ -49,7 +55,7 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
             SplashScreen(
                 viewModel = viewModel,
                 onNavigateToHome = {
-                    navController.navigate(Routes.HOME) {
+                    navController.navigate(Routes.CLIENT_MAIN) { // Cambiado
                         popUpTo(Routes.SPLASH) { inclusive = true }
                     }
                 },
@@ -72,10 +78,16 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
                     navController.navigate(Routes.FORGOT_PASSWORD)
                 },
                 onNavigateToClientFlow = { // Cambiado de onNavigateToHome
-                    navController.navigate(Routes.CLIENT_FLOW) {
+                    navController.navigate(Routes.CLIENT_MAIN) { // Cambiado
                         popUpTo(Routes.LOGIN) { inclusive = true }
                     }
                 }
+            )
+        }
+
+        composable(Routes.CLIENT_REQUESTS){
+            RequestsScreen(
+                navController = navController
             )
         }
 
@@ -87,7 +99,7 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
                     }
                 },
                 onNavigateToHome = {
-                    navController.navigate(Routes.HOME) {
+                    navController.navigate(Routes.CLIENT_MAIN) { // Cambiado
                         popUpTo(Routes.REGISTER) { inclusive = true }
                     }
                 }
@@ -107,12 +119,19 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
 
         // Home Screen
         composable(Routes.HOME) {
-            val viewModel: HomeViewModel = hiltViewModel()
-            HomeScreen(viewModel = viewModel)
+            ClientMainScreen(mainNavController = navController) // Cambiado
         }
 
-        composable(Routes.CLIENT_FLOW) {
-            ClientHomeScreen()
+        composable(Routes.CLIENT_MAIN) { // Nueva pantalla principal del cliente
+            ClientMainScreen(mainNavController = navController)
+        }
+
+        composable(Routes.CLIENT_SERVICES) {
+            ServicesScreen(navController = navController)
+        }
+
+        composable(Routes.CLIENT_PROFILE) {
+            ClientProfileScreen(navController = navController)
         }
     }
 }
