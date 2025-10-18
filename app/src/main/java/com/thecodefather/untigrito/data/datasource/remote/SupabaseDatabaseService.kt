@@ -415,3 +415,221 @@ data class SupabaseProfessionalProfile(
     val updatedAt: String? = null
 )
 
+/**
+ * Modelo de Enlace de Profesión - Coincide con ProfessionLink de Prisma
+ */
+@SuppressLint("UnsafeOptInUsageError")
+@Serializable
+data class SupabaseProfessionLink(
+    val id: String,
+    val userId: String,
+    val professionId: String,
+    val documents: String? = null, // JSON
+    val verified: Boolean = false
+)
+
+/**
+ * Modelo de Método de Pago del Usuario - Coincide con UserPaymentMethod de Prisma
+ */
+@SuppressLint("UnsafeOptInUsageError")
+@Serializable
+data class SupabaseUserPaymentMethod(
+    val id: String,
+    val userId: String,
+    val method: String, // CASHEA, BALANCE, TRANSFER, PAY_MOBILE, CARD, OTHER
+    val accountNumber: String? = null,
+    val accountAlias: String? = null,
+    val idNumber: String? = null,
+    val phoneNumber: String? = null,
+    val details: String? = null, // JSON
+    val isVerified: Boolean = false,
+    val isDefault: Boolean = false,
+    val createdAt: String? = null,
+    val updatedAt: String? = null
+)
+
+/**
+ * Modelo de Retiro - Coincide con Withdrawal de Prisma
+ */
+@SuppressLint("UnsafeOptInUsageError")
+@Serializable
+data class SupabaseWithdrawal(
+    val id: String,
+    val userId: String,
+    val paymentMethodId: String,
+    val amount: Double,
+    val status: String = "PENDING", // PENDING, COMPLETED, FAILED
+    val requestedAt: String? = null,
+    val completedAt: String? = null,
+    val adminNotes: String? = null,
+    val rejectionReason: String? = null
+)
+
+/**
+ * Modelo de Reporte - Coincide con Report de Prisma
+ */
+@SuppressLint("UnsafeOptInUsageError")
+@Serializable
+data class SupabaseReport(
+    val id: String,
+    val reporterId: String,
+    val reportedId: String? = null,
+    val serviceId: String? = null,
+    val reason: String,
+    val proofMedia: String? = null, // JSON
+    val status: String = "PENDING",
+    val adminNotes: String? = null,
+    val createdAt: String? = null
+)
+
+/**
+ * Modelo de Campaña Publicitaria - Coincide con AdCampaign de Prisma
+ */
+@SuppressLint("UnsafeOptInUsageError")
+@Serializable
+data class SupabaseAdCampaign(
+    val id: String,
+    val title: String,
+    val targetSegment: String, // CLIENT, PROFESSIONAL, ALL
+    val location: String,
+    val imageUrl: String,
+    val targetUrl: String,
+    val startDate: String,
+    val endDate: String,
+    val isActive: Boolean = true,
+    val impressions: Int = 0,
+    val clicks: Int = 0,
+    val createdAt: String? = null,
+    val updatedAt: String? = null
+)
+
+/**
+ * Modelo de Código Promocional - Coincide con PromoCode de Prisma
+ */
+@SuppressLint("UnsafeOptInUsageError")
+@Serializable
+data class SupabasePromoCode(
+    val id: String,
+    val code: String,
+    val discountType: String, // PERCENTAGE, FIXED_AMOUNT
+    val discountValue: Double,
+    val maxUses: Int? = null,
+    val usesCount: Int = 0,
+    val maxUsesPerUser: Int? = null,
+    val validFrom: String? = null,
+    val validUntil: String? = null,
+    val targetCategory: String? = null,
+    val isActive: Boolean = true,
+    val createdAt: String? = null
+)
+
+/**
+ * Modelo de Uso de Código Promocional - Coincide con PromoCodeUsage de Prisma
+ */
+@SuppressLint("UnsafeOptInUsageError")
+@Serializable
+data class SupabasePromoCodeUsage(
+    val id: String,
+    val codeId: String,
+    val userId: String,
+    val usedAt: String? = null
+)
+
+/**
+ * Modelo de Media/Archivo - Coincide con Media de Prisma
+ */
+@SuppressLint("UnsafeOptInUsageError")
+@Serializable
+data class SupabaseMedia(
+    val id: String,
+    val url: String,
+    val type: String, // IMAGE, VIDEO, DOCUMENT
+    val filename: String? = null,
+    val sizeBytes: Int? = null,
+    val uploadedById: String? = null,
+    val postingId: String? = null,
+    val proServiceId: String? = null,
+    val transactionId: String? = null,
+    val reportId: String? = null,
+    val createdAt: String? = null
+)
+
+/**
+ * Modelo de Dispositivo - Coincide con Device de Prisma
+ */
+@SuppressLint("UnsafeOptInUsageError")
+@Serializable
+data class SupabaseDevice(
+    val id: String,
+    val userId: String,
+    val deviceId: String,
+    val pushToken: String? = null,
+    val lastSeen: String? = null
+)
+
+/**
+ * Modelo de Notificación - Coincide con Notification de Prisma
+ */
+@SuppressLint("UnsafeOptInUsageError")
+@Serializable
+data class SupabaseNotification(
+    val id: String,
+    val userId: String,
+    val title: String,
+    val body: String,
+    val data: String? = null, // JSON
+    val read: Boolean = false,
+    val createdAt: String? = null
+)
+
+/**
+ * Modelo de Log de Auditoría - Coincide con AuditLog de Prisma
+ */
+@SuppressLint("UnsafeOptInUsageError")
+@Serializable
+data class SupabaseAuditLog(
+    val id: String,
+    val actorId: String? = null,
+    val action: String,
+    val meta: String? = null, // JSON
+    val createdAt: String? = null
+)
+
+/**
+ * Modelo de Conversación - Coincide con Conversation de Prisma
+ */
+@SuppressLint("UnsafeOptInUsageError")
+@Serializable
+data class SupabaseConversation(
+    val id: String,
+    val createdById: String,
+    val createdAt: String? = null
+)
+
+/**
+ * Modelo de Participante de Conversación - Coincide con ConversationParticipant de Prisma
+ */
+@SuppressLint("UnsafeOptInUsageError")
+@Serializable
+data class SupabaseConversationParticipant(
+    val id: String,
+    val conversationId: String,
+    val userId: String,
+    val joinedAt: String? = null
+)
+
+/**
+ * Modelo de Mensaje - Coincide con Message de Prisma
+ */
+@SuppressLint("UnsafeOptInUsageError")
+@Serializable
+data class SupabaseMessage(
+    val id: String,
+    val conversationId: String,
+    val senderId: String,
+    val text: String? = null,
+    val mediaIds: String? = null, // JSON array
+    val readBy: String? = null, // JSON array
+    val createdAt: String? = null
+)
+
