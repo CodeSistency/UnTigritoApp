@@ -40,6 +40,7 @@ android{
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
+        isCoreLibraryDesugaringEnabled = true
     }
 
     kotlinOptions {
@@ -95,6 +96,7 @@ dependencies {
     
     // Serialization
     implementation(libs.kotlinx.serialization.json)
+    implementation(libs.gson)
 
     // Image Loading
     implementation(libs.coil.compose)
@@ -108,6 +110,9 @@ dependencies {
     // Logging
     implementation(libs.timber)
     implementation(libs.logcat)
+
+    // Core Library Desugaring
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
 
     // Testing
     testImplementation(libs.junit)
