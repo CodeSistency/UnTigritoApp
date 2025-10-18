@@ -10,12 +10,20 @@ import com.thecodefather.untigrito.presentation.screens.home.HomeScreen
 import com.thecodefather.untigrito.presentation.screens.home.HomeViewModel
 import com.thecodefather.untigrito.presentation.screens.splash.SplashScreen
 import com.thecodefather.untigrito.presentation.screens.splash.SplashViewModel
+import com.thecodefather.untigrito.presentation.screens.auth.login.LoginScreen
+import com.thecodefather.untigrito.presentation.screens.auth.login.LoginViewModel
+import com.thecodefather.untigrito.presentation.screens.auth.register.RegisterScreen
+import com.thecodefather.untigrito.presentation.screens.auth.forgotpassword.ForgotPasswordScreen
+import com.thecodefather.untigrito.presentation.screens.auth.forgotpassword.ForgotPasswordViewModel
 
 /**
  * Route definitions for navigation
  */
 object Routes {
     const val SPLASH = "splash"
+    const val LOGIN = "login"
+    const val REGISTER = "register"
+    const val FORGOT_PASSWORD = "forgot_password"
     const val HOME = "home"
 }
 
@@ -41,6 +49,55 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
                 onNavigateToHome = {
                     navController.navigate(Routes.HOME) {
                         popUpTo(Routes.SPLASH) { inclusive = true }
+                    }
+                },
+                onNavigateToLogin = {
+                    navController.navigate(Routes.LOGIN) {
+                        popUpTo(Routes.SPLASH) { inclusive = true }
+                    }
+                }
+            )
+        }
+
+        // Auth Screens
+        composable(Routes.LOGIN) {
+            val viewModel: LoginViewModel = hiltViewModel()
+            LoginScreen(
+                onNavigateToRegister = {
+                    navController.navigate(Routes.REGISTER)
+                },
+                onNavigateToForgotPassword = {
+                    navController.navigate(Routes.FORGOT_PASSWORD)
+                },
+                onNavigateToHome = {
+                    navController.navigate(Routes.HOME) {
+                        popUpTo(Routes.LOGIN) { inclusive = true }
+                    }
+                }
+            )
+        }
+
+        composable(Routes.REGISTER) {
+            RegisterScreen(
+                onNavigateToLogin = {
+                    navController.navigate(Routes.LOGIN) {
+                        popUpTo(Routes.REGISTER) { inclusive = true }
+                    }
+                },
+                onNavigateToHome = {
+                    navController.navigate(Routes.HOME) {
+                        popUpTo(Routes.REGISTER) { inclusive = true }
+                    }
+                }
+            )
+        }
+
+        composable(Routes.FORGOT_PASSWORD) {
+            val viewModel: ForgotPasswordViewModel = hiltViewModel()
+            ForgotPasswordScreen(
+                onNavigateToLogin = {
+                    navController.navigate(Routes.LOGIN) {
+                        popUpTo(Routes.FORGOT_PASSWORD) { inclusive = true }
                     }
                 }
             )

@@ -17,6 +17,10 @@ data class User(
     val name: String,
     val email: String,
     val userType: UserType,
+    val phoneNumber: String = "",
+    val cedula: String = "",
+    val isPhoneVerified: Boolean = false,
+    val isCedulaVerified: Boolean = false,
     val createdAt: Long = System.currentTimeMillis()
 )
 
