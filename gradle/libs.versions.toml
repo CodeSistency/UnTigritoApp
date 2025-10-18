@@ -23,6 +23,7 @@ ktor = "2.3.6"
 retrofit = "2.9.0"
 okhttp = "4.11.0"
 kotlinxSerialization = "1.6.0"
+supabase = "2.0.0"
 
 # Image Loading
 coil = "2.4.0"
@@ -87,6 +88,13 @@ okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhtt
 okhttp-logging = { group = "com.squareup.okhttp3", name = "logging-interceptor", version.ref = "okhttp" }
 ktor-client-core = { group = "io.ktor", name = "ktor-client-core", version.ref = "ktor" }
 ktor-client-android = { group = "io.ktor", name = "ktor-client-android", version.ref = "ktor" }
+ktor-client-logging = { group = "io.ktor", name = "ktor-client-logging", version.ref = "ktor" }
+ktor-serialization = { group = "io.ktor", name = "ktor-serialization-kotlinx-json", version.ref = "ktor" }
+ktor-content-negotiation = { group = "io.ktor", name = "ktor-client-content-negotiation", version.ref = "ktor" }
+supabase-postgrest = { group = "io.github.jan-tennert.supabase", name = "postgrest-kt", version.ref = "supabase" }
+supabase-gotrue = { group = "io.github.jan-tennert.supabase", name = "gotrue-kt", version.ref = "supabase" }
+supabase-realtime = { group = "io.github.jan-tennert.supabase", name = "realtime-kt", version.ref = "supabase" }
+supabase-storage = { group = "io.github.jan-tennert.supabase", name = "storage-kt", version.ref = "supabase" }
 
 # Serialization
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
@@ -152,7 +160,20 @@ networking = [
     "retrofit",
     "retrofit-kotlinx-serialization",
     "okhttp",
-    "okhttp-logging"
+    "okhttp-logging",
+    "ktor-client-core",
+    "ktor-client-android",
+    "ktor-client-logging",
+    "ktor-serialization",
+    "ktor-content-negotiation"
+]
+
+# Supabase Bundle
+supabase = [
+    "supabase-postgrest",
+    "supabase-gotrue",
+    "supabase-realtime",
+    "supabase-storage"
 ]
 
 [plugins]

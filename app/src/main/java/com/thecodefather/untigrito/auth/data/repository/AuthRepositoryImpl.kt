@@ -17,25 +17,24 @@ class AuthRepositoryImpl @Inject constructor(
     private val tokenManager: TokenManager
 ) : IAuthRepository {
 
-    override suspend fun login(email: String?, phone: String?, password: String): Result<User> {
+    override suspend fun login(email: String?, password: String): Result<User> {
         return try {
-            Timber.d("🔐 AUTH LOGIN_START - Attempting login with identifier: ${email ?: phone}")
+            Timber.d("🔐 AUTH LOGIN_START - Attempting login with identifier: ${email ?: ""}")
 
             val request = AuthApiService.LoginRequest(
                 email = email,
-                phone = phone,
                 password = password
             )
 
             val response = authApiService.login(request)
 
-            if (response.success && response.data != null) {
-                val apiUser = response.data.user
-                val user = mapApiUserToDomainUser(apiUser)
+            if (response.isSuccessful && response.body() != null) {
+                val apiUser = response.body()?.data?.user
+                val user = mapApiUserToDomainUser(apiUser?: AuthApiService.UserData())
 
                 // Save tokens securely
-                response.data.token?.let { accessToken ->
-                    response.data.refreshToken?.let { refreshToken ->
+                response.body()?.data?.token?.let { accessToken ->
+                    response.body()?.data?.refreshToken?.let { refreshToken ->
                         tokenManager.saveTokens(accessToken, refreshToken)
                     } ?: tokenManager.saveTokens(accessToken)
                 }
@@ -43,7 +42,7 @@ class AuthRepositoryImpl @Inject constructor(
                 Timber.d("✅ AUTH LOGIN_SUCCESS - User: ${user.id}, Role: ${user.userType}")
                 Result.success(user)
             } else {
-                val errorMessage = response.error?.message ?: "Login failed"
+                val errorMessage = response.body()?.error?.message ?: "Login failed"
                 Timber.w("⚠️ AUTH LOGIN_FAILED - $errorMessage")
                 Result.failure(AuthException.InvalidCredentials(errorMessage))
             }

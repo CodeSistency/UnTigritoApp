@@ -9,7 +9,7 @@ import com.thecodefather.untigrito.domain.model.User
 interface IAuthRepository {
 
     // ========== Basic Authentication ==========
-    suspend fun login(email: String?, phone: String?, password: String): Result<User>
+    suspend fun login(email: String?, password: String): Result<User>
     suspend fun register(name: String, email: String?, phone: String?, password: String): Result<User>
     suspend fun forgotPassword(email: String): Result<Boolean>
     fun logout()

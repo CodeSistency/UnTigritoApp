@@ -1,9 +1,11 @@
 package com.thecodefather.untigrito.presentation.screens.auth.login
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.thecodefather.untigrito.auth.domain.model.AuthState
 import com.thecodefather.untigrito.domain.model.User
+import com.thecodefather.untigrito.domain.model.UserType
 import com.thecodefather.untigrito.auth.domain.repository.IAuthRepository
 import com.thecodefather.untigrito.auth.domain.usecase.AuthStateManager
 import com.thecodefather.untigrito.core.validation.EmailValidator
@@ -11,7 +13,11 @@ import com.thecodefather.untigrito.core.validation.PasswordValidator
 import com.thecodefather.untigrito.core.validation.PhoneValidator
 import com.thecodefather.untigrito.data.datasource.local.GoogleSignInData
 import com.thecodefather.untigrito.data.datasource.local.GoogleSignInHelper
+import com.thecodefather.untigrito.data.datasource.remote.SupabaseDatabaseService
+import com.thecodefather.untigrito.data.datasource.remote.SupabaseUser
 import dagger.hilt.android.lifecycle.HiltViewModel
+import io.github.jan.supabase.postgrest.Postgrest
+import io.github.jan.supabase.postgrest.query.Columns
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -26,7 +32,9 @@ import javax.inject.Inject
 class AuthViewModel @Inject constructor(
     private val authRepository: IAuthRepository,
     private val googleSignInHelper: GoogleSignInHelper,
-    private val authStateManager: AuthStateManager
+    private val authStateManager: AuthStateManager,
+    private val supabaseDatabase: SupabaseDatabaseService,
+    private val postgrest: Postgrest
 ) : ViewModel() {
 
     private val _authState = MutableStateFlow<AuthState>(AuthState.Unauthenticated)
@@ -50,11 +58,119 @@ class AuthViewModel @Inject constructor(
     // ========== Authentication Methods ==========
 
     /**
-     * Performs login with email/phone and password
+     * Performs login using direct Supabase database query
+     * Busca un usuario en la tabla User que coincida con email/phone y password
+     */
+    fun loginWithSupabase(identifier: String, password: String) {
+        Timber.d("🔐 SUPABASE LOGIN_START - Identifier: $identifier")
+        Log.e("TAG", "🔐 SUPABASE LOGIN_START - Identifier: $identifier")
+        
+        // Determinar si es email o teléfono
+        val isEmail = EmailValidator.isValid(identifier)
+        val isPhone = PhoneValidator.isValidVenezuelanPhone(identifier)
+        
+        // Validar datos
+        if (!isEmail && !isPhone) {
+            Timber.w("⚠️ SUPABASE LOGIN - Identificador inválido")
+            Log.e("TAG", "⚠️ SUPABASE LOGIN - Identificador inválido")
+            _authState.value = AuthState.Error("Email o teléfono inválido")
+            return
+        }
+        
+        if (password.length < 6) {
+            Timber.w("⚠️ SUPABASE LOGIN - Contraseña inválida")
+            Log.e("TAG", "⚠️ SUPABASE LOGIN - Contraseña inválida")
+            _authState.value = AuthState.Error("La contraseña debe tener al menos 6 caracteres")
+            return
+        }
+        
+        _authState.value = AuthState.Loading
+        
+        viewModelScope.launch {
+            try {
+                Timber.d("📊 SUPABASE - Consultando tabla User...")
+                Log.e("TAG", "📊 SUPABASE - Consultando tabla User...")
+                
+                // Hacer consulta directa a la tabla User con Postgrest
+                val users = if (isEmail) {
+                    postgrest.from("User")
+                        .select {
+                            filter {
+                                eq("email", identifier)
+                                eq("password", password)
+                            }
+                        }
+                        .decodeList<SupabaseUser>()
+                } else {
+                    postgrest.from("User")
+                        .select {
+                            filter {
+                                eq("phone", identifier)
+                                eq("password", password)
+                            }
+                        }
+                        .decodeList<SupabaseUser>()
+                }
+                
+                Timber.d("📊 SUPABASE - Resultados encontrados: ${users.size}")
+                Log.e("TAG", "📊 SUPABASE - Resultados encontrados: ${users.size}")
+                
+                if (users.isNotEmpty()) {
+                    // Usuario encontrado - Login exitoso
+                    val supabaseUser = users.first()
+                    
+                    Timber.d("✅ SUPABASE LOGIN_SUCCESS - User: ${supabaseUser.id}")
+                    Log.e("TAG", "✅ SUPABASE LOGIN_SUCCESS - User: ${supabaseUser.id}")
+                    Log.e("TAG", "✅ User name: ${supabaseUser.name}")
+                    Log.e("TAG", "✅ User email: ${supabaseUser.email}")
+                    Log.e("TAG", "✅ User role: ${supabaseUser.role}")
+                    
+                    // Convertir SupabaseUser a User del dominio
+                    val domainUser = User(
+                        id = supabaseUser.id,
+                        name = supabaseUser.name ?: "Usuario",
+                        email = supabaseUser.email ?: "",
+                        userType = when (supabaseUser.role) {
+                            "PROFESSIONAL" -> UserType.PROFESSIONAL
+                            else -> UserType.CLIENT
+                        },
+                        phoneNumber = supabaseUser.phone ?: "",
+                        cedula = "",
+                        isPhoneVerified = supabaseUser.isVerified,
+                        isCedulaVerified = supabaseUser.isIDVerified,
+                        createdAt = System.currentTimeMillis()
+                    )
+                    
+                    _authState.value = AuthState.Authenticated(domainUser)
+                    
+                    // Persistir estado de autenticación
+                    authStateManager.updateAuthState(
+                        AuthState.Authenticated(domainUser), 
+                        domainUser
+                    )
+                } else {
+                    // No se encontró usuario con esas credenciales
+                    Timber.w("⚠️ SUPABASE LOGIN_FAILED - Usuario no encontrado o credenciales incorrectas")
+                    Log.e("TAG", "⚠️ SUPABASE LOGIN_FAILED - Usuario no encontrado")
+                    _authState.value = AuthState.Error("Email/teléfono o contraseña incorrectos")
+                }
+                
+            } catch (exception: Exception) {
+                Timber.e(exception, "❌ SUPABASE LOGIN_ERROR")
+                Log.e("TAG", "❌ SUPABASE LOGIN_ERROR: ${exception.message}", exception)
+                _authState.value = AuthState.Error(
+                    exception.message ?: "Error al conectar con la base de datos"
+                )
+            }
+        }
+    }
+
+    /**
+     * Performs login with email/phone and password (usando API REST)
      */
     fun login(identifier: String, password: String) {
         Timber.d("🔐 AUTH VIEWMODEL LOGIN_START - Identifier: $identifier")
-
+        Log.e("TAG", "🔐 AUTH VIEWMODEL LOGIN_START - Identifier: $identifier", )
         // Determine if identifier is email or phone
         val email = if (EmailValidator.isValid(identifier)) identifier else null
         val phone = if (email == null && PhoneValidator.isValidVenezuelanPhone(identifier)) identifier else null
@@ -62,15 +178,17 @@ class AuthViewModel @Inject constructor(
         // Validate data
         if (!validateLoginData(identifier, password)) {
             Timber.w("⚠️ AUTH VIEWMODEL LOGIN_VALIDATION_FAILED")
+            Log.e("TAG", "⚠️ AUTH VIEWMODEL LOGIN_VALIDATION_FAILED", )
             return
         }
 
         _authState.value = AuthState.Loading
 
         viewModelScope.launch {
-            val result = authRepository.login(email, phone, password)
+            val result = authRepository.login(email, password)
 
             result.onSuccess { user ->
+                Log.e("TAG", "AUTH VIEWMODEL LOGIN_SUCCESS - User: ${user.id}", )
                 Timber.d("✅ AUTH VIEWMODEL LOGIN_SUCCESS - User: ${user.id}")
                 _authState.value = AuthState.Authenticated(user)
                 // Persist authentication state
@@ -78,6 +196,7 @@ class AuthViewModel @Inject constructor(
                     authStateManager.updateAuthState(AuthState.Authenticated(user), user)
                 }
             }.onFailure { exception ->
+                Log.e("TAG", "⚠️ AUTH VIEWMODEL LOGIN_FAILED - ${exception.message}", )
                 Timber.w("⚠️ AUTH VIEWMODEL LOGIN_FAILED - ${exception.message}")
                 _authState.value = AuthState.Error(exception.message ?: "Login failed")
             }

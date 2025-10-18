@@ -1,0 +1,49 @@
+## This file must *NOT* be checked into Version Control Systems,
+# as it contains information specific to your local configuration.
+#
+# Location of the SDK. This is only used by Gradle.
+# For customization when using a Version Control System, please read the
+# header note.
+#
+# Example for Linux:
+sdk.dir=/home/usuario/Android/Sdk
+# Example for Windows:
+# sdk.dir=C\:\\Users\\usuario\\AppData\\Local\\Android\\sdk
+# Example for macOS:
+# sdk.dir=/Users/usuario/Library/Android/sdk
+
+# ========================================
+# CONFIGURACIÓN DE SUPABASE
+# ========================================
+# IMPORTANTE: Copia este archivo como 'local.properties' y actualiza con tus credenciales
+# Este archivo NO debe ser versionado en Git (.gitignore)
+
+# URL de tu proyecto de Supabase
+# Proyecto actual: wcyyphrkkudovnizwpsr
+supabase.url=https://wcyyphrkkudovnizwpsr.supabase.co
+
+# Clave pública anónima de Supabase
+# Esta clave es segura para usar en el cliente
+supabase.anonKey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndjeXlwaHJra3Vkb3ZuaXp3cHNyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA3MTc5MzksImV4cCI6MjA3NjI5MzkzOX0.3b60CZ0veGu8JqCoqk7E5yLMU2zAjA2YO_ca2RwUKpw
+
+# ========================================
+# NOTA PARA PRODUCCIÓN
+# ========================================
+# Para producción, considera usar:
+# 1. BuildConfig generado automáticamente
+# 2. Variables de entorno en tu CI/CD
+# 3. Firebase Remote Config
+# 4. Android Keystore para credenciales sensibles
+
+# ========================================
+# CONFIGURACIÓN OPCIONAL DE API
+# ========================================
+# Si mantienes tu API actual junto con Supabase
+api.base.url=https://mvp-tigrito-web.vercel.app/api/
+
+# ========================================
+# GOOGLE OAUTH (SI LO USAS CON SUPABASE)
+# ========================================
+# Cliente ID de Google Cloud Console
+# google.client.id=TU_GOOGLE_CLIENT_ID.apps.googleusercontent.com
+

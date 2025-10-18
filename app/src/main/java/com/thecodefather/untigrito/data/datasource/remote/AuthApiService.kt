@@ -1,5 +1,6 @@
 package com.thecodefather.untigrito.data.datasource.remote
 
+import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.POST
 
@@ -12,7 +13,7 @@ interface AuthApiService {
     // ========== Basic Authentication ==========
 
     @POST("/api/auth/login")
-    suspend fun login(@Body request: LoginRequest): ApiResponse<AuthResponse>
+    suspend fun login(@Body request: LoginRequest): Response<ApiResponse<AuthResponse>>
 
     @POST("/api/auth/register")
     suspend fun register(@Body request: RegisterRequest): ApiResponse<AuthResponse>
@@ -59,7 +60,6 @@ interface AuthApiService {
 
     data class LoginRequest(
         val email: String? = null,
-        val phone: String? = null,
         val password: String
     )
 
@@ -146,17 +146,17 @@ interface AuthApiService {
     )
 
     data class UserData(
-        val id: String,
+        val id: String= "",
         val email: String? = null,
         val phone: String? = null,
         val name: String? = null,
-        val role: String,
-        val isVerified: Boolean,
-        val isIDVerified: Boolean,
-        val balance: Double,
-        val isSuspended: Boolean,
-        val createdAt: String,
-        val updatedAt: String,
+        val role: String= "",
+        val isVerified: Boolean = false,
+        val isIDVerified: Boolean = false,
+        val balance: Double = 0.0,
+        val isSuspended: Boolean = false,
+        val createdAt: String= "",
+        val updatedAt: String = "",
         val locationLat: Double? = null,
         val locationLng: Double? = null,
         val locationAddress: String? = null

@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.hilt)
     alias(libs.plugins.ksp)
     alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 android{
@@ -96,6 +97,9 @@ dependencies {
     // Serialization
     implementation(libs.kotlinx.serialization.json)
 
+    // Supabase
+    implementation(libs.bundles.supabase)
+
     // Image Loading
     implementation(libs.coil.compose)
 
@@ -109,6 +113,8 @@ dependencies {
     // Logging
     implementation(libs.timber)
     implementation(libs.logcat)
+    implementation("com.google.code.gson:gson:2.13.2")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
 
     // Testing
     testImplementation(libs.junit)

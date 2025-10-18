@@ -1,5 +1,6 @@
 package com.thecodefather.untigrito.presentation.screens.auth.login
 
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -191,7 +192,9 @@ fun LoginScreen(
 
             Button(
                 onClick = {
-                    viewModel.login(identifier, password)
+                    Log.e("TAG", "LoginScreen: Iniciando login con Supabase", )
+                    // Usar el nuevo método que consulta directamente a Supabase
+                    viewModel.loginWithSupabase(identifier, password)
                 },
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE67822)),
