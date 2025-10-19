@@ -55,7 +55,6 @@ fun HomeScreenClient(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .background(Color(0xFFF0F0F0)) // Fondo ligeramente gris
         ) {
             AppTopBar(navController = navController, userName = user?.name)
             Spacer(modifier = Modifier.height(16.dp))

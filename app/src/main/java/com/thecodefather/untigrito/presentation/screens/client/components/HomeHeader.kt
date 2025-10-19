@@ -2,6 +2,7 @@ package com.thecodefather.untigrito.presentation.screens.client.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,6 +19,7 @@ import androidx.compose.material.icons.filled.MailOutline
 import androidx.compose.material.icons.filled.NotificationsNone
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -25,6 +27,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -57,7 +60,7 @@ fun HomeHeader(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "UnTigrito®",
+                text = "UnTigrito",
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Black,
                 color = OrangeUntigrito
@@ -80,15 +83,14 @@ fun HomeHeader(
                 Box(
                     modifier = Modifier
                         .size(48.dp) // Tamaño del avatar
-                        .clip(CircleShape) // Forma circular
-                        .background(Color(0xFFB0BEC5)), // Un color gris claro para el fondo del avatar
+                        .clip(CircleShape), // Forma circular
+//                        .background(Color(0xFFB0BEC5)), // Un color gris claro para el fondo del avatar
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_launcher_foreground), // Placeholder
+                    Image(
+                        painter = painterResource(id = R.drawable.profile_img), // Placeholder
                         contentDescription = "Avatar de usuario",
-                        tint = Color.White,
-                        modifier = Modifier.size(30.dp)
+                        modifier = Modifier.size(48.dp)
                     )
                 }
 
@@ -118,12 +120,20 @@ fun HomeHeader(
                 IconButton(
                     onClick = onMessageClick,
                     modifier = Modifier
-                        .size(40.dp) // Tamaño del IconButton (más pequeño)
-                        .clip(CircleShape)
-                        .background(Color(0xFFE0E0E0)) // Fondo gris claro
+                        .size(30.dp) // Tamaño del IconButton (más pequeño)
+//                        .clip(CircleShape)
+                        .border(
+                            1.dp,
+                            Brush.horizontalGradient(
+                                colors = listOf(Color.Gray, Color.Gray)
+                            ),
+                            CircleShape
+                        )
+                        .padding(5.dp)
+//                        .background(Color(0xFFE0E0E0)) // Fondo gris claro
                 ) {
                     Icon(
-                        imageVector = Icons.Default.MailOutline,
+                        painter = painterResource(R.drawable.sms),
                         contentDescription = "Mensajes",
                         tint = Color(0xFF424242), // Icono gris oscuro
                         modifier = Modifier.size(20.dp) // Tamaño del icono real
@@ -134,12 +144,19 @@ fun HomeHeader(
                 IconButton(
                     onClick = onNotificationClick,
                     modifier = Modifier
-                        .size(40.dp) // Tamaño del IconButton
-                        .clip(CircleShape)
-                        .background(Color(0xFFE0E0E0)) // Fondo gris claro
+                        .size(30.dp) // Tamaño del IconButton (más pequeño)
+                        .border(
+                            1.dp,
+                            Brush.horizontalGradient(
+                                colors = listOf(Color.Gray, Color.Gray)
+                            ),
+                            CircleShape
+                        )
+                        .padding(5.dp)
+//                        .background(Color(0xFFE0E0E0)) // Fondo gris claro
                 ) {
                     Icon(
-                        imageVector = Icons.Default.NotificationsNone,
+                        painter = painterResource(R.drawable.notification),
                         contentDescription = "Notificaciones",
                         tint = Color(0xFF424242), // Icono gris oscuro
                         modifier = Modifier.size(20.dp) // Tamaño del icono real

@@ -6,6 +6,7 @@ import com.thecodefather.untigrito.auth.domain.usecase.AuthStateManager
 import com.thecodefather.untigrito.data.datasource.remote.SupabaseDatabaseService
 import com.thecodefather.untigrito.data.datasource.remote.SupabaseService
 import com.thecodefather.untigrito.data.datasource.remote.SupabaseProfessionalProfile
+import com.thecodefather.untigrito.data.datasource.remote.SupabaseUser
 import com.thecodefather.untigrito.data.repository.ClientRepositoryImpl
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,6 +19,7 @@ import com.thecodefather.untigrito.domain.model.ProfessionalService
 import com.thecodefather.untigrito.domain.model.Professional
 import com.thecodefather.untigrito.domain.model.toProfessionalService
 import com.thecodefather.untigrito.domain.model.toProfessional
+import com.thecodefather.untigrito.domain.model.toClientUser
 import timber.log.Timber
 
 /**
@@ -57,16 +59,8 @@ class ClientHomeViewModel @Inject constructor(
         _loading.value = true
         viewModelScope.launch {
             try {
-                // Load user data
-                val currentUserId = authStateManager.getCurrentUserId()
-                if (currentUserId != null) {
-                    repository.getUserById(currentUserId).collect { user ->
-                        _user.value = user
-                    }
-                } else {
-                    Timber.w("No user authenticated")
-                    _error.value = "Usuario no autenticado"
-                }
+                // Load user data from Supabase User table
+                loadUserFromDatabase()
 
                 // Load services offered by professionals (NOT service_postings)
                 supabaseDatabaseService.getAllOrdered<SupabaseService>(
@@ -128,5 +122,59 @@ class ClientHomeViewModel @Inject constructor(
      */
     fun navigateToCreateRequest() {
         // Navigation handled in Composable
+    }
+
+    /**
+     * Load user data from Supabase User table using AuthStateManager
+     */
+    private fun loadUserFromDatabase() {
+        viewModelScope.launch {
+            try {
+                // Get current user ID from AuthStateManager
+                val currentUserId = authStateManager.getCurrentUserId()
+
+                if (currentUserId == null) {
+                    Timber.w("No user authenticated in AuthStateManager")
+                    _error.value = "Usuario no autenticado"
+                    return@launch
+                }
+
+                Timber.d("Loading user data from Supabase for userId: $currentUserId")
+
+                // Fetch user from Supabase User table
+                val result = supabaseDatabaseService.getById<SupabaseUser>("User", currentUserId)
+
+                result.onSuccess { supabaseUser ->
+                    if (supabaseUser != null) {
+                        // Convert SupabaseUser to ClientUser
+                        var clientUser = supabaseUser.toClientUser()
+                        _user.value = clientUser
+
+                        Timber.d("✅ User loaded successfully: ${clientUser.name} (${clientUser.email})")
+                        Timber.d("   Balance: ${clientUser.balance}")
+                        Timber.d("   Role: ${clientUser.role}")
+                        Timber.d("   Verified: ${clientUser.isVerified}")
+
+                        _error.value = null
+                    } else {
+                        Timber.w("User not found in database with id: $currentUserId")
+                        _error.value = "Usuario no encontrado en la base de datos"
+                    }
+                }.onFailure { exception ->
+                    Timber.e(exception, "Error loading user from database")
+                    _error.value = "Error al cargar datos del usuario: ${exception.message}"
+                }
+            } catch (e: Exception) {
+                Timber.e(e, "Unexpected error loading user from database")
+                _error.value = "Error inesperado: ${e.message}"
+            }
+        }
+    }
+
+    /**
+     * Public method to manually refresh user data
+     */
+    fun refreshUserData() {
+        loadUserFromDatabase()
     }
 }
