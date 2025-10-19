@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
+import kotlinx.serialization.json.JsonArray
 import com.thecodefather.untigrito.presentation.viewmodel.ProfessionalViewModel
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -357,7 +358,19 @@ fun ProfessionalOwnProfileScreen(
                         }
                         
                         // Especialidades
-                        if (!professionalProfile?.specialties.isNullOrEmpty()) {
+                        val specialties = professionalProfile?.specialties?.let { jsonElement ->
+                            try {
+                                if (jsonElement is kotlinx.serialization.json.JsonArray) {
+                                    jsonElement.map { it.toString().trim('"') }
+                                } else {
+                                    jsonElement.toString().trim('"').split(",").map { it.trim() }
+                                }
+                            } catch (e: Exception) {
+                                emptyList()
+                            }
+                        } ?: emptyList()
+                        
+                        if (specialties.isNotEmpty()) {
                             Spacer(modifier = Modifier.height(12.dp))
                             Text(
                                 text = "Especialidades",
@@ -368,7 +381,6 @@ fun ProfessionalOwnProfileScreen(
                             
                             Spacer(modifier = Modifier.height(8.dp))
                             
-                            val specialties = professionalProfile?.specialties?.split(",") ?: emptyList()
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -376,7 +388,7 @@ fun ProfessionalOwnProfileScreen(
                                 specialties.forEach { specialty ->
                                     AssistChip(
                                         onClick = { },
-                                        label = { Text(specialty.trim()) },
+                                        label = { Text(specialty) },
                                         modifier = Modifier.padding(vertical = 2.dp)
                                     )
                                 }

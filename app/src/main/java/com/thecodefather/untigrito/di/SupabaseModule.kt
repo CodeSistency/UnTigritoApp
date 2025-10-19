@@ -2,6 +2,7 @@ package com.thecodefather.untigrito.di
 
 import com.thecodefather.untigrito.data.datasource.remote.SupabaseClientProvider
 import com.thecodefather.untigrito.data.datasource.remote.SupabaseDatabaseService
+import com.thecodefather.untigrito.data.datasource.remote.SupabaseStorageService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -75,6 +76,15 @@ object SupabaseModule {
     @Singleton
     fun provideSupabaseDatabaseService(postgrest: Postgrest): SupabaseDatabaseService {
         return SupabaseDatabaseService(postgrest)
+    }
+    
+    /**
+     * Proporciona el servicio de almacenamiento de Supabase
+     */
+    @Provides
+    @Singleton
+    fun provideSupabaseStorageService(storage: Storage): SupabaseStorageService {
+        return SupabaseStorageService(storage)
     }
 }
 

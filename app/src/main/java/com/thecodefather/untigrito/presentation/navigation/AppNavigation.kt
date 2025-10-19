@@ -18,7 +18,9 @@ import com.thecodefather.untigrito.presentation.screens.client.RequestsScreen
 import com.thecodefather.untigrito.presentation.screens.client.ServicesScreen
 import com.thecodefather.untigrito.presentation.screens.client.ServiceDetailScreen
 import com.thecodefather.untigrito.presentation.screens.client.ClientMainScreen
+import com.thecodefather.untigrito.presentation.screens.client.ClientMessagesScreen
 import com.thecodefather.untigrito.presentation.screens.professional.messages.ChatScreen
+import com.thecodefather.untigrito.presentation.screens.professional.messages.SupportChatScreen
 import com.thecodefather.untigrito.presentation.screens.professionals.profile.ProfessionalProfileScreen
 import com.thecodefather.untigrito.presentation.screens.professional.ProfessionalMainScreen
 import com.thecodefather.untigrito.presentation.screens.verification.IdentityVerificationScreen
@@ -45,6 +47,7 @@ object Routes {
     const val CLIENT_REQUESTS = "client_requests"
     const val CLIENT_PROFILE = "client_profile"
     const val CHAT = "chat/{conversationId}"
+    const val SUPPORT_CHAT = "support_chat"
     const val PROFESSIONAL_PROFILE = "professional_profile"
     const val IDENTITY_VERIFICATION = "identity_verification"
     const val PAYMENT = "payment/{paymentType}"
@@ -167,6 +170,27 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
 
         composable(Routes.CLIENT_PROFILE) {
             ClientProfileScreen(navController = navController)
+        }
+
+        // Client Messages Screen
+        composable(ClientRoutes.MESSAGES) {
+            ClientMessagesScreen(
+                onConversationClick = { conversationId ->
+                    navController.navigate(Routes.createChatRoute(conversationId))
+                },
+                onNavigateBack = { navController.popBackStack() },
+                onSupportClick = { 
+                    navController.navigate(Routes.SUPPORT_CHAT)
+                },
+                navController = navController
+            )
+        }
+
+        // Support Chat Screen
+        composable(Routes.SUPPORT_CHAT) {
+            SupportChatScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
         }
 
         // Account Details Routes

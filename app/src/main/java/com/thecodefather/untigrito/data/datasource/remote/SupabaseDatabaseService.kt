@@ -9,6 +9,7 @@ import io.github.jan.supabase.postgrest.query.Order
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonElement
 import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -234,14 +235,25 @@ public class SupabaseDatabaseService @Inject constructor(
     suspend fun getServicesWithProfessional(): Result<List<ServiceWithProfessional>> =
         withContext(Dispatchers.IO) {
             try {
-                val result = postgrest.from("ProfessionalService")
-                    .select(
-                        columns = Columns.raw("""
-                            *,
-                            professional:User!professionalId(name, locationLat, locationLng)
-                        """)
+                // Primero obtener solo los servicios
+                val services = postgrest.from("ProfessionalService")
+                    .select()
+                    .decodeList<SupabaseService>()
+                
+                // Convertir a ServiceWithProfessional con professional = null por ahora
+                val result = services.map { service ->
+                    ServiceWithProfessional(
+                        id = service.id,
+                        professionalId = service.professionalId,
+                        title = service.title,
+                        description = service.description,
+                        price = service.price,
+                        categoryId = service.categoryId,
+                        isActive = service.isActive,
+                        createdAt = service.createdAt,
+                        professional = null // TODO: Implementar JOIN real
                     )
-                    .decodeList<ServiceWithProfessional>()
+                }
                 
                 Timber.d("Servicios con profesional obtenidos: ${result.size}")
                 Result.success(result)
@@ -688,7 +700,7 @@ data class SupabaseService(
     val price: Double,
     val categoryId: String,
     val professionalProfileId: String? = null,
-    val serviceLocations: String? = null, // JSON
+    val serviceLocations: JsonElement? = null, // JSON
     val isActive: Boolean = true,
     val createdAt: String? = null,
     val updatedAt: String? = null
@@ -828,7 +840,7 @@ data class SupabaseProfessionalProfile(
     val id: String,
     val userId: String,
     val bio: String? = null,
-    val earningsSummary: String? = null, // JSON
+    val earningsSummary: JsonElement? = null, // JSON
     val portfolio: String? = null, // JSON
     val ratingAvg: Double? = 0.0,
     val ratingCount: Int = 0,
@@ -836,7 +848,7 @@ data class SupabaseProfessionalProfile(
     val certifications: String? = null,
     val hourlyRate: Double? = null,
     val isVerified: Boolean = false,
-    val specialties: String? = null, // Array JSON
+    val specialties: JsonElement? = null, // Array JSON
     val taxId: String? = null,
     val yearsOfExperience: Int? = null,
     val completionRate: Double? = 0.0,
@@ -1068,7 +1080,7 @@ data class ServiceWithProfessional(
     val categoryId: String,
     val isActive: Boolean,
     val createdAt: String?,
-    val professional: ProfessionalBasicInfo
+    val professional: ProfessionalBasicInfo? = null
 )
 
 /**
@@ -1076,9 +1088,9 @@ data class ServiceWithProfessional(
  */
 @Serializable
 data class ProfessionalBasicInfo(
-    val name: String?,
-    val locationLat: Double?,
-    val locationLng: Double?
+    val name: String? = null,
+    val locationLat: Double? = null,
+    val locationLng: Double? = null
 )
 
 /**

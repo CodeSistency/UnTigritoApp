@@ -13,6 +13,7 @@ import com.thecodefather.untigrito.domain.model.ProfessionalService
 // import com.thecodefather.untigrito.presentation.screens.professionals.profile.Review
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.serialization.json.JsonArray
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -240,7 +241,17 @@ class ProfessionalProfileViewModel @Inject constructor(
             rating = averageRating.toDouble(),
             totalReviews = reviews.size,
             yearsOfExperience = profile?.yearsOfExperience ?: 0,
-            specialties = profile?.specialties?.split(",") ?: emptyList(),
+            specialties = profile?.specialties?.let { jsonElement ->
+                try {
+                    if (jsonElement is kotlinx.serialization.json.JsonArray) {
+                        jsonElement.map { it.toString().trim('"') }
+                    } else {
+                        jsonElement.toString().trim('"').split(",").map { it.trim() }
+                    }
+                } catch (e: Exception) {
+                    emptyList()
+                }
+            } ?: emptyList(),
             hourlyRate = profile?.hourlyRate ?: 0.0,
             isVerified = user?.isVerified ?: false,
             imageUrl = null

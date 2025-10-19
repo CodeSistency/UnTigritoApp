@@ -39,6 +39,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.thecodefather.untigrito.presentation.navigation.Routes
+import com.thecodefather.untigrito.presentation.navigation.ClientRoutes
 import com.thecodefather.untigrito.presentation.screens.client.components.HomeHeader
 import com.thecodefather.untigrito.presentation.screens.client.components.ServiceCard
 import com.thecodefather.untigrito.presentation.screens.client.components.ProfessionalCard
@@ -110,7 +111,8 @@ fun ServicesScreen(
         HomeHeader(
             userName = "Juan Pérez",
             onMessageClick = {
-                navController.navigate(Routes.createChatRoute("test_conversation"))
+                // Navigate directly to messages screen
+                navController.navigate(ClientRoutes.MESSAGES)
             }
         )
 

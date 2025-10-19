@@ -1,6 +1,7 @@
 package com.thecodefather.untigrito.domain.model
 
 import com.thecodefather.untigrito.data.datasource.remote.SupabaseProfessionalProfile
+import kotlinx.serialization.json.JsonArray
 
 /**
  * Professional model
@@ -40,7 +41,19 @@ fun SupabaseProfessionalProfile.toProfessional(): Professional {
         totalReviews = this.ratingCount,
         yearsOfExperience = this.yearsOfExperience,
         certifications = this.certifications,
-        specialties = this.specialties?.split(",")?.map { it.trim() } ?: emptyList(),
+        specialties = this.specialties?.let { jsonElement ->
+            try {
+                // Si es un array JSON, extraer los elementos
+                if (jsonElement is kotlinx.serialization.json.JsonArray) {
+                    jsonElement.map { it.toString().trim('"') }
+                } else {
+                    // Si es un string, dividir por comas
+                    jsonElement.toString().trim('"').split(",").map { it.trim() }
+                }
+            } catch (e: Exception) {
+                emptyList()
+            }
+        } ?: emptyList(),
         responseTime = this.responseTime,
         completionRate = this.completionRate,
         hourlyRate = this.hourlyRate,

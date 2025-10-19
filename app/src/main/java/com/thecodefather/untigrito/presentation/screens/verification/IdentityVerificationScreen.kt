@@ -48,6 +48,11 @@ fun IdentityVerificationScreen(
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
     
+    // Debug: Log del estado de UI
+    LaunchedEffect(uiState) {
+        println("🔍 UI_STATE_DEBUG - isLoading: ${uiState.isLoading}, error: ${uiState.errorMessage}")
+    }
+    
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
     
     // URI para la foto tomada

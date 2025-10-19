@@ -64,8 +64,8 @@ class ClientHomeViewModel @Inject constructor(
 
                 // Load services offered by professionals (NOT service_postings)
                 supabaseDatabaseService.getAllOrdered<SupabaseService>(
-                    "professional_services",
-                    "created_at",
+                    "ProfessionalService",
+                    "createdAt",
                     false
                 ).onSuccess { services ->
                     _services.value = services
@@ -80,7 +80,7 @@ class ClientHomeViewModel @Inject constructor(
 
                 // Load top professionals
                 supabaseDatabaseService.getAllOrdered<SupabaseProfessionalProfile>(
-                    "professional_profiles",
+                    "ProfessionalProfile",
                     "rating",
                     false
                 ).onSuccess { profiles ->
@@ -147,8 +147,17 @@ class ClientHomeViewModel @Inject constructor(
                 result.onSuccess { supabaseUser ->
                     if (supabaseUser != null) {
                         // Convert SupabaseUser to ClientUser
-                        var clientUser = supabaseUser.toClientUser()
+                        val clientUser = supabaseUser.toClientUser()
                         _user.value = clientUser
+
+                        // Guardar clientUser en la base de datos local
+                        Timber.d("💾 Saving clientUser to local database...")
+                        try {
+                            repository.saveUser(clientUser)
+                            Timber.d("✅ ClientUser saved to local database successfully")
+                        } catch (e: Exception) {
+                            Timber.e(e, "❌ Error saving clientUser to local database")
+                        }
 
                         Timber.d("✅ User loaded successfully: ${clientUser.name} (${clientUser.email})")
                         Timber.d("   Balance: ${clientUser.balance}")

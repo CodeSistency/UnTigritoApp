@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import kotlinx.serialization.json.Json
 import javax.inject.Inject
 
 @HiltViewModel
@@ -268,7 +269,7 @@ class ProfessionalViewModel @Inject constructor(
         _editableResponseTime.value = profile?.responseTime?.toString() ?: ""
         _editableBankAccount.value = profile?.bankAccount ?: ""
         _editableTaxId.value = profile?.taxId ?: ""
-        _editableSpecialties.value = profile?.specialties ?: ""
+        _editableSpecialties.value = profile?.specialties?.toString()?.trim('"') ?: ""
     }
 
     /**
@@ -368,7 +369,9 @@ class ProfessionalViewModel @Inject constructor(
                     responseTime = responseTimeInt,
                     bankAccount = bankAccount.ifEmpty { null },
                     taxId = taxId.ifEmpty { null },
-                    specialties = specialties.ifEmpty { null }
+                    specialties = if (specialties.isNotEmpty()) {
+                        kotlinx.serialization.json.Json.parseToJsonElement("\"$specialties\"")
+                    } else null
                 )
                 
                 val result = supabaseDatabase.update(

@@ -25,6 +25,7 @@ object ClientRoutes {
     const val RECHARGE = "recharge"
     const val WITHDRAW = "withdraw"
     const val PROFESSIONAL_PROFILE = "professional_profile/{professionalId}"
+    const val MESSAGES = "client_messages"
 }
 
 /**

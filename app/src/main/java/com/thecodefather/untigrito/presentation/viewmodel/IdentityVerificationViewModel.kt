@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeout
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -50,69 +51,62 @@ class IdentityVerificationViewModel @Inject constructor(
             isLoading = true,
             errorMessage = null
         )
+        Timber.d("🔄 UI_STATE - Loading iniciado: ${_uiState.value.isLoading}")
 
         viewModelScope.launch {
             try {
-                Timber.d("🔐 IDENTITY_VERIFICATION_START - Verificando identidad...")
-                
                 // Obtener el ID del usuario actual desde Supabase Auth
-                val currentUserId = supabaseAuth.currentUserOrNull()?.id
+                Timber.d("🔐 AUTH - Verificando usuario autenticado...")
+                val currentUser = supabaseAuth.currentUserOrNull()
+                Timber.d("🔐 AUTH - Current user: $currentUser")
+                
+                val currentUserId = currentUser?.id
                 if (currentUserId == null) {
+                    Timber.w("⚠️ AUTH - Usuario no autenticado")
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
-                        errorMessage = "Usuario no autenticado"
+                        errorMessage = "Usuario no autenticado. Por favor, inicia sesión nuevamente."
                     )
+                    Timber.d("🔄 UI_STATE - Loading detenido (no auth): ${_uiState.value.isLoading}")
                     return@launch
                 }
+                
+                // Timeout de 30 segundos para evitar cuelgues
+                withTimeout(30000) {
+                Timber.d("🔐 IDENTITY_VERIFICATION_START - Verificando identidad...")
                 Timber.d("🔐 IDENTITY_VERIFICATION - User ID: $currentUserId")
 
-                // 1. Subir imagen a Supabase Storage
-                Timber.d("📤 STORAGE - Subiendo imagen de cédula...")
-                val uploadResult = supabaseStorageService.uploadIdentityDocument(
-                    currentUserId, 
-                    cedulaImageUri, 
-                    context
+                // 1. Actualizar el usuario a PROFESSIONAL (sin subir imagen)
+                Timber.d("📤 DATABASE - Actualizando usuario a PROFESSIONAL...")
+                
+                val updatedFields = mapOf(
+                    "role" to "PROFESSIONAL",
+                    "isIDVerified" to true
                 )
 
-                uploadResult.onSuccess { imageUrl ->
-                    Timber.d("✅ STORAGE - Imagen subida exitosamente: $imageUrl")
-                    
-                    // 2. Actualizar el usuario en Supabase con la URL de la imagen
-                    val updatedFields = mapOf(
-                        "role" to "PROFESSIONAL",
-                        "isIDVerified" to true,
-                        "emailVerificationToken" to imageUrl  // Usar campo temporal para URL de cédula
-                    )
-
-                    val result = postgrest.from("User")
-                        .update(updatedFields) {
-                            filter {
-                                eq("id", currentUserId)
-                            }
+                val result = postgrest.from("User")
+                    .update(updatedFields) {
+                        filter {
+                            eq("id", currentUserId)
                         }
-                        .decodeSingleOrNull<Map<String, Any>>()
-
-                    if (result != null) {
-                        Timber.d("✅ IDENTITY_VERIFICATION_SUCCESS - Usuario actualizado a PROFESSIONAL")
-                        _uiState.value = _uiState.value.copy(
-                            isLoading = false,
-                            verificationSuccess = true,
-                            errorMessage = null
-                        )
-                    } else {
-                        Timber.w("⚠️ IDENTITY_VERIFICATION_FAILED - No se pudo actualizar el usuario")
-                        _uiState.value = _uiState.value.copy(
-                            isLoading = false,
-                            errorMessage = "No se pudo actualizar tu perfil. Inténtalo de nuevo."
-                        )
                     }
-                }.onFailure { exception ->
-                    Timber.e(exception, "❌ STORAGE - Error subiendo imagen")
+                    .decodeSingleOrNull<Map<String, Any>>()
+
+                if (result != null) {
+                    Timber.d("✅ IDENTITY_VERIFICATION_SUCCESS - Usuario actualizado a PROFESSIONAL")
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
-                        errorMessage = "Error al subir la imagen: ${exception.message}"
+                        verificationSuccess = true,
+                        errorMessage = null
+                    )
+                } else {
+                    Timber.w("⚠️ IDENTITY_VERIFICATION_FAILED - No se pudo actualizar el usuario")
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        errorMessage = "No se pudo actualizar tu perfil. Inténtalo de nuevo."
                     )
                 }
+                } // Cerrar withTimeout
 
             } catch (exception: Exception) {
                 Timber.e(exception, "❌ IDENTITY_VERIFICATION_ERROR")
