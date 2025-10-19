@@ -16,6 +16,7 @@ import com.thecodefather.untigrito.presentation.navigation.ClientRoutes
 import com.thecodefather.untigrito.presentation.navigation.Routes
 import com.thecodefather.untigrito.presentation.screens.account.AccountDetailsScreen
 import com.thecodefather.untigrito.presentation.screens.client.ClientMessagesScreen
+import com.thecodefather.untigrito.presentation.screens.client.CreateRequestScreen
 import com.thecodefather.untigrito.presentation.screens.professional.messages.ChatScreen
 
 @Composable
@@ -85,6 +86,9 @@ fun ClientMainScreen(mainNavController: NavHostController) {
                     conversationId = conversationId,
                     onNavigateBack = { navController.popBackStack() }
                 )
+            }
+            composable(ClientRoutes.CREATE_REQUEST) {
+                CreateRequestScreen(navController = navController)
             }
         }
     }

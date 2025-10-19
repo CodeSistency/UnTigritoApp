@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import java.time.Instant
 import javax.inject.Inject
 
 /**
@@ -22,6 +23,13 @@ class ProfessionalServicesViewModel @Inject constructor(
     private val supabaseDatabase: SupabaseDatabaseService,
     private val authStateManager: AuthStateManager
 ) : ViewModel() {
+
+    /**
+     * Generates current timestamp in ISO 8601 format
+     */
+    private fun getCurrentTimestamp(): String {
+        return Instant.now().toString()
+    }
 
     private val _services = MutableStateFlow<List<SupabaseService>>(emptyList())
     val services: StateFlow<List<SupabaseService>> = _services.asStateFlow()
@@ -136,6 +144,7 @@ class ProfessionalServicesViewModel @Inject constructor(
 
                 Timber.d("💾 SERVICES VIEWMODEL - Creating service: ${service.title}")
                 
+                val currentTimestamp = getCurrentTimestamp()
                 val newService = SupabaseService(
                     id = "", // Se generará automáticamente
                     professionalId = user.id,
@@ -145,8 +154,8 @@ class ProfessionalServicesViewModel @Inject constructor(
                     price = service.price,
                     categoryId = service.categoryId,
                     isActive = service.isActive,
-                    createdAt = null,
-                    updatedAt = null
+                    createdAt = currentTimestamp,
+                    updatedAt = currentTimestamp
                 )
                 
                 val result = supabaseDatabase.createProfessionalService(newService)
@@ -213,7 +222,7 @@ class ProfessionalServicesViewModel @Inject constructor(
                     price = service.price,
                     categoryId = service.categoryId,
                     isActive = service.isActive,
-                    updatedAt = null // Se actualizará automáticamente
+                    updatedAt = getCurrentTimestamp()
                 )
                 
                 val result = supabaseDatabase.updateProfessionalService(serviceId, updatedService)
@@ -288,7 +297,10 @@ class ProfessionalServicesViewModel @Inject constructor(
                     return@launch
                 }
                 
-                val updatedService = existingService.copy(isActive = isActive)
+                val updatedService = existingService.copy(
+                    isActive = isActive,
+                    updatedAt = getCurrentTimestamp()
+                )
                 
                 val result = supabaseDatabase.updateProfessionalService(serviceId, updatedService)
                 

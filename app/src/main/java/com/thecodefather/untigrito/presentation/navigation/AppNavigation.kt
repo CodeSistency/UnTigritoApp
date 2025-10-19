@@ -17,6 +17,7 @@ import com.thecodefather.untigrito.presentation.screens.client.ClientProfileScre
 import com.thecodefather.untigrito.presentation.screens.client.RequestsScreen
 import com.thecodefather.untigrito.presentation.screens.client.ServicesScreen
 import com.thecodefather.untigrito.presentation.screens.client.ServiceDetailScreen
+import com.thecodefather.untigrito.presentation.screens.client.ProfessionalDetailScreen
 import com.thecodefather.untigrito.presentation.screens.client.ClientMainScreen
 import com.thecodefather.untigrito.presentation.screens.client.ClientMessagesScreen
 import com.thecodefather.untigrito.presentation.screens.professional.messages.ChatScreen
@@ -241,10 +242,11 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
             )
         }
 
-        composable(Routes.PROFESSIONAL_PROFILE) { backStackEntry ->
+        composable("${Routes.PROFESSIONAL_PROFILE}/{professionalId}") { backStackEntry ->
             val professionalId = backStackEntry.arguments?.getString("professionalId") ?: ""
-            ProfessionalProfileScreen(
+            ProfessionalDetailScreen(
                 professionalId = professionalId,
+                navController = navController,
                 onBackClick = { navController.popBackStack() }
             )
         }

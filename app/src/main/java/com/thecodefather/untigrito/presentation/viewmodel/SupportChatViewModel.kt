@@ -31,28 +31,34 @@ class SupportChatViewModel @Inject constructor(
             _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null)
             
             try {
-                val request = StartConversationRequest(
-                    title = "Consulta de Soporte"
+                // Simular respuesta local temporalmente
+                val conversationId = UUID.randomUUID().toString()
+                
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    conversationId = conversationId,
+                    errorMessage = null
                 )
                 
-                val response = chatbotApiService.startConversation(request)
+                // Agregar mensaje de bienvenida del bot
+                val welcomeMessage = ChatbotMessage(
+                    id = UUID.randomUUID().toString(),
+                    content = "¡Hola! Soy tu asistente virtual de UnTigrito. ¿En qué puedo ayudarte hoy?",
+                    senderId = "bot",
+                    senderName = "Asistente UnTigrito",
+                    senderType = "BOT",
+                    createdAt = Date().toString(),
+                    messageType = "TEXT"
+                )
                 
-                if (response.success && response.data != null) {
-                    _uiState.value = _uiState.value.copy(
-                        isLoading = false,
-                        conversationId = response.data.id,
-                        errorMessage = null
-                    )
-                } else {
-                    _uiState.value = _uiState.value.copy(
-                        isLoading = false,
-                        errorMessage = response.error ?: "Error al iniciar conversación"
-                    )
-                }
+                _uiState.value = _uiState.value.copy(
+                    messages = listOf(welcomeMessage)
+                )
+                
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
-                    errorMessage = "Error de conexión: ${e.message}"
+                    errorMessage = "Error al iniciar conversación: ${e.message}"
                 )
             }
         }
@@ -88,68 +94,63 @@ class SupportChatViewModel @Inject constructor(
                 currentMessages.add(userMessage)
                 _uiState.value = _uiState.value.copy(messages = currentMessages)
                 
-                // Enviar al chatbot
-                val request = SendMessageRequest(
-                    conversationId = _uiState.value.conversationId!!,
-                    message = messageText
+                // Simular respuesta del bot localmente
+                val botResponse = generateBotResponse(messageText)
+                val botMessage = ChatbotMessage(
+                    id = UUID.randomUUID().toString(),
+                    content = botResponse,
+                    senderId = "bot",
+                    senderName = "Asistente UnTigrito",
+                    senderType = "BOT",
+                    createdAt = Date().toString(),
+                    messageType = "TEXT"
                 )
                 
-                val response = chatbotApiService.sendMessage(request)
-                
-                if (response.success && response.message != null) {
-                    // Agregar respuesta del bot
-                    val botMessage = ChatbotMessage(
-                        id = response.message.id,
-                        content = response.message.content,
-                        senderId = response.message.senderId,
-                        senderName = "Asistente IA",
-                        senderType = "BOT",
-                        createdAt = response.message.createdAt,
-                        messageType = response.message.messageType
-                    )
-                    
-                    val updatedMessages = _uiState.value.messages.toMutableList()
-                    updatedMessages.add(botMessage)
-                    
-                    _uiState.value = _uiState.value.copy(
-                        isSendingMessage = false,
-                        messages = updatedMessages,
-                        errorMessage = null
-                    )
-                } else {
-                    // Manejar escalación a agente humano
-                    if (response.escalated) {
-                        val systemMessage = ChatbotMessage(
-                            id = UUID.randomUUID().toString(),
-                            content = response.error ?: "Tu consulta ha sido transferida a un agente humano. Un especialista se pondrá en contacto contigo pronto.",
-                            senderId = "system",
-                            senderName = "Sistema",
-                            senderType = "SYSTEM",
-                            createdAt = Date().toString(),
-                            messageType = "SYSTEM"
-                        )
-                        
-                        val updatedMessages = _uiState.value.messages.toMutableList()
-                        updatedMessages.add(systemMessage)
-                        
-                        _uiState.value = _uiState.value.copy(
-                            isSendingMessage = false,
-                            messages = updatedMessages,
-                            isEscalated = true,
-                            errorMessage = null
-                        )
-                    } else {
-                        _uiState.value = _uiState.value.copy(
-                            isSendingMessage = false,
-                            errorMessage = response.error ?: "Error al enviar mensaje"
-                        )
-                    }
-                }
+                val updatedMessages = currentMessages.toMutableList()
+                updatedMessages.add(botMessage)
+                _uiState.value = _uiState.value.copy(
+                    messages = updatedMessages,
+                    isSendingMessage = false
+                )
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
                     isSendingMessage = false,
                     errorMessage = "Error de conexión: ${e.message}"
                 )
+            }
+        }
+    }
+    
+    /**
+     * Genera una respuesta del bot basada en el mensaje del usuario
+     */
+    private fun generateBotResponse(userMessage: String): String {
+        val message = userMessage.lowercase()
+        
+        return when {
+            message.contains("hola") || message.contains("buenos") || message.contains("buenas") -> {
+                "¡Hola! Me alegra saludarte. ¿En qué puedo ayudarte con UnTigrito?"
+            }
+            message.contains("ayuda") || message.contains("problema") -> {
+                "Estoy aquí para ayudarte. ¿Podrías contarme más detalles sobre tu consulta?"
+            }
+            message.contains("servicio") || message.contains("tigrito") -> {
+                "UnTigrito conecta clientes con profesionales de confianza para todo tipo de servicios. ¿Necesitas ayuda con algún servicio específico?"
+            }
+            message.contains("precio") || message.contains("costo") -> {
+                "Los precios varían según el servicio y el profesional. Puedes ver los precios en cada perfil de profesional o solicitar un presupuesto personalizado."
+            }
+            message.contains("contacto") || message.contains("telefono") -> {
+                "Puedes contactar con nosotros a través de esta aplicación o visitar nuestro sitio web. ¿Hay algo específico en lo que pueda ayudarte?"
+            }
+            message.contains("gracias") || message.contains("muchas gracias") -> {
+                "¡De nada! Me alegra poder ayudarte. ¿Hay algo más en lo que pueda asistirte?"
+            }
+            message.contains("adios") || message.contains("hasta luego") -> {
+                "¡Hasta luego! Que tengas un excelente día. Recuerda que estoy aquí cuando necesites ayuda."
+            }
+            else -> {
+                "Entiendo tu consulta. Te recomiendo revisar nuestros servicios disponibles o contactar directamente con un profesional. ¿Hay algo más específico en lo que pueda ayudarte?"
             }
         }
     }

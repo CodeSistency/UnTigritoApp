@@ -45,7 +45,7 @@ class ClientProfileViewModel @Inject constructor(
             try {
                 val currentUserId = supabaseAuth.currentUserOrNull()?.id
                 if (currentUserId != null) {
-                    supabaseDatabaseService.getById<SupabaseUser>("users", currentUserId)
+                    supabaseDatabaseService.getById<SupabaseUser>("User", currentUserId)
                         .onSuccess { supabaseUser ->
                             _user.value = supabaseUser?.toClientUser()
                             Timber.d("User profile loaded successfully")
@@ -84,7 +84,7 @@ class ClientProfileViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 _loading.value = true
-                supabaseDatabaseService.update("users", user.id, user.toSupabaseUser())
+                supabaseDatabaseService.update("User", user.id, user.toSupabaseUser())
                     .onSuccess {
                         _user.value = user
                         Timber.d("Profile updated successfully")

@@ -8,6 +8,7 @@ import androidx.navigation.compose.composable
 import com.thecodefather.untigrito.presentation.screens.account.AccountDetailsScreen
 import com.thecodefather.untigrito.presentation.screens.client.request.RequestServiceScreen
 import com.thecodefather.untigrito.presentation.screens.client.ServiceDetailScreen
+import com.thecodefather.untigrito.presentation.screens.client.ProfessionalDetailScreen
 import com.thecodefather.untigrito.presentation.screens.professionals.profile.ProfessionalProfileScreen
 
 /**
@@ -99,9 +100,11 @@ fun ClientNavGraph(navController: NavHostController) {
             Text(text = "Pantalla de Retiro") // TODO: Implement WithdrawScreen
         }
 
-        composable(ClientRoutes.PROFESSIONAL_PROFILE) {
-            ProfessionalProfileScreen(
-                professionalId = "default-id", // TODO: Get from navigation arguments
+        composable(ClientRoutes.PROFESSIONAL_PROFILE) { backStackEntry ->
+            val professionalId = backStackEntry.arguments?.getString("professionalId") ?: ""
+            ProfessionalDetailScreen(
+                professionalId = professionalId,
+                navController = navController,
                 onBackClick = { navController.popBackStack() }
             )
         }
