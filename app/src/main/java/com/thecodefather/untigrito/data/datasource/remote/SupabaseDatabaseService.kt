@@ -262,6 +262,10 @@ data class SupabaseUser(
     val locationLat: Double? = null,
     val locationLng: Double? = null,
     val locationAddress: String? = null,
+    val emailVerificationExpires: String? = null,
+    val emailVerificationToken: String? = null,
+    val passwordResetExpires: String? = null,
+    val passwordResetToken: String? = null,
     val createdAt: String? = null,
     val updatedAt: String? = null,
     val deletedAt: String? = null
@@ -280,6 +284,7 @@ data class SupabaseService(
     val description: String,
     val price: Double,
     val categoryId: String,
+    val professionalProfileId: String? = null,
     val serviceLocations: String? = null, // JSON
     val isActive: Boolean = true,
     val createdAt: String? = null,
@@ -304,10 +309,14 @@ data class SupabaseServicePosting(
     val requiredTo: String? = null,
     val priceMin: Double? = null,
     val priceMax: Double? = null,
+    val budget: Double? = null,
+    val locationLat: Double? = null,
+    val locationLng: Double? = null,
     val status: String = "OPEN", // OPEN, CLOSED, EXPIRED
     val createdAt: String? = null,
     val updatedAt: String? = null,
     val expiresAt: String? = null,
+    val deletedAt: String? = null,
     val transactionId: String? = null
 )
 
@@ -321,6 +330,7 @@ data class SupabaseOffer(
     val postingId: String,
     val professionalId: String,
     val price: Double,
+    val proposedPrice: Double? = null,
     val message: String? = null,
     val status: String = "PENDING", // PENDING, ACCEPTED, REJECTED
     val createdAt: String? = null
@@ -340,10 +350,13 @@ data class SupabaseServiceTransaction(
     val platformFee: Double = 0.0,
     val escrowAmount: Double = 0.0,
     val currentStatus: String = "PENDING_SOLICITUD", // PENDING_SOLICITUD, SCHEDULED, IN_PROGRESS, COMPLETED, CANCELED
+    val status: String = "PENDING_SOLICITUD", // Duplicado para compatibilidad
     val scheduledDate: String? = null,
     val postingId: String? = null,
     val proServiceId: String? = null,
     val promoCodeId: String? = null,
+    val offerId: String? = null,
+    val agreedPrice: Double? = null,
     val yummyLogistics: String? = null, // JSON
     val notes: String? = null,
     val createdAt: String? = null,
@@ -364,6 +377,7 @@ data class SupabasePayment(
     val fee: Double = 0.0,
     val method: String, // CASHEA, BALANCE, TRANSFER, PAY_MOBILE, CARD, OTHER
     val status: String = "PENDING", // PENDING, COMPLETED, FAILED, REFUNDED
+    val recipientId: String? = null,
     val details: String? = null, // JSON
     val createdAt: String? = null,
     val updatedAt: String? = null
@@ -389,12 +403,14 @@ data class SupabaseProfession(
 @Serializable
 data class SupabaseReview(
     val id: String,
-    val transactionId: String,
+    val transactionId: String? = null,
     val reviewerId: String,
     val reviewedId: String,
     val rating: Int,
     val comment: String? = null,
     val isProReview: Boolean,
+    val professionalProfileId: String? = null,
+    val jobId: String? = null,
     val createdAt: String? = null
 )
 
@@ -411,8 +427,19 @@ data class SupabaseProfessionalProfile(
     val portfolio: String? = null, // JSON
     val ratingAvg: Double? = 0.0,
     val ratingCount: Int = 0,
+    val bankAccount: String? = null,
+    val certifications: String? = null,
+    val hourlyRate: Double? = null,
+    val isVerified: Boolean = false,
+    val specialties: String? = null, // Array JSON
+    val taxId: String? = null,
+    val yearsOfExperience: Int? = null,
+    val completionRate: Double? = 0.0,
+    val rating: Double? = 0.0,
+    val responseTime: Int? = null,
     val createdAt: String? = null,
-    val updatedAt: String? = null
+    val updatedAt: String? = null,
+    val deletedAt: String? = null
 )
 
 /**
@@ -603,7 +630,11 @@ data class SupabaseAuditLog(
 data class SupabaseConversation(
     val id: String,
     val createdById: String,
-    val createdAt: String? = null
+    val jobId: String? = null,
+    val title: String? = null,
+    val type: String? = "CLIENT_PROFESSIONAL", // CLIENT_PROFESSIONAL, SUPPORT
+    val createdAt: String? = null,
+    val updatedAt: String? = null
 )
 
 /**
@@ -628,8 +659,11 @@ data class SupabaseMessage(
     val conversationId: String,
     val senderId: String,
     val text: String? = null,
+    val content: String? = null,
     val mediaIds: String? = null, // JSON array
     val readBy: String? = null, // JSON array
+    val isRead: Boolean = false,
+    val messageType: String? = "TEXT", // TEXT, IMAGE, FILE, SYSTEM
     val createdAt: String? = null
 )
 

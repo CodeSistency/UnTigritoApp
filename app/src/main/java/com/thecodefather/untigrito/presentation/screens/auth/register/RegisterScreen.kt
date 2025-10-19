@@ -230,7 +230,8 @@ fun RegisterScreen(
 
             Button(
                 onClick = {
-                    viewModel.register(name, identifier, password, confirmPassword)
+                    android.util.Log.e("TAG", "RegisterScreen: Iniciando registro con Supabase")
+                    viewModel.registerWithSupabase(name, identifier, password, confirmPassword)
                 },
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE67822)),
