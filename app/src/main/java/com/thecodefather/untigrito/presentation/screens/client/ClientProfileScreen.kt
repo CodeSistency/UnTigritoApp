@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -45,6 +46,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import com.thecodefather.untigrito.presentation.components.ClientBottomNavBar
 import com.thecodefather.untigrito.presentation.navigation.Routes
 import com.thecodefather.untigrito.presentation.navigation.ProfessionalNavigation
+import com.thecodefather.untigrito.presentation.navigation.ClientRoutes
 import com.thecodefather.untigrito.presentation.screens.client.components.HomeHeader
 import com.thecodefather.untigrito.presentation.viewmodel.ClientProfileViewModel
 
@@ -77,7 +79,15 @@ fun ClientProfileScreen(
     // Navegar a la sección de profesionales cuando el switch esté en true
     LaunchedEffect(isProfessional) {
         if (isProfessional) {
-            navController.navigate(ProfessionalNavigation.PROFESSIONAL_MAIN)
+            val currentUser = user
+            if (currentUser?.role == "PROFESSIONAL") {
+                // Ya es profesional, navegar directamente
+                navController.navigate(ProfessionalNavigation.PROFESSIONAL_MAIN)
+            } else {
+                // No es profesional, ir a verificación
+                navController.navigate(Routes.IDENTITY_VERIFICATION)
+                isProfessional = false // Reset toggle
+            }
         }
     }
 
@@ -117,6 +127,56 @@ fun ClientProfileScreen(
                         onCheckedChange = { isProfessional = it }
                     )
                 }
+            }
+        }
+
+        item {
+            // Sección "Ver detalles de cuenta"
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { navController.navigate(ClientRoutes.ACCOUNT_DETAILS) },
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("Ver detalles de cuenta", fontSize = 16.sp, color = Color.Black)
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = String.format("%,.2f Bs", user?.balance ?: 0.0),
+                            fontSize = 14.sp,
+                            color = Color(0xFFE67822),
+                            fontWeight = FontWeight.Bold
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Icon(Icons.Default.KeyboardArrowRight, contentDescription = null, tint = Color.Gray)
+                    }
+                }
+            }
+        }
+
+        item {
+            // Botón de Recargar Saldo
+            Button(
+                onClick = { navController.navigate(ClientRoutes.RECHARGE) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50)),
+                shape = RoundedCornerShape(8.dp)
+            ) {
+                Text(
+                    "Recargar Saldo",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
             }
         }
 

@@ -66,6 +66,7 @@ fun ClientNavGraph(navController: NavHostController) {
             val serviceId = backStackEntry.arguments?.getString("serviceId") ?: ""
             ServiceDetailScreen(
                 serviceId = serviceId,
+                navController = navController,
                 onBackClick = { navController.popBackStack() },
                 onContactClick = { /* TODO: Implement contact */ }
             )

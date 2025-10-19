@@ -1,12 +1,11 @@
 package com.thecodefather.untigrito.presentation.screens.account
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
-import androidx.compose.ui.graphics.Color
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -15,18 +14,15 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.graphics.Color
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
-import com.thecodefather.untigrito.ui.theme.UnTigritoTheme
-import com.thecodefather.untigrito.presentation.screens.account.data.Transaction
 import com.thecodefather.untigrito.presentation.navigation.ClientRoutes
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -47,68 +43,36 @@ fun AccountDetailsScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
-                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimary
+                    containerColor = Color.White,
+                    titleContentColor = Color.Black,
+                    navigationIconContentColor = Color.Black
                 )
             )
         }
     ) { paddingValues ->
-        Column(
+        LazyColumn(
             modifier = Modifier
                 .padding(paddingValues)
-                .padding(horizontal = 0.dp)
+                .background(Color(0xFFF5F5F5)),
+            contentPadding = PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            AccountSummaryCard(
-                balance = String.format("%,.2f", uiState.balance),
-                onRechargeClick = { navController.navigate(ClientRoutes.RECHARGE) },
-                onWithdrawClick = { navController.navigate(ClientRoutes.WITHDRAW) }
-            )
-            // Mostrar transacciones o mensaje de lista vacía
-            if (uiState.transactions.isEmpty() && !uiState.isLoading && uiState.errorMessage == null) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(32.dp),
-                    horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        text = "No hay transacciones registradas",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = Color.Gray
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = "Tus transacciones aparecerán aquí",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = Color.LightGray
-                    )
-                }
-            } else {
-                TransactionHistoryList(
-                    transactions = uiState.transactions,
-                    onRefresh = { viewModel.refreshAccountDetails() },
-                    isRefreshing = uiState.isLoading
+            item {
+                AccountSummaryCard(
+                    balance = String.format("%,.2f", uiState.balance),
+                    onRechargeClick = { navController.navigate(ClientRoutes.RECHARGE) },
+                    onWithdrawClick = { navController.navigate(ClientRoutes.WITHDRAW) }
                 )
             }
             
-            // Mostrar error si existe
-            uiState.errorMessage?.let { error ->
-                Text(
-                    text = error,
-                    color = MaterialTheme.colorScheme.error,
-                    modifier = Modifier.padding(16.dp),
-                    style = MaterialTheme.typography.bodyMedium
+            item {
+                TransactionHistoryList(
+                    transactions = uiState.transactions,
+                    isLoading = uiState.isLoading,
+                    errorMessage = uiState.errorMessage,
+                    onRefresh = { viewModel.refresh() }
                 )
             }
         }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun AccountDetailsScreenPreview() {
-    UnTigritoTheme {
-        AccountDetailsScreen(rememberNavController())
     }
 }

@@ -6,6 +6,7 @@ import com.thecodefather.untigrito.auth.domain.usecase.AuthStateManager
 import com.thecodefather.untigrito.data.datasource.remote.SupabaseDatabaseService
 import com.thecodefather.untigrito.data.datasource.remote.SupabaseServicePosting
 import com.thecodefather.untigrito.data.datasource.remote.SupabaseUser
+import com.thecodefather.untigrito.data.repository.JobFavoriteRepository
 import com.thecodefather.untigrito.domain.model.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,7 +20,8 @@ import javax.inject.Inject
 @HiltViewModel
 class JobsViewModel @Inject constructor(
     private val supabaseDatabase: SupabaseDatabaseService,
-    private val authStateManager: AuthStateManager
+    private val authStateManager: AuthStateManager,
+    private val jobFavoriteRepository: JobFavoriteRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(JobsUiState())
@@ -89,6 +91,9 @@ class JobsViewModel @Inject constructor(
                         errorMessage = null
                     )
                     Timber.d("UI state updated successfully")
+                    
+                    // Cargar favoritos después de cargar trabajos
+                    loadFavorites()
                 }.onFailure { exception ->
                     Timber.e(exception, "Failed to load jobs from database")
                     _uiState.value = _uiState.value.copy(
@@ -180,6 +185,9 @@ class JobsViewModel @Inject constructor(
                         errorMessage = null
                     )
                     Timber.d("UI state updated successfully with client info")
+                    
+                    // Cargar favoritos después de cargar trabajos
+                    loadFavorites()
                 }.onFailure { exception ->
                     Timber.e(exception, "Failed to load jobs with client info")
                     _uiState.value = _uiState.value.copy(
@@ -332,7 +340,16 @@ class JobsViewModel @Inject constructor(
                 result.onSuccess { posting ->
                     if (posting != null) {
                         Timber.d("Job found: ${posting.title}")
-                        val job = mapSupabaseToJob(posting)
+                        var job = mapSupabaseToJob(posting)
+                        
+                        // Cargar estado de favorito
+                        val userId = authStateManager.getCurrentUserId()
+                        if (userId != null) {
+                            val isFavorite = jobFavoriteRepository.isFavorite(userId, jobId)
+                            job = job.copy(isFavorite = isFavorite)
+                            Timber.d("Job favorite state: $isFavorite")
+                        }
+                        
                         _uiState.value = _uiState.value.copy(
                             isLoading = false,
                             job = job,
@@ -378,11 +395,19 @@ class JobsViewModel @Inject constructor(
         viewModelScope.launch {
             Timber.d("toggleFavorite() called for jobId: $jobId")
             try {
+                val userId = authStateManager.getCurrentUserId()
+                if (userId == null) {
+                    Timber.w("User not authenticated")
+                    return@launch
+                }
+
+                // Toggle en base de datos local
+                val newFavoriteState = jobFavoriteRepository.toggleFavorite(userId, jobId)
+                Timber.d("Favorite toggled to: $newFavoriteState")
+                
                 // Actualizar estado local
                 val updatedJobs = _uiState.value.jobs.map { job ->
                     if (job.id == jobId) {
-                        val newFavoriteState = !job.isFavorite
-                        Timber.d("Toggling favorite for job ${job.title}: $newFavoriteState")
                         job.copy(isFavorite = newFavoriteState)
                     } else {
                         job
@@ -392,8 +417,6 @@ class JobsViewModel @Inject constructor(
                 
                 // Actualizar trabajo actual si existe
                 if (_uiState.value.job?.id == jobId) {
-                    val newFavoriteState = !(_uiState.value.job?.isFavorite ?: false)
-                    Timber.d("Toggling favorite for current job: $newFavoriteState")
                     _uiState.value = _uiState.value.copy(
                         job = _uiState.value.job?.copy(isFavorite = newFavoriteState)
                     )
@@ -406,6 +429,31 @@ class JobsViewModel @Inject constructor(
                     errorMessage = e.message ?: "Error al actualizar favorito"
                 )
             }
+        }
+    }
+
+    // Cargar favoritos desde base de datos local
+    private suspend fun loadFavorites() {
+        try {
+            val userId = authStateManager.getCurrentUserId()
+            if (userId == null) {
+                Timber.w("User not authenticated")
+                return
+            }
+
+            val favoriteIds = jobFavoriteRepository.getFavoriteIdsByUser(userId)
+            Timber.d("Loaded ${favoriteIds.size} favorites for user $userId")
+            
+            // Actualizar trabajos con estado de favorito
+            val updatedJobs = _uiState.value.jobs.map { job ->
+                job.copy(isFavorite = favoriteIds.contains(job.id))
+            }
+            
+            _uiState.value = _uiState.value.copy(jobs = updatedJobs)
+            Timber.d("Favorites applied to jobs")
+            
+        } catch (e: Exception) {
+            Timber.e(e, "Error loading favorites")
         }
     }
     

@@ -106,6 +106,7 @@ dependencies {
 
     // Accompanist
     implementation(libs.accompanist.swiperefresh)
+    implementation(libs.accompanist.permissions)
 
     // Security
     implementation(libs.androidx.security.crypto)

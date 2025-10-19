@@ -34,6 +34,7 @@ import com.thecodefather.untigrito.presentation.screens.professional.proposals.*
 import com.thecodefather.untigrito.presentation.screens.professional.messages.*
 import com.thecodefather.untigrito.presentation.screens.professional.services.*
 import com.thecodefather.untigrito.presentation.screens.professional.profile.*
+import com.thecodefather.untigrito.presentation.navigation.ProfessionalNavigation
 import com.thecodefather.untigrito.presentation.viewmodel.ProfessionalViewModel
 import kotlinx.coroutines.launch
 
@@ -246,7 +247,7 @@ fun ProfessionalMainScreen(
                         navController.navigate("${ProfessionalRoutes.CHAT}/$conversationId")
                     },
                     onSupportClick = {
-                        navController.navigate("${ProfessionalRoutes.CHAT}/support")
+                        navController.navigate(ProfessionalNavigation.SUPPORT_CHAT)
                     }
                 )
             }
@@ -276,8 +277,8 @@ fun ProfessionalMainScreen(
             
             composable(ProfessionalRoutes.CREATE_SERVICE) {
                 CreateEditServiceScreen(
-                    onNavigateBack = { navController.popBackStack() },
-                    onServiceSaved = { navController.popBackStack() }
+                    serviceId = null,
+                    onNavigateBack = { navController.popBackStack() }
                 )
             }
             
@@ -285,21 +286,22 @@ fun ProfessionalMainScreen(
                 val serviceId = backStackEntry.arguments?.getString("serviceId") ?: ""
                 CreateEditServiceScreen(
                     serviceId = serviceId,
-                    onNavigateBack = { navController.popBackStack() },
-                    onServiceSaved = { navController.popBackStack() }
+                    onNavigateBack = { navController.popBackStack() }
                 )
             }
             
             composable("${ProfessionalRoutes.SERVICE_DETAIL}/{serviceId}") { backStackEntry ->
                 val serviceId = backStackEntry.arguments?.getString("serviceId") ?: ""
-                // Aquí implementarías la pantalla de detalle del servicio
-                // Por ahora mostramos un placeholder
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = androidx.compose.ui.Alignment.Center
-                ) {
-                    Text("Detalle del Servicio: $serviceId")
-                }
+                ServiceDetailScreen(
+                    serviceId = serviceId,
+                    onNavigateBack = { navController.popBackStack() },
+                    onNavigateToProposals = { 
+                        navController.navigate(ProfessionalRoutes.PROPOSALS)
+                    },
+                    onNavigateToEdit = { id ->
+                        navController.navigate("${ProfessionalRoutes.EDIT_SERVICE}/$id")
+                    }
+                )
             }
             
             // Rutas de Perfil
@@ -308,7 +310,9 @@ fun ProfessionalMainScreen(
                     onNavigateBack = { navController.popBackStack() },
                     onEditService = { serviceId ->
                         navController.navigate("${ProfessionalRoutes.EDIT_SERVICE}/$serviceId")
-                    }
+                    },
+                    onCreateService = { navController.navigate(ProfessionalRoutes.CREATE_SERVICE) },
+                    onViewAllServices = { navController.navigate(ProfessionalRoutes.SERVICES) }
                 )
             }
             

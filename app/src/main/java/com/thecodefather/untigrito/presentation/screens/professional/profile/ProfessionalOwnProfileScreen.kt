@@ -21,24 +21,91 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.thecodefather.untigrito.presentation.viewmodel.ProfessionalViewModel
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarDuration
+import com.thecodefather.untigrito.presentation.components.ImagePicker
+import android.net.Uri
+import com.thecodefather.untigrito.presentation.viewmodel.ProfessionalServicesViewModel
+import com.thecodefather.untigrito.data.datasource.remote.SupabaseService
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfessionalOwnProfileScreen(
     onNavigateBack: () -> Unit,
     onEditService: (String) -> Unit,
-    viewModel: ProfessionalViewModel = hiltViewModel()
+    onCreateService: () -> Unit,
+    onViewAllServices: () -> Unit,
+    viewModel: ProfessionalViewModel = hiltViewModel(),
+    servicesViewModel: ProfessionalServicesViewModel = hiltViewModel()
 ) {
+    val context = LocalContext.current
     val currentUser by viewModel.currentUser.collectAsState()
     val professionalProfile by viewModel.professionalProfile.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val errorMessage by viewModel.errorMessage.collectAsState()
     
+    // Estados editables
+    val editableName by viewModel.editableName.collectAsState()
+    val editableEmail by viewModel.editableEmail.collectAsState()
+    val editableBio by viewModel.editableBio.collectAsState()
+    val editableHourlyRate by viewModel.editableHourlyRate.collectAsState()
+    val editableCertifications by viewModel.editableCertifications.collectAsState()
+    val editableResponseTime by viewModel.editableResponseTime.collectAsState()
+    val editableBankAccount by viewModel.editableBankAccount.collectAsState()
+    val editableTaxId by viewModel.editableTaxId.collectAsState()
+    val editableSpecialties by viewModel.editableSpecialties.collectAsState()
+    
+    // Estados de feedback
+    val isUpdating by viewModel.isUpdating.collectAsState()
+    val updateSuccess by viewModel.updateSuccess.collectAsState()
+    
+    // Estados para imagen de perfil
+    val profileImageUrl by viewModel.profileImageUrl.collectAsState()
+    val isUploadingImage by viewModel.isUploadingImage.collectAsState()
+    
+    // Estados de servicios
+    val services by servicesViewModel.services.collectAsState()
+    val isServicesLoading by servicesViewModel.isLoading.collectAsState()
+    
     var isEditing by remember { mutableStateOf(false) }
+    val snackbarHostState = remember { SnackbarHostState() }
+    
+    // Cargar servicios al inicializar
+    LaunchedEffect(currentUser?.id) {
+        currentUser?.id?.let { userId ->
+            servicesViewModel.loadServices(userId)
+        }
+    }
+    
+    // Manejar feedback de actualización
+    LaunchedEffect(updateSuccess) {
+        if (updateSuccess) {
+            snackbarHostState.showSnackbar(
+                message = "Perfil actualizado exitosamente",
+                duration = SnackbarDuration.Short
+            )
+            viewModel.resetUpdateSuccess()
+            isEditing = false
+        }
+    }
+    
+    // Manejar errores
+    LaunchedEffect(errorMessage) {
+        errorMessage?.let { message ->
+            snackbarHostState.showSnackbar(
+                message = message,
+                duration = SnackbarDuration.Long
+            )
+            viewModel.clearError()
+        }
+    }
     
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = { Text("Mi Perfil") },
@@ -56,14 +123,27 @@ fun ProfessionalOwnProfileScreen(
                             Text("Editar")
                         }
                     } else {
-                        TextButton(onClick = { isEditing = false }) {
+                        TextButton(onClick = { 
+                            isEditing = false
+                            // Recargar datos originales
+                            viewModel.loadEditableData()
+                        }) {
                             Text("Cancelar")
                         }
-                        TextButton(onClick = { 
-                            // TODO: Guardar cambios
-                            isEditing = false 
-                        }) {
-                            Text("Guardar")
+                        TextButton(
+                            onClick = { 
+                                viewModel.saveProfileChanges()
+                            },
+                            enabled = !isUpdating
+                        ) {
+                            if (isUpdating) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(16.dp),
+                                    strokeWidth = 2.dp
+                                )
+                            } else {
+                                Text("Guardar")
+                            }
                         }
                     }
                 }
@@ -90,48 +170,48 @@ fun ProfessionalOwnProfileScreen(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         // Foto de perfil
-                        Box(
-                            modifier = Modifier
-                                .size(100.dp)
-                                .clip(CircleShape)
-                                .background(Color(0xFFE67822)),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Person,
-                                contentDescription = "Foto de perfil",
-                                tint = Color.White,
-                                modifier = Modifier.size(50.dp)
-                            )
-                        }
+                        ImagePicker(
+                            currentImageUrl = profileImageUrl,
+                            isUploading = isUploadingImage,
+                            onImageSelected = { uri ->
+                                viewModel.uploadProfileImage(uri, context)
+                            },
+                            onImageRemoved = {
+                                viewModel.removeProfileImage()
+                            },
+                            modifier = Modifier.size(100.dp)
+                        )
                         
                         Spacer(modifier = Modifier.height(16.dp))
                         
                         if (isEditing) {
                             OutlinedTextField(
-                                value = currentUser?.name ?: "",
-                                onValueChange = { /* TODO: Actualizar nombre */ },
+                                value = editableName,
+                                onValueChange = { viewModel.updateField("name", it) },
                                 label = { Text("Nombre") },
-                                modifier = Modifier.fillMaxWidth()
+                                modifier = Modifier.fillMaxWidth(),
+                                enabled = !isUpdating
                             )
                             
                             Spacer(modifier = Modifier.height(8.dp))
                             
                             OutlinedTextField(
-                                value = currentUser?.email ?: "",
-                                onValueChange = { /* TODO: Actualizar email */ },
+                                value = editableEmail,
+                                onValueChange = { viewModel.updateField("email", it) },
                                 label = { Text("Email") },
-                                modifier = Modifier.fillMaxWidth()
+                                modifier = Modifier.fillMaxWidth(),
+                                enabled = !isUpdating
                             )
                             
                             Spacer(modifier = Modifier.height(8.dp))
                             
                             OutlinedTextField(
-                                value = professionalProfile?.bio ?: "",
-                                onValueChange = { /* TODO: Actualizar bio */ },
+                                value = editableBio,
+                                onValueChange = { viewModel.updateField("bio", it) },
                                 label = { Text("Biografía") },
                                 modifier = Modifier.fillMaxWidth(),
-                                maxLines = 3
+                                maxLines = 3,
+                                enabled = !isUpdating
                             )
                         } else {
                             Text(
@@ -243,29 +323,32 @@ fun ProfessionalOwnProfileScreen(
                         
                         if (isEditing) {
                             OutlinedTextField(
-                                value = professionalProfile?.hourlyRate?.toString() ?: "",
-                                onValueChange = { /* TODO: Actualizar tarifa */ },
+                                value = editableHourlyRate,
+                                onValueChange = { viewModel.updateField("hourlyRate", it) },
                                 label = { Text("Tarifa por hora (Bs.)") },
-                                modifier = Modifier.fillMaxWidth()
+                                modifier = Modifier.fillMaxWidth(),
+                                enabled = !isUpdating
                             )
                             
                             Spacer(modifier = Modifier.height(8.dp))
                             
                             OutlinedTextField(
-                                value = professionalProfile?.certifications ?: "",
-                                onValueChange = { /* TODO: Actualizar certificaciones */ },
+                                value = editableCertifications,
+                                onValueChange = { viewModel.updateField("certifications", it) },
                                 label = { Text("Certificaciones") },
                                 modifier = Modifier.fillMaxWidth(),
-                                maxLines = 2
+                                maxLines = 2,
+                                enabled = !isUpdating
                             )
                             
                             Spacer(modifier = Modifier.height(8.dp))
                             
                             OutlinedTextField(
-                                value = professionalProfile?.responseTime?.toString() ?: "",
-                                onValueChange = { /* TODO: Actualizar tiempo de respuesta */ },
+                                value = editableResponseTime,
+                                onValueChange = { viewModel.updateField("responseTime", it) },
                                 label = { Text("Tiempo de respuesta (horas)") },
-                                modifier = Modifier.fillMaxWidth()
+                                modifier = Modifier.fillMaxWidth(),
+                                enabled = !isUpdating
                             )
                         } else {
                             InfoRow("Tarifa por hora", "Bs. ${professionalProfile?.hourlyRate ?: 0.0}")
@@ -324,19 +407,21 @@ fun ProfessionalOwnProfileScreen(
                         
                         if (isEditing) {
                             OutlinedTextField(
-                                value = professionalProfile?.bankAccount ?: "",
-                                onValueChange = { /* TODO: Actualizar cuenta bancaria */ },
+                                value = editableBankAccount,
+                                onValueChange = { viewModel.updateField("bankAccount", it) },
                                 label = { Text("Cuenta Bancaria") },
-                                modifier = Modifier.fillMaxWidth()
+                                modifier = Modifier.fillMaxWidth(),
+                                enabled = !isUpdating
                             )
                             
                             Spacer(modifier = Modifier.height(8.dp))
                             
                             OutlinedTextField(
-                                value = professionalProfile?.taxId ?: "",
-                                onValueChange = { /* TODO: Actualizar RIF */ },
+                                value = editableTaxId,
+                                onValueChange = { viewModel.updateField("taxId", it) },
                                 label = { Text("RIF/Tax ID") },
-                                modifier = Modifier.fillMaxWidth()
+                                modifier = Modifier.fillMaxWidth(),
+                                enabled = !isUpdating
                             )
                         } else {
                             InfoRow("Cuenta Bancaria", professionalProfile?.bankAccount ?: "No especificada")
@@ -368,20 +453,64 @@ fun ProfessionalOwnProfileScreen(
                                 color = Color.Black
                             )
                             
-                            TextButton(onClick = { /* TODO: Navegar a crear servicio */ }) {
-                                Text("Agregar")
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                TextButton(onClick = onCreateService) {
+                                    Text("Agregar")
+                                }
+                                if (services.isNotEmpty()) {
+                                    TextButton(onClick = onViewAllServices) {
+                                        Text("Ver todos")
+                                    }
+                                }
                             }
                         }
                         
                         Spacer(modifier = Modifier.height(12.dp))
                         
-                        // Lista de servicios (placeholder)
-                        Text(
-                            text = "No hay servicios publicados",
-                            fontSize = 14.sp,
-                            color = Color.Gray,
-                            modifier = Modifier.fillMaxWidth()
-                        )
+                        if (isServicesLoading) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(20.dp),
+                                    color = Color(0xFFE67822)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = "Cargando servicios...",
+                                    fontSize = 14.sp,
+                                    color = Color.Gray
+                                )
+                            }
+                        } else if (services.isEmpty()) {
+                            Text(
+                                text = "No hay servicios publicados",
+                                fontSize = 14.sp,
+                                color = Color.Gray,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        } else {
+                            // Mostrar los primeros 3 servicios
+                            services.take(3).forEach { service ->
+                                ServicePreviewCard(
+                                    service = service,
+                                    onEdit = { onEditService(service.id) }
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                            }
+                            
+                            if (services.size > 3) {
+                                Text(
+                                    text = "Y ${services.size - 3} servicios más...",
+                                    fontSize = 12.sp,
+                                    color = Color.Gray,
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+                            }
+                        }
                     }
                 }
             }
@@ -446,6 +575,61 @@ private fun InfoRow(
             fontWeight = FontWeight.Medium,
             color = Color.Black
         )
+    }
+}
+
+@Composable
+private fun ServicePreviewCard(
+    service: SupabaseService,
+    onEdit: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onEdit() },
+        colors = CardDefaults.cardColors(
+            containerColor = if (service.isActive) Color(0xFFE8F5E8) else Color(0xFFF5F5F5)
+        ),
+        shape = RoundedCornerShape(8.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(
+                    text = service.title,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black
+                )
+                
+                Spacer(modifier = Modifier.height(2.dp))
+                
+                Text(
+                    text = "Bs. ${service.price}",
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = Color(0xFF4CAF50)
+                )
+            }
+            
+            AssistChip(
+                onClick = { },
+                label = { 
+                    Text(
+                        if (service.isActive) "Activo" else "Inactivo",
+                        fontSize = 10.sp,
+                        color = if (service.isActive) Color(0xFF4CAF50) else Color.Red
+                    ) 
+                }
+            )
+        }
     }
 }
 

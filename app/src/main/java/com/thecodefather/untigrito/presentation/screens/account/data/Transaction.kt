@@ -5,5 +5,11 @@ data class Transaction(
     val type: String,
     val description: String,
     val date: String,
-    val amount: Double
+    val amount: Double,
+    val status: String,
+    val method: String?
 )
+
+enum class TransactionType {
+    RECHARGE, WITHDRAWAL, PAYMENT
+}

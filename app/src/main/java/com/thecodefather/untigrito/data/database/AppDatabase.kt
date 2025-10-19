@@ -5,11 +5,13 @@ import androidx.room.RoomDatabase
 import com.thecodefather.untigrito.data.database.dao.AuthStateDao
 import com.thecodefather.untigrito.data.database.dao.ClientRequestDao
 import com.thecodefather.untigrito.data.database.dao.ClientUserDao
+import com.thecodefather.untigrito.data.database.dao.JobFavoriteDao
 import com.thecodefather.untigrito.data.database.dao.ServicePostingDao
 import com.thecodefather.untigrito.data.database.dao.TransactionDao
 import com.thecodefather.untigrito.data.database.entity.AuthStateEntity
 import com.thecodefather.untigrito.data.database.entity.ClientRequestEntity
 import com.thecodefather.untigrito.data.database.entity.ClientUserEntity
+import com.thecodefather.untigrito.data.database.entity.JobFavoriteEntity
 import com.thecodefather.untigrito.data.database.entity.ServicePostingEntity
 import com.thecodefather.untigrito.data.database.entity.TransactionEntity
 
@@ -19,9 +21,10 @@ import com.thecodefather.untigrito.data.database.entity.TransactionEntity
         ClientRequestEntity::class,
         ServicePostingEntity::class,
         TransactionEntity::class,
-        AuthStateEntity::class
+        AuthStateEntity::class,
+        JobFavoriteEntity::class
     ],
-    version = 2,
+    version = 3,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -30,4 +33,5 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun servicePostingDao(): ServicePostingDao
     abstract fun transactionDao(): TransactionDao
     abstract fun authStateDao(): AuthStateDao
+    abstract fun jobFavoriteDao(): JobFavoriteDao
 }

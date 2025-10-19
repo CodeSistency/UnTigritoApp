@@ -20,6 +20,14 @@ import com.thecodefather.untigrito.presentation.screens.client.ClientMainScreen
 import com.thecodefather.untigrito.presentation.screens.professional.messages.ChatScreen
 import com.thecodefather.untigrito.presentation.screens.professionals.profile.ProfessionalProfileScreen
 import com.thecodefather.untigrito.presentation.screens.professional.ProfessionalMainScreen
+import com.thecodefather.untigrito.presentation.screens.verification.IdentityVerificationScreen
+import com.thecodefather.untigrito.presentation.screens.account.AccountDetailsScreen
+import com.thecodefather.untigrito.presentation.screens.account.RechargeScreen
+import com.thecodefather.untigrito.presentation.screens.account.WithdrawalMethodsScreen
+import com.thecodefather.untigrito.presentation.screens.account.WithdrawalFormScreen
+import com.thecodefather.untigrito.presentation.screens.payment.PaymentScreen
+import com.thecodefather.untigrito.domain.model.PaymentParams
+import com.thecodefather.untigrito.presentation.navigation.ClientRoutes
 
 /**
  * Route definitions for navigation
@@ -37,8 +45,11 @@ object Routes {
     const val CLIENT_PROFILE = "client_profile"
     const val CHAT = "chat/{conversationId}"
     const val PROFESSIONAL_PROFILE = "professional_profile"
+    const val IDENTITY_VERIFICATION = "identity_verification"
+    const val PAYMENT = "payment/{paymentType}"
 
     fun createChatRoute(conversationId: String) = "chat/$conversationId"
+    fun createPaymentRoute(paymentType: String) = "payment/$paymentType"
 }
 
 /**
@@ -146,6 +157,46 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
             ClientProfileScreen(navController = navController)
         }
 
+        // Account Details Routes
+        composable(ClientRoutes.ACCOUNT_DETAILS) {
+            AccountDetailsScreen(navController = navController)
+        }
+
+        composable(ClientRoutes.RECHARGE) {
+            RechargeScreen(
+                navController = navController,
+                currentUserId = "current-user-id" // TODO: Obtener del AuthStateManager
+            )
+        }
+
+        composable(ClientRoutes.WITHDRAW) {
+            WithdrawalMethodsScreen(navController = navController)
+        }
+
+        composable("${ClientRoutes.WITHDRAW}/{method}") { backStackEntry ->
+            val method = backStackEntry.arguments?.getString("method") ?: ""
+            WithdrawalFormScreen(method = method, navController = navController)
+        }
+
+        // Payment Routes
+        composable(Routes.PAYMENT) { backStackEntry ->
+            val paymentParams = navController.previousBackStackEntry
+                ?.savedStateHandle
+                ?.get<PaymentParams>("paymentParams")
+            
+            paymentParams?.let { params ->
+                PaymentScreen(
+                    paymentParams = params,
+                    onPaymentCompleted = {
+                        navController.navigate(Routes.CLIENT_MAIN) {
+                            popUpTo(Routes.CLIENT_MAIN) { inclusive = false }
+                        }
+                    },
+                    onNavigateBack = { navController.popBackStack() }
+                )
+            }
+        }
+
         composable(Routes.CHAT) { backStackEntry ->
             val conversationId = backStackEntry.arguments?.getString("conversationId") ?: ""
             ChatScreen(
@@ -158,6 +209,17 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
             ProfessionalProfileScreen(
                 professionalId = "default-id",
                 onBackClick = { navController.popBackStack() }
+            )
+        }
+
+        composable(Routes.IDENTITY_VERIFICATION) {
+            IdentityVerificationScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onVerificationSuccess = {
+                    navController.navigate(ProfessionalNavigation.PROFESSIONAL_MAIN) {
+                        popUpTo(Routes.CLIENT_MAIN) { inclusive = false }
+                    }
+                }
             )
         }
 

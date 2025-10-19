@@ -61,4 +61,10 @@ object NetworkModule {
     fun provideClientApiService(retrofit: Retrofit): ClientApiService {
         return retrofit.create(ClientApiService::class.java)
     }
+
+    @Provides
+    @Singleton
+    fun provideChatbotApiService(retrofit: Retrofit): com.thecodefather.untigrito.data.datasource.remote.ChatbotApiService {
+        return retrofit.create(com.thecodefather.untigrito.data.datasource.remote.ChatbotApiService::class.java)
+    }
 }

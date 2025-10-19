@@ -2,68 +2,115 @@ package com.thecodefather.untigrito.presentation.screens.professional.services
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.thecodefather.untigrito.domain.model.Service
-import com.thecodefather.untigrito.domain.model.ServiceStatus
+import com.thecodefather.untigrito.presentation.viewmodel.ProfessionalServicesViewModel
+import com.thecodefather.untigrito.presentation.viewmodel.CreateServiceRequest
+import com.thecodefather.untigrito.presentation.viewmodel.UpdateServiceRequest
+import com.thecodefather.untigrito.data.datasource.remote.SupabaseService
+import com.thecodefather.untigrito.data.datasource.remote.SupabaseProfession
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateEditServiceScreen(
-    serviceId: String? = null,
+    serviceId: String? = null, // null para crear, no null para editar
     onNavigateBack: () -> Unit,
-    onServiceSaved: () -> Unit,
-    viewModel: com.thecodefather.untigrito.presentation.viewmodel.ServicesViewModel = hiltViewModel()
+    viewModel: ProfessionalServicesViewModel = hiltViewModel()
 ) {
-    val uiState by viewModel.uiState.collectAsState()
-    var title by remember { mutableStateOf("") }
-    var description by remember { mutableStateOf("") }
-    var category by remember { mutableStateOf("") }
-    var minPrice by remember { mutableStateOf("") }
-    var maxPrice by remember { mutableStateOf("") }
-    var serviceArea by remember { mutableStateOf("") }
-    var isActive by remember { mutableStateOf(true) }
-    var isLoading by remember { mutableStateOf(false) }
+    val services by viewModel.services.collectAsState()
+    val professions by viewModel.professions.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
+    val isLoadingProfessions by viewModel.isLoadingProfessions.collectAsState()
+    val errorMessage by viewModel.errorMessage.collectAsState()
+    val operationSuccess by viewModel.operationSuccess.collectAsState()
 
-    val isEditMode = serviceId != null
-    val screenTitle = if (isEditMode) "Editar Servicio" else "Crear Servicio"
+    // Encontrar el servicio a editar si existe
+    val existingService = serviceId?.let { id ->
+        services.find { it.id == id }
+    }
 
-    // Cargar datos del servicio si estamos editando
-    LaunchedEffect(serviceId) {
-        if (isEditMode && serviceId != null) {
-            // Cargar datos del servicio desde el ViewModel
-            // viewModel.loadService(serviceId)
+    // Estados del formulario
+    var title by remember { mutableStateOf(existingService?.title ?: "") }
+    var description by remember { mutableStateOf(existingService?.description ?: "") }
+    var price by remember { mutableStateOf(existingService?.price?.toString() ?: "") }
+    var selectedCategoryId by remember { mutableStateOf(existingService?.categoryId ?: "") }
+    var isActive by remember { mutableStateOf(existingService?.isActive ?: true) }
+
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    // Cargar profesiones al inicializar
+    LaunchedEffect(Unit) {
+        viewModel.loadProfessions()
+    }
+
+    // Manejar éxito de operación
+    LaunchedEffect(operationSuccess) {
+        if (operationSuccess) {
+            snackbarHostState.showSnackbar(
+                message = if (serviceId != null) "Servicio actualizado exitosamente" else "Servicio creado exitosamente",
+                duration = SnackbarDuration.Short
+            )
+            viewModel.resetOperationSuccess()
+            onNavigateBack()
         }
     }
-    
-    // Observar cambios en el estado del ViewModel
-    // LaunchedEffect(uiState.service) {
-    //     uiState.service?.let { service ->
-    //         title = service.title
-    //         description = service.description
-    //         category = service.categoryId
-    //         minPrice = service.price.toString()
-    //         maxPrice = service.price.toString()
-    //         serviceArea = ""
-    //         isActive = service.isActive
-    //     }
-    // }
+
+    // Manejar errores
+    LaunchedEffect(errorMessage) {
+        errorMessage?.let { message ->
+            snackbarHostState.showSnackbar(
+                message = message,
+                duration = SnackbarDuration.Long
+            )
+            viewModel.clearError()
+        }
+    }
 
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
-                title = { Text(screenTitle) },
+                title = { 
+                    Text(
+                        if (serviceId != null) "Editar Servicio" else "Crear Servicio"
+                    ) 
+                },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = "Atrás"
+                        )
+                    }
+                },
+                actions = {
+                    if (serviceId != null) {
+                        IconButton(
+                            onClick = {
+                                existingService?.let { service ->
+                                    viewModel.deleteService(service.id)
+                                }
+                            },
+                            enabled = !isLoading
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Delete,
+                                contentDescription = "Eliminar",
+                                tint = Color.Red
+                            )
+                        }
                     }
                 }
             )
@@ -74,17 +121,34 @@ fun CreateEditServiceScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
                 .padding(16.dp)
-                .verticalScroll(rememberScrollState())
+                .verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Título del servicio
+            // Formulario
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    Text(
+                        text = "Información del Servicio",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.Black
+                    )
+
+                    // Título
             OutlinedTextField(
                 value = title,
                 onValueChange = { title = it },
-                label = { Text("Título del Servicio") },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 16.dp),
-                supportingText = { Text("Un título claro y atractivo para tu servicio") }
+                        label = { Text("Título del servicio") },
+                        modifier = Modifier.fillMaxWidth(),
+                        enabled = !isLoading,
+                        isError = title.isBlank() && title.isNotEmpty()
             )
 
             // Descripción
@@ -92,156 +156,208 @@ fun CreateEditServiceScreen(
                 value = description,
                 onValueChange = { description = it },
                 label = { Text("Descripción") },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 16.dp),
-                minLines = 3,
-                maxLines = 5,
-                supportingText = { Text("Describe detalladamente qué incluye tu servicio") }
-            )
-
-            // Categoría
-            OutlinedTextField(
-                value = category,
-                onValueChange = { category = it },
-                label = { Text("Categoría") },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 16.dp),
-                supportingText = { Text("Ej: Plomería, Electricidad, Pintura, etc.") }
-            )
-
-            // Precios
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                OutlinedTextField(
-                    value = minPrice,
-                    onValueChange = { minPrice = it },
-                    label = { Text("Precio Mínimo ($)") },
-                    modifier = Modifier.weight(1f),
-                    supportingText = { Text("Precio mínimo") }
-                )
-
-                OutlinedTextField(
-                    value = maxPrice,
-                    onValueChange = { maxPrice = it },
-                    label = { Text("Precio Máximo ($)") },
-                    modifier = Modifier.weight(1f),
-                    supportingText = { Text("Precio máximo") }
-                )
-            }
-
-            // Área de servicio
-            OutlinedTextField(
-                value = serviceArea,
-                onValueChange = { serviceArea = it },
-                label = { Text("Área de Servicio") },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 16.dp),
-                supportingText = { Text("Zonas donde ofreces tu servicio") }
-            )
-
-            // Estado del servicio
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 24.dp)
-            ) {
-                Column(
-                    modifier = Modifier.padding(16.dp)
-                ) {
-                    Text(
-                        text = "Estado del Servicio",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Medium,
-                        modifier = Modifier.padding(bottom = 8.dp)
+                        modifier = Modifier.fillMaxWidth(),
+                        maxLines = 4,
+                        enabled = !isLoading,
+                        isError = description.isBlank() && description.isNotEmpty()
                     )
-                    
+
+                    // Precio
+            OutlinedTextField(
+                        value = price,
+                        onValueChange = { price = it },
+                        label = { Text("Precio (Bs.)") },
+                        modifier = Modifier.fillMaxWidth(),
+                        enabled = !isLoading,
+                        isError = price.toDoubleOrNull()?.let { it <= 0 } == true
+                    )
+
+                    // Categoría
+                    if (isLoadingProfessions) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            CircularProgressIndicator(modifier = Modifier.size(20.dp))
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Cargando categorías...")
+                        }
+                    } else {
+                        var expanded by remember { mutableStateOf(false) }
+                        
+                        ExposedDropdownMenuBox(
+                            expanded = expanded,
+                            onExpandedChange = { expanded = !expanded }
+                        ) {
+            OutlinedTextField(
+                                value = professions.find { it.id == selectedCategoryId }?.name ?: "",
+                                onValueChange = { },
+                                readOnly = true,
+                                label = { Text("Categoría") },
+                                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                                    .menuAnchor(),
+                                enabled = !isLoading
+                            )
+                            
+                            ExposedDropdownMenu(
+                                expanded = expanded,
+                                onDismissRequest = { expanded = false }
+                            ) {
+                                professions.forEach { profession ->
+                                    DropdownMenuItem(
+                                        text = { Text(profession.name) },
+                                        onClick = {
+                                            selectedCategoryId = profession.id
+                                            expanded = false
+                                        }
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    // Estado activo
                     Row(
-                        modifier = Modifier
-                            .fillMaxWidth(),
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
+                        Text(
+                            text = "Servicio activo",
+                            fontSize = 16.sp,
+                            color = Color.Black
+                        )
+                        
                         Switch(
                             checked = isActive,
-                            onCheckedChange = { isActive = it }
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = if (isActive) "Servicio activo" else "Servicio inactivo",
-                            style = MaterialTheme.typography.bodyMedium
+                            onCheckedChange = { isActive = it },
+                            enabled = !isLoading
                         )
                     }
-                    
-                    Text(
-                        text = if (isActive) 
-                            "Tu servicio será visible para los clientes" 
-                        else 
-                            "Tu servicio no será visible para los clientes",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(top = 4.dp)
-                    )
                 }
             }
 
-            // Botón de guardar
-            Button(
-                onClick = {
-                    if (title.isNotBlank() && description.isNotBlank() && category.isNotBlank() && 
-                        minPrice.isNotBlank() && maxPrice.isNotBlank() && serviceArea.isNotBlank()) {
+            // Preview del servicio
+            if (title.isNotBlank() && description.isNotBlank() && price.isNotBlank()) {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFFF5F5F5)),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp)
+                    ) {
+                        Text(
+                            text = "Vista previa",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.Black
+                        )
                         
-                        isLoading = true
+                        Spacer(modifier = Modifier.height(8.dp))
                         
-                        if (isEditMode) {
-                            // Lógica para actualizar servicio
-                            onServiceSaved()
-                        } else {
-                            // Lógica para crear servicio
-                            viewModel.createService(
-                                title = title.trim(),
-                                description = description.trim(),
-                                category = category.trim(),
-                                minPrice = minPrice.toDoubleOrNull() ?: 0.0,
-                                maxPrice = maxPrice.toDoubleOrNull() ?: 0.0,
-                                serviceArea = serviceArea.trim()
+                        Text(
+                            text = title,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.Black
+                        )
+                        
+                        Spacer(modifier = Modifier.height(4.dp))
+                        
+                        Text(
+                            text = description,
+                            fontSize = 14.sp,
+                            color = Color.Gray
+                        )
+                        
+                        Spacer(modifier = Modifier.height(8.dp))
+                        
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "Bs. $price",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF4CAF50)
+                            )
+                            
+                            AssistChip(
+                                onClick = { },
+                                label = { 
+                                    Text(
+                                        if (isActive) "Activo" else "Inactivo",
+                                        color = if (isActive) Color(0xFF4CAF50) else Color.Red
+                                    ) 
+                                }
                             )
                         }
                     }
-                },
+                }
+            }
+
+            // Botones de acción
+            Row(
                 modifier = Modifier.fillMaxWidth(),
-                enabled = !isLoading && title.isNotBlank() && description.isNotBlank() && 
-                         category.isNotBlank() && minPrice.isNotBlank() && 
-                         maxPrice.isNotBlank() && serviceArea.isNotBlank()
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                OutlinedButton(
+                    onClick = onNavigateBack,
+                    modifier = Modifier.weight(1f),
+                    enabled = !isLoading
+                ) {
+                    Text("Cancelar")
+                }
+                
+                Button(
+                    onClick = {
+                        if (serviceId != null) {
+                            // Actualizar servicio
+                            viewModel.updateService(
+                                serviceId,
+                                UpdateServiceRequest(
+                                    title = title,
+                                    description = description,
+                                    price = price.toDoubleOrNull() ?: 0.0,
+                                    categoryId = selectedCategoryId,
+                                    isActive = isActive
+                                )
+                            )
+                        } else {
+                            // Crear servicio
+                            viewModel.createService(
+                                CreateServiceRequest(
+                                    title = title,
+                                    description = description,
+                                    price = price.toDoubleOrNull() ?: 0.0,
+                                    categoryId = selectedCategoryId,
+                                    isActive = isActive
+                                )
+                            )
+                        }
+                    },
+                    modifier = Modifier.weight(1f),
+                    enabled = !isLoading && title.isNotBlank() && description.isNotBlank() && 
+                             price.toDoubleOrNull()?.let { it > 0 } == true && selectedCategoryId.isNotBlank()
             ) {
                 if (isLoading) {
                     CircularProgressIndicator(
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
+                            modifier = Modifier.size(16.dp),
+                            strokeWidth = 2.dp,
+                            color = Color.White
+                        )
+                    } else {
+                        Text(
+                            if (serviceId != null) "Actualizar" else "Crear"
+                        )
+                    }
                 }
-                Text(if (isLoading) "Guardando..." else if (isEditMode) "Actualizar Servicio" else "Crear Servicio")
             }
-        }
-    }
-
-    // Manejo de errores
-    uiState.errorMessage?.let { error ->
-        LaunchedEffect(error) {
-            // Aquí podrías mostrar un Snackbar
-            viewModel.clearError()
-        }
-    }
-
-    // Manejo de éxito
-    LaunchedEffect(uiState.showCreateSuccess, uiState.showUpdateSuccess) {
-        if (uiState.showCreateSuccess || uiState.showUpdateSuccess) {
-            onServiceSaved()
         }
     }
 }

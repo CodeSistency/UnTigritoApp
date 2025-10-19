@@ -2,144 +2,184 @@ package com.thecodefather.untigrito.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.thecodefather.untigrito.auth.domain.usecase.AuthStateManager
 import com.thecodefather.untigrito.data.datasource.remote.SupabaseDatabaseService
 import com.thecodefather.untigrito.data.datasource.remote.SupabaseService
-import com.thecodefather.untigrito.domain.model.Service
-import com.thecodefather.untigrito.domain.model.ServiceStatus
+import com.thecodefather.untigrito.domain.model.ServiceRequestWithClient
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import java.util.Date
+import timber.log.Timber
 import javax.inject.Inject
 
+/**
+ * ViewModel para la pantalla de detalles de servicio
+ */
 @HiltViewModel
 class ServiceDetailViewModel @Inject constructor(
-    private val supabaseDatabase: SupabaseDatabaseService
+    private val supabaseDatabase: SupabaseDatabaseService,
+    private val authStateManager: AuthStateManager
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(ServiceDetailUiState())
-    val uiState: StateFlow<ServiceDetailUiState> = _uiState.asStateFlow()
+    private val _service = MutableStateFlow<SupabaseService?>(null)
+    val service: StateFlow<SupabaseService?> = _service.asStateFlow()
+
+    private val _serviceRequests = MutableStateFlow<List<ServiceRequestWithClient>>(emptyList())
+    val serviceRequests: StateFlow<List<ServiceRequestWithClient>> = _serviceRequests.asStateFlow()
+
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+
+    private val _errorMessage = MutableStateFlow<String?>(null)
+    val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()
+
+    private val _navigationEvent = MutableStateFlow<NavigationEvent?>(null)
+    val navigationEvent: StateFlow<NavigationEvent?> = _navigationEvent.asStateFlow()
 
     /**
-     * Load service details by ID
+     * Carga los detalles del servicio y sus solicitudes
      */
-    fun loadServiceDetails(serviceId: String) {
+    fun loadServiceDetail(serviceId: String) {
         viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null)
+            _isLoading.value = true
+            _errorMessage.value = null
             
             try {
-                val result = supabaseDatabase.getById<SupabaseService>("ProfessionalService", serviceId)
+                Timber.d("🔍 SERVICE DETAIL VIEWMODEL - Loading service details: $serviceId")
                 
-                result.onSuccess { supabaseService ->
-                    if (supabaseService != null) {
-                        val service = mapSupabaseToService(supabaseService)
-                        _uiState.value = _uiState.value.copy(
-                            isLoading = false,
-                            service = service,
-                            errorMessage = null
-                        )
-                    } else {
-                        _uiState.value = _uiState.value.copy(
-                            isLoading = false,
-                            service = null,
-                            errorMessage = "Servicio no encontrado"
-                        )
-                    }
+                // Cargar servicio
+                val serviceResult = supabaseDatabase.getById<SupabaseService>("ProfessionalService", serviceId)
+                serviceResult.onSuccess { service ->
+                    _service.value = service
+                    Timber.d("✅ SERVICE DETAIL VIEWMODEL - Service loaded: ${service?.title}")
                 }.onFailure { exception ->
-                    _uiState.value = _uiState.value.copy(
-                        isLoading = false,
-                        service = null,
-                        errorMessage = exception.message ?: "Error al cargar el servicio"
-                    )
+                    Timber.e(exception, "❌ SERVICE DETAIL VIEWMODEL - Error loading service")
+                    _errorMessage.value = exception.message ?: "Error al cargar servicio"
                 }
+                
+                // Cargar solicitudes
+                loadServiceRequests(serviceId)
             } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(
-                    isLoading = false,
-                    service = null,
-                    errorMessage = e.message ?: "Error inesperado"
-                )
+                Timber.e(e, "❌ SERVICE DETAIL VIEWMODEL - Error loading service details")
+                _errorMessage.value = e.message ?: "Error al cargar detalles"
+            } finally {
+                _isLoading.value = false
             }
         }
     }
 
     /**
-     * Request service - placeholder for future implementation
+     * Carga las solicitudes de clientes para el servicio
      */
-    fun requestService() {
-        viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isLoading = true)
+    private suspend fun loadServiceRequests(serviceId: String) {
+        try {
+            Timber.d("🔍 SERVICE DETAIL VIEWMODEL - Loading service requests for: $serviceId")
             
-            // TODO: Implement service request logic
-            // This would typically create a service request/booking
-            
-            _uiState.value = _uiState.value.copy(
-                isLoading = false,
-                showRequestSuccess = true
-            )
+            val requestsResult = supabaseDatabase.getServiceRequests(serviceId)
+            requestsResult.onSuccess { transactions ->
+                Timber.d("📋 SERVICE DETAIL VIEWMODEL - Found ${transactions.size} transactions")
+                
+                // Obtener datos de clientes
+                val requestsWithClients = transactions.mapNotNull { transaction ->
+                    val clientResult = supabaseDatabase.getClientById(transaction.clientId)
+                    clientResult.getOrNull()?.let { client ->
+                        ServiceRequestWithClient(transaction, client)
+                    }
+                }
+                
+                _serviceRequests.value = requestsWithClients
+                Timber.d("✅ SERVICE DETAIL VIEWMODEL - Loaded ${requestsWithClients.size} requests with client data")
+            }.onFailure { exception ->
+                Timber.e(exception, "❌ SERVICE DETAIL VIEWMODEL - Error loading service requests")
+                _errorMessage.value = exception.message ?: "Error al cargar solicitudes"
+            }
+        } catch (e: Exception) {
+            Timber.e(e, "❌ SERVICE DETAIL VIEWMODEL - Error in loadServiceRequests")
+            _errorMessage.value = e.message ?: "Error al cargar solicitudes"
         }
     }
 
     /**
-     * Contact professional - placeholder for future implementation
+     * Acepta una solicitud de cliente
      */
-    fun contactProfessional() {
+    fun acceptRequest(transactionId: String) {
         viewModelScope.launch {
-            // TODO: Implement contact professional logic
-            // This would typically open chat or contact form
+            _isLoading.value = true
+            _errorMessage.value = null
+            
+            try {
+                Timber.d("✅ SERVICE DETAIL VIEWMODEL - Accepting request: $transactionId")
+                
+                val result = supabaseDatabase.acceptServiceRequest(transactionId)
+                result.onSuccess {
+                    Timber.d("✅ SERVICE DETAIL VIEWMODEL - Request accepted successfully")
+                    _navigationEvent.value = NavigationEvent.NavigateToProposals
+                    // Recargar solicitudes
+                    _service.value?.id?.let { loadServiceRequests(it) }
+                }.onFailure { exception ->
+                    Timber.e(exception, "❌ SERVICE DETAIL VIEWMODEL - Error accepting request")
+                    _errorMessage.value = exception.message ?: "Error al aceptar solicitud"
+                }
+            } catch (e: Exception) {
+                Timber.e(e, "❌ SERVICE DETAIL VIEWMODEL - Error accepting request")
+                _errorMessage.value = e.message ?: "Error al aceptar solicitud"
+            } finally {
+                _isLoading.value = false
+            }
         }
     }
 
     /**
-     * Clear success messages
+     * Rechaza una solicitud de cliente
      */
-    fun clearSuccessMessages() {
-        _uiState.value = _uiState.value.copy(showRequestSuccess = false)
+    fun declineRequest(transactionId: String) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            _errorMessage.value = null
+            
+            try {
+                Timber.d("❌ SERVICE DETAIL VIEWMODEL - Declining request: $transactionId")
+                
+                val result = supabaseDatabase.declineServiceRequest(transactionId)
+                result.onSuccess {
+                    Timber.d("✅ SERVICE DETAIL VIEWMODEL - Request declined successfully")
+                    // Remover de la lista
+                    _serviceRequests.value = _serviceRequests.value.filter { 
+                        it.transaction.id != transactionId 
+                    }
+                }.onFailure { exception ->
+                    Timber.e(exception, "❌ SERVICE DETAIL VIEWMODEL - Error declining request")
+                    _errorMessage.value = exception.message ?: "Error al rechazar solicitud"
+                }
+            } catch (e: Exception) {
+                Timber.e(e, "❌ SERVICE DETAIL VIEWMODEL - Error declining request")
+                _errorMessage.value = e.message ?: "Error al rechazar solicitud"
+            } finally {
+                _isLoading.value = false
+            }
+        }
     }
 
     /**
-     * Clear error messages
+     * Limpia los errores
      */
     fun clearError() {
-        _uiState.value = _uiState.value.copy(errorMessage = null)
+        _errorMessage.value = null
     }
 
     /**
-     * Mapper helper to convert SupabaseService to Service domain model
+     * Limpia los eventos de navegación
      */
-    private fun mapSupabaseToService(supabaseService: SupabaseService): Service {
-        return Service(
-            id = supabaseService.id,
-            title = supabaseService.title,
-            description = supabaseService.description,
-            category = supabaseService.categoryId,
-            minPrice = supabaseService.price,
-            maxPrice = supabaseService.price, // Use same price for both min and max
-            serviceArea = supabaseService.serviceLocations ?: "",
-            status = if (supabaseService.isActive) ServiceStatus.ACTIVE else ServiceStatus.INACTIVE,
-            images = emptyList(), // TODO: Implement image loading
-            createdAt = try {
-                Date(supabaseService.createdAt?.toLongOrNull() ?: System.currentTimeMillis())
-            } catch (e: Exception) {
-                Date()
-            },
-            updatedAt = try {
-                Date(supabaseService.updatedAt?.toLongOrNull() ?: System.currentTimeMillis())
-            } catch (e: Exception) {
-                Date()
-            },
-            isActive = supabaseService.isActive,
-            rating = 4.5, // TODO: Get real rating from reviews
-            reviewCount = 0, // TODO: Get real review count
-            completedJobs = 0 // TODO: Get real completed jobs count
-        )
+    fun clearNavigationEvent() {
+        _navigationEvent.value = null
     }
 }
 
-data class ServiceDetailUiState(
-    val isLoading: Boolean = false,
-    val service: Service? = null,
-    val errorMessage: String? = null,
-    val showRequestSuccess: Boolean = false
-)
+/**
+ * Eventos de navegación
+ */
+sealed class NavigationEvent {
+    object NavigateToProposals : NavigationEvent()
+}

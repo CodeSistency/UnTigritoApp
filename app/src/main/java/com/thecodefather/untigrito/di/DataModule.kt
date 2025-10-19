@@ -5,6 +5,7 @@ import androidx.room.Room
 import com.thecodefather.untigrito.data.database.AppDatabase
 import com.thecodefather.untigrito.data.database.dao.ClientRequestDao
 import com.thecodefather.untigrito.data.database.dao.ClientUserDao
+import com.thecodefather.untigrito.data.database.dao.JobFavoriteDao
 import com.thecodefather.untigrito.data.database.dao.ServicePostingDao
 import com.thecodefather.untigrito.data.database.dao.TransactionDao
 import com.thecodefather.untigrito.data.repository.ClientRepositoryImpl
@@ -56,7 +57,9 @@ abstract class DataModule {
                 context,
                 AppDatabase::class.java,
                 "untigrito_database"
-            ).build()
+            )
+            .fallbackToDestructiveMigration()
+            .build()
         }
 
         @Provides
@@ -81,6 +84,12 @@ abstract class DataModule {
         @JvmStatic
         fun provideTransactionDao(appDatabase: AppDatabase): TransactionDao {
             return appDatabase.transactionDao()
+        }
+
+        @Provides
+        @JvmStatic
+        fun provideJobFavoriteDao(appDatabase: AppDatabase): JobFavoriteDao {
+            return appDatabase.jobFavoriteDao()
         }
     }
 }

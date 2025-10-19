@@ -153,6 +153,146 @@ public class SupabaseDatabaseService @Inject constructor(
         }
 
     /**
+     * Actualiza información del usuario (nombre, email)
+     * 
+     * @param userId ID del usuario
+     * @param name Nuevo nombre
+     * @param email Nuevo email
+     * @return Usuario actualizado
+     */
+    suspend fun updateUser(userId: String, name: String?, email: String?): Result<SupabaseUser?> =
+        withContext(Dispatchers.IO) {
+            try {
+                val updateData = mutableMapOf<String, Any>()
+                name?.let { updateData["name"] = it }
+                email?.let { updateData["email"] = it }
+                
+                if (updateData.isEmpty()) {
+                    return@withContext Result.success(null)
+                }
+                
+                val result = postgrest.from("User")
+                    .update(updateData) {
+                        filter {
+                            eq("id", userId)
+                        }
+                        select()
+                    }
+                    .decodeSingleOrNull<SupabaseUser>()
+                
+                Timber.d("Usuario actualizado con id: $userId")
+                Result.success(result)
+            } catch (e: Exception) {
+                Timber.e(e, "Error al actualizar usuario con id: $userId")
+                Result.failure(e)
+            }
+        }
+
+    /**
+     * Obtiene los servicios de un profesional
+     */
+    suspend fun getProfessionalServices(professionalId: String): Result<List<SupabaseService>> =
+        withContext(Dispatchers.IO) {
+            try {
+                val result = postgrest.from("ProfessionalService")
+                    .select {
+                        filter {
+                            eq("professionalId", professionalId)
+                        }
+                    }
+                    .decodeList<SupabaseService>()
+                
+                Timber.d("Servicios obtenidos para profesional $professionalId: ${result.size}")
+                Result.success(result)
+            } catch (e: Exception) {
+                Timber.e(e, "Error al obtener servicios del profesional $professionalId")
+                Result.failure(e)
+            }
+        }
+
+    /**
+     * Obtiene las profesiones/categorías disponibles
+     */
+    suspend fun getProfessions(): Result<List<SupabaseProfession>> =
+        withContext(Dispatchers.IO) {
+            try {
+                val result = postgrest.from("Profession")
+                    .select()
+                    .decodeList<SupabaseProfession>()
+                
+                Timber.d("Profesiones obtenidas: ${result.size}")
+                Result.success(result)
+            } catch (e: Exception) {
+                Timber.e(e, "Error al obtener profesiones")
+                Result.failure(e)
+            }
+        }
+
+    /**
+     * Crea un nuevo servicio profesional
+     */
+    suspend fun createProfessionalService(service: SupabaseService): Result<SupabaseService?> =
+        withContext(Dispatchers.IO) {
+            try {
+                val result = postgrest.from("ProfessionalService")
+                    .insert(service) {
+                        select()
+                    }
+                    .decodeSingleOrNull<SupabaseService>()
+                
+                Timber.d("Servicio profesional creado")
+                Result.success(result)
+            } catch (e: Exception) {
+                Timber.e(e, "Error al crear servicio profesional")
+                Result.failure(e)
+            }
+        }
+
+    /**
+     * Actualiza un servicio profesional
+     */
+    suspend fun updateProfessionalService(serviceId: String, service: SupabaseService): Result<SupabaseService?> =
+        withContext(Dispatchers.IO) {
+            try {
+                val result = postgrest.from("ProfessionalService")
+                    .update(service) {
+                        filter {
+                            eq("id", serviceId)
+                        }
+                        select()
+                    }
+                    .decodeSingleOrNull<SupabaseService>()
+                
+                Timber.d("Servicio profesional actualizado: $serviceId")
+                Result.success(result)
+            } catch (e: Exception) {
+                Timber.e(e, "Error al actualizar servicio profesional $serviceId")
+                Result.failure(e)
+            }
+        }
+
+    /**
+     * Elimina un servicio profesional
+     */
+    suspend fun deleteProfessionalService(serviceId: String): Result<Unit> =
+        withContext(Dispatchers.IO) {
+            try {
+                postgrest.from("ProfessionalService")
+                    .delete {
+                        filter {
+                            eq("id", serviceId)
+                        }
+                    }
+                
+                Timber.d("Servicio profesional eliminado: $serviceId")
+                Result.success(Unit)
+            } catch (e: Exception) {
+                Timber.e(e, "Error al eliminar servicio profesional $serviceId")
+                Result.failure(e)
+            }
+        }
+
+    /**
      * Ejemplo: Consulta con filtros personalizados
      * 
      * @param table Nombre de la tabla
@@ -362,6 +502,99 @@ public class SupabaseDatabaseService @Inject constructor(
             Result.failure(e)
         }
     }
+
+    /**
+     * Obtener solicitudes para un servicio profesional
+     */
+    suspend fun getServiceRequests(serviceId: String): Result<List<SupabaseServiceTransaction>> =
+        withContext(Dispatchers.IO) {
+            try {
+                val result = postgrest.from("ServiceTransaction")
+                    .select {
+                        filter {
+                            eq("proServiceId", serviceId)
+                            eq("status", "PENDING_SOLICITUD")
+                        }
+                    }
+                    .decodeList<SupabaseServiceTransaction>()
+                
+                Timber.d("Solicitudes obtenidas para servicio $serviceId: ${result.size}")
+                Result.success(result)
+            } catch (e: Exception) {
+                Timber.e(e, "Error al obtener solicitudes del servicio $serviceId")
+                Result.failure(e)
+            }
+        }
+
+    /**
+     * Obtener datos del cliente
+     */
+    suspend fun getClientById(clientId: String): Result<SupabaseUser?> =
+        withContext(Dispatchers.IO) {
+            try {
+                val result = postgrest.from("User")
+                    .select {
+                        filter {
+                            eq("id", clientId)
+                        }
+                    }
+                    .decodeSingleOrNull<SupabaseUser>()
+                
+                Timber.d("Cliente obtenido: $clientId")
+                Result.success(result)
+            } catch (e: Exception) {
+                Timber.e(e, "Error al obtener cliente $clientId")
+                Result.failure(e)
+            }
+        }
+
+    /**
+     * Aceptar solicitud de cliente
+     */
+    suspend fun acceptServiceRequest(transactionId: String): Result<SupabaseServiceTransaction?> =
+        withContext(Dispatchers.IO) {
+            try {
+                val updateData = mapOf("status" to "SCHEDULED")
+                val result = postgrest.from("ServiceTransaction")
+                    .update(updateData) {
+                        filter {
+                            eq("id", transactionId)
+                        }
+                        select()
+                    }
+                    .decodeSingleOrNull<SupabaseServiceTransaction>()
+                
+                Timber.d("Solicitud aceptada: $transactionId")
+                Result.success(result)
+            } catch (e: Exception) {
+                Timber.e(e, "Error al aceptar solicitud $transactionId")
+                Result.failure(e)
+            }
+        }
+
+    /**
+     * Rechazar solicitud de cliente
+     */
+    suspend fun declineServiceRequest(transactionId: String): Result<SupabaseServiceTransaction?> =
+        withContext(Dispatchers.IO) {
+            try {
+                val updateData = mapOf("status" to "CANCELED")
+                val result = postgrest.from("ServiceTransaction")
+                    .update(updateData) {
+                        filter {
+                            eq("id", transactionId)
+                        }
+                        select()
+                    }
+                    .decodeSingleOrNull<SupabaseServiceTransaction>()
+                
+                Timber.d("Solicitud rechazada: $transactionId")
+                Result.success(result)
+            } catch (e: Exception) {
+                Timber.e(e, "Error al rechazar solicitud $transactionId")
+                Result.failure(e)
+            }
+        }
 }
 
 // ========== MODELOS BASADOS EN PRISMA SCHEMA ==========
