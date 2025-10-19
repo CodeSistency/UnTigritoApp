@@ -622,7 +622,14 @@ class ServicesViewModel @Inject constructor(
                 status = if (serviceWithProf.isActive) ServiceStatus.ACTIVE else ServiceStatus.INACTIVE,
                 images = emptyList(),
                 createdAt = try {
-                    Date(serviceWithProf.createdAt ?: System.currentTimeMillis().toString())
+                    val dateString = serviceWithProf.createdAt ?: System.currentTimeMillis().toString()
+                    if (dateString.contains("T")) {
+                        // ISO 8601 format from Supabase
+                        java.time.Instant.parse(dateString).toEpochMilli().let { Date(it) }
+                    } else {
+                        // Fallback for other formats
+                        Date(dateString.toLongOrNull() ?: System.currentTimeMillis())
+                    }
                 } catch (e: Exception) {
                     Timber.w(e, "Failed to parse createdAt: ${serviceWithProf.createdAt}")
                     Date()

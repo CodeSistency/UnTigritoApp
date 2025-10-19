@@ -79,9 +79,8 @@ fun HomeScreenClient(
             // Tigres mejor calificados
             TopRatedTigersSection(
                 professionals = topProfessionals,
-                onTigerClick = {
-                    // TODO: Eventualmente, pasar el ID del profesional. Por ahora, navega al perfil de ejemplo.
-                    navController.navigate(ClientRoutes.PROFESSIONAL_PROFILE)
+                onTigerClick = { professionalId ->
+                    navController.navigate("professional_profile/$professionalId")
                 }
             )
 
@@ -287,7 +286,7 @@ fun CategoryItem(name: String, iconRes: Int) {
 @Composable
 fun TopRatedTigersSection(
     professionals: List<com.thecodefather.untigrito.domain.model.Professional>,
-    onTigerClick: () -> Unit
+    onTigerClick: (String) -> Unit
 ) {
     val testProfessionals = listOf(
         com.thecodefather.untigrito.domain.model.Professional(
@@ -396,7 +395,7 @@ fun TopRatedTigersSection(
                         reviews = prof.totalReviews ?: 0,
                         profession = prof.specialties.firstOrNull() ?: "Profesional",
                         location = "Valencia",
-                        onClick = onTigerClick
+                        onClick = { onTigerClick(prof.id) }
                     )
                 }
             }

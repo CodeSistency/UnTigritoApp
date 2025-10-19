@@ -36,14 +36,15 @@ class ProfessionalProfileViewModel @Inject constructor(
             _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null)
             
             try {
-                // Obtener perfil profesional
-                val profileResult = supabaseDatabase.getById<SupabaseProfessionalProfile>(
+                // Obtener información del usuario primero (professionalId es el userId)
+                val userResult = supabaseDatabase.getById<SupabaseUser>("User", professionalId)
+                
+                // Obtener perfil profesional usando el userId
+                val profileResult = supabaseDatabase.findBy<SupabaseProfessionalProfile>(
                     "ProfessionalProfile",
+                    "userId",
                     professionalId
                 )
-                
-                // Obtener información del usuario
-                val userResult = supabaseDatabase.getById<SupabaseUser>("User", professionalId)
                 
                 // Obtener servicios del profesional
                 val servicesResult = supabaseDatabase.findBy<SupabaseService>(
@@ -59,8 +60,9 @@ class ProfessionalProfileViewModel @Inject constructor(
                     professionalId
                 )
                 
-                profileResult.onSuccess { profile ->
-                    userResult.onSuccess { user ->
+                userResult.onSuccess { user ->
+                    profileResult.onSuccess { profiles ->
+                        val profile = profiles.firstOrNull() // Tomar el primer perfil si existe
                         servicesResult.onSuccess { services ->
                             reviewsResult.onSuccess { reviews ->
                                 val professional = mapToProfessional(profile, user, services, reviews)
@@ -85,13 +87,13 @@ class ProfessionalProfileViewModel @Inject constructor(
                     }.onFailure { exception ->
                         _uiState.value = _uiState.value.copy(
                             isLoading = false,
-                            errorMessage = "Error al cargar usuario: ${exception.message}"
+                            errorMessage = "Error al cargar perfil: ${exception.message}"
                         )
                     }
                 }.onFailure { exception ->
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
-                        errorMessage = "Error al cargar perfil: ${exception.message}"
+                        errorMessage = "Error al cargar usuario: ${exception.message}"
                     )
                 }
             } catch (e: Exception) {

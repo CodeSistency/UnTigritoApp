@@ -17,6 +17,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.thecodefather.untigrito.presentation.components.ConversationCard
 import com.thecodefather.untigrito.presentation.viewmodel.MessagesViewModel
+import com.thecodefather.untigrito.presentation.viewmodel.ConnectionStatus
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -63,6 +64,10 @@ fun ClientMessagesScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
+            // Indicador de estado de conexión
+            if (uiState.connectionStatus != ConnectionStatus.DISCONNECTED) {
+                ConnectionStatusBanner(status = uiState.connectionStatus)
+            }
             // Contador de mensajes no leídos
             if (uiState.unreadCount > 0) {
                 Surface(
@@ -137,6 +142,45 @@ fun ClientMessagesScreen(
         LaunchedEffect(error) {
             // Aquí podrías mostrar un Snackbar
             viewModel.clearError()
+        }
+    }
+}
+
+@Composable
+fun ConnectionStatusBanner(status: ConnectionStatus) {
+    val (color, text) = when (status) {
+        ConnectionStatus.CONNECTED -> MaterialTheme.colorScheme.primary to "Conectado"
+        ConnectionStatus.CONNECTING -> MaterialTheme.colorScheme.secondary to "Conectando..."
+        ConnectionStatus.ERROR -> MaterialTheme.colorScheme.error to "Error de conexión"
+        ConnectionStatus.DISCONNECTED -> return
+    }
+    
+    Surface(
+        color = color,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            if (status == ConnectionStatus.CONNECTING) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(12.dp),
+                    strokeWidth = 2.dp,
+                    color = MaterialTheme.colorScheme.onSecondary
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+            }
+            Text(
+                text = text,
+                style = MaterialTheme.typography.labelSmall,
+                color = when (status) {
+                    ConnectionStatus.CONNECTED -> MaterialTheme.colorScheme.onPrimary
+                    ConnectionStatus.CONNECTING -> MaterialTheme.colorScheme.onSecondary
+                    ConnectionStatus.ERROR -> MaterialTheme.colorScheme.onError
+                    else -> MaterialTheme.colorScheme.onSurface
+                }
+            )
         }
     }
 }

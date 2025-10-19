@@ -59,7 +59,7 @@ class RequestsViewModel @Inject constructor(
                 
                 // Load service_postings created by client
                 supabaseDatabaseService.findBy<SupabaseServicePosting>(
-                    "service_postings",
+                    "ServicePosting",
                     "clientId",
                     currentUserId
                 ).onSuccess { postings ->

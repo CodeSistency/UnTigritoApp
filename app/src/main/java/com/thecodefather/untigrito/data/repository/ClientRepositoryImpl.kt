@@ -46,13 +46,54 @@ class ClientRepositoryImpl @Inject constructor(
     override suspend fun saveUser(user: ClientUser) {
         if (FeatureFlags.useSupabaseIntegration) {
             try {
-                supabaseDatabaseService.insert("users", user.toSupabaseUser())
-                    .onSuccess {
-                        Timber.d("User saved to Supabase successfully")
+                // First check if user exists
+                supabaseDatabaseService.getById<SupabaseUser>("User", user.id)
+                    .onSuccess { existingUser ->
+                        if (existingUser != null) {
+                            // User exists, update instead of insert
+                            supabaseDatabaseService.update("User", user.id, user.toSupabaseUser())
+                                .onSuccess {
+                                    Timber.d("User updated in Supabase successfully")
+                                }
+                                .onFailure { exception ->
+                                    Timber.e(exception, "Error updating user in Supabase, using fallback")
+                                    clientUserDao.insert(user.toEntity())
+                                }
+                        } else {
+                            // User doesn't exist, insert
+                            supabaseDatabaseService.insert("User", user.toSupabaseUser())
+                                .onSuccess {
+                                    Timber.d("User saved to Supabase successfully")
+                                }
+                                .onFailure { exception ->
+                                    Timber.e(exception, "Error saving user to Supabase, using fallback")
+                                    clientUserDao.insert(user.toEntity())
+                                }
+                        }
                     }
                     .onFailure { exception ->
-                        Timber.e(exception, "Error saving user to Supabase, using fallback")
-                        clientUserDao.insert(user.toEntity())
+                        Timber.e(exception, "Error checking user existence in Supabase, trying insert")
+                        // If we can't check existence, try insert and handle duplicate key error
+                        supabaseDatabaseService.insert("User", user.toSupabaseUser())
+                            .onSuccess {
+                                Timber.d("User saved to Supabase successfully")
+                            }
+                            .onFailure { insertException ->
+                                if (insertException.message?.contains("duplicate key") == true) {
+                                    // User already exists, try update instead
+                                    supabaseDatabaseService.update("User", user.id, user.toSupabaseUser())
+                                        .onSuccess {
+                                            Timber.d("User updated in Supabase after duplicate key error")
+                                        }
+                                        .onFailure { updateException ->
+                                            Timber.e(updateException, "Error updating user after duplicate key, using fallback")
+                                            clientUserDao.insert(user.toEntity())
+                                        }
+                                } else {
+                                    Timber.e(insertException, "Error saving user to Supabase, using fallback")
+                                    clientUserDao.insert(user.toEntity())
+                                }
+                            }
                     }
             } catch (e: Exception) {
                 Timber.e(e, "Exception saving user to Supabase, using fallback")
@@ -66,7 +107,7 @@ class ClientRepositoryImpl @Inject constructor(
     override fun getUserById(userId: String): Flow<ClientUser?> = flow {
         if (FeatureFlags.useSupabaseIntegration) {
             try {
-                supabaseDatabaseService.getById<SupabaseUser>("users", userId)
+                supabaseDatabaseService.getById<SupabaseUser>("User", userId)
                     .onSuccess { supabaseUser ->
                         emit(supabaseUser?.toClientUser())
                     }
@@ -126,7 +167,7 @@ class ClientRepositoryImpl @Inject constructor(
                     createdAt = posting.createdAt,
                     updatedAt = posting.updatedAt
                 )
-                supabaseDatabaseService.insert("service_postings", supabasePosting)
+                supabaseDatabaseService.insert("ServicePosting", supabasePosting)
                     .onFailure { exception ->
                         Timber.e(exception, "Error saving posting to Supabase, using fallback")
                         servicePostingDao.insert(posting.toEntity())
@@ -143,7 +184,7 @@ class ClientRepositoryImpl @Inject constructor(
     override fun getServicePostingById(postingId: String): Flow<ServicePosting?> = flow {
         if (FeatureFlags.useSupabaseIntegration) {
             try {
-                supabaseDatabaseService.getById<SupabaseServicePosting>("service_postings", postingId)
+                supabaseDatabaseService.getById<SupabaseServicePosting>("ServicePosting", postingId)
                     .onSuccess { supabasePosting ->
                         emit(supabasePosting?.toServicePosting())
                     }
@@ -161,7 +202,7 @@ class ClientRepositoryImpl @Inject constructor(
     override fun getServicePostingsByClient(clientId: String): Flow<List<ServicePosting>> = flow {
         if (FeatureFlags.useSupabaseIntegration) {
             try {
-                supabaseDatabaseService.findBy<SupabaseServicePosting>("service_postings", "clientId", clientId)
+                supabaseDatabaseService.findBy<SupabaseServicePosting>("ServicePosting", "clientId", clientId)
                     .onSuccess { postings ->
                         emit(postings.map { it.toServicePosting() })
                     }
@@ -185,7 +226,7 @@ class ClientRepositoryImpl @Inject constructor(
     override fun getServicePostingsByStatus(status: String): Flow<List<ServicePosting>> = flow {
         if (FeatureFlags.useSupabaseIntegration) {
             try {
-                supabaseDatabaseService.findBy<SupabaseServicePosting>("service_postings", "status", status)
+                supabaseDatabaseService.findBy<SupabaseServicePosting>("ServicePosting", "status", status)
                     .onSuccess { postings ->
                         emit(postings.map { it.toServicePosting() })
                     }

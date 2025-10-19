@@ -11,6 +11,8 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
 import timber.log.Timber
+import java.time.Instant
+import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -26,6 +28,13 @@ import javax.inject.Singleton
 public class SupabaseDatabaseService @Inject constructor(
     val postgrest: Postgrest
 ) {
+
+    /**
+     * Generates current timestamp in ISO 8601 format for database operations
+     */
+    private fun getCurrentTimestamp(): String {
+        return Instant.now().toString()
+    }
 
     /**
      * Ejemplo: Obtiene todos los elementos de una tabla
@@ -703,7 +712,7 @@ data class SupabaseService(
     val serviceLocations: JsonElement? = null, // JSON
     val isActive: Boolean = true,
     val createdAt: String? = null,
-    val updatedAt: String? = null
+    val updatedAt: String = Instant.now().toString() // Default to current timestamp
 )
 
 /**
@@ -841,7 +850,7 @@ data class SupabaseProfessionalProfile(
     val userId: String,
     val bio: String? = null,
     val earningsSummary: JsonElement? = null, // JSON
-    val portfolio: String? = null, // JSON
+    val portfolio: JsonElement? = null, // JSON
     val ratingAvg: Double? = 0.0,
     val ratingCount: Int = 0,
     val bankAccount: String? = null,

@@ -44,20 +44,43 @@ class CreateRequestViewModel @Inject constructor(
     private val _success = MutableStateFlow(false)
     val success = _success.asStateFlow()
 
+    private val _titleError = MutableStateFlow<String?>(null)
+    val titleError = _titleError.asStateFlow()
+
+    private val _descriptionError = MutableStateFlow<String?>(null)
+    val descriptionError = _descriptionError.asStateFlow()
+
+    private val _categoryError = MutableStateFlow<String?>(null)
+    val categoryError = _categoryError.asStateFlow()
+
+    private val _budgetError = MutableStateFlow<String?>(null)
+    val budgetError = _budgetError.asStateFlow()
+
+    private val _isFormValid = MutableStateFlow(false)
+    val isFormValid = _isFormValid.asStateFlow()
+
     fun updateTitle(newTitle: String) {
         _title.value = newTitle
+        validateTitle(newTitle)
+        checkFormValidity()
     }
 
     fun updateDescription(newDesc: String) {
         _description.value = newDesc
+        validateDescription(newDesc)
+        checkFormValidity()
     }
 
     fun updateCategory(newCategory: String) {
         _category.value = newCategory
+        validateCategory(newCategory)
+        checkFormValidity()
     }
 
     fun updateBudget(newBudget: String) {
         _budget.value = newBudget
+        validateBudget(newBudget)
+        checkFormValidity()
     }
 
     fun submitRequest() {
@@ -88,7 +111,7 @@ class CreateRequestViewModel @Inject constructor(
                         updatedAt = currentTimestamp
                     )
                     
-                    supabaseDatabaseService.insert("service_postings", supabasePosting)
+                    supabaseDatabaseService.insert("ServicePosting", supabasePosting)
                         .onSuccess {
                             _success.value = true
                             _error.value = null
@@ -108,24 +131,54 @@ class CreateRequestViewModel @Inject constructor(
         }
     }
 
+    private fun validateTitle(title: String) {
+        _titleError.value = when {
+            title.isBlank() -> "El título es requerido"
+            title.length > 100 -> "El título no puede exceder 100 caracteres"
+            else -> null
+        }
+    }
+
+    private fun validateDescription(description: String) {
+        _descriptionError.value = when {
+            description.isBlank() -> "La descripción es requerida"
+            description.length > 500 -> "La descripción no puede exceder 500 caracteres"
+            else -> null
+        }
+    }
+
+    private fun validateCategory(category: String) {
+        _categoryError.value = if (category.isBlank()) "La categoría es requerida" else null
+    }
+
+    private fun validateBudget(budget: String) {
+        _budgetError.value = when {
+            budget.isBlank() -> "El presupuesto es requerido"
+            budget.toDoubleOrNull() == null -> "El presupuesto debe ser un número válido"
+            budget.toDoubleOrNull()?.let { it <= 0 } == true -> "El presupuesto debe ser mayor a 0"
+            else -> null
+        }
+    }
+
+    private fun checkFormValidity() {
+        _isFormValid.value = _titleError.value == null &&
+                _descriptionError.value == null &&
+                _categoryError.value == null &&
+                _budgetError.value == null &&
+                _title.value.isNotBlank() &&
+                _description.value.isNotBlank() &&
+                _category.value.isNotBlank() &&
+                _budget.value.isNotBlank()
+    }
+
     private fun validateForm(): Boolean {
-        if (_title.value.isBlank()) {
-            _error.value = "El título es requerido"
-            return false
-        }
-        if (_description.value.isBlank()) {
-            _error.value = "La descripción es requerida"
-            return false
-        }
-        if (_category.value.isBlank()) {
-            _error.value = "La categoría es requerida"
-            return false
-        }
-        if (_budget.value.toDoubleOrNull() == null) {
-            _error.value = "El presupuesto debe ser un número válido"
-            return false
-        }
-        return true
+        validateTitle(_title.value)
+        validateDescription(_description.value)
+        validateCategory(_category.value)
+        validateBudget(_budget.value)
+        checkFormValidity()
+        
+        return _isFormValid.value
     }
 
     fun clearForm() {
@@ -134,6 +187,15 @@ class CreateRequestViewModel @Inject constructor(
         _category.value = ""
         _budget.value = ""
         _error.value = null
+        _success.value = false
+        _titleError.value = null
+        _descriptionError.value = null
+        _categoryError.value = null
+        _budgetError.value = null
+        _isFormValid.value = false
+    }
+
+    fun onSuccessHandled() {
         _success.value = false
     }
 }
