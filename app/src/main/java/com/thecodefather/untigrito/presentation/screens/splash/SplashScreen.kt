@@ -53,15 +53,14 @@ fun SplashScreen(
 
     Column(
         modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.primary),
+            .fillMaxSize(),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Image(
             painter = painterResource(id = R.drawable.untiger),
             contentDescription = "App Logo",
-            Modifier.size(100.dp)
+            Modifier.size(200.dp)
 
         )
     }
