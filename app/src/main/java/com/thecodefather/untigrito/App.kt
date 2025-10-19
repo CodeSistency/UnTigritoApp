@@ -1,6 +1,7 @@
 package com.thecodefather.untigrito
 
 import android.app.Application
+import androidx.compose.material3.MaterialTheme
 import dagger.hilt.android.HiltAndroidApp
 import timber.log.Timber
 
@@ -12,6 +13,8 @@ import timber.log.Timber
  */
 @HiltAndroidApp
 class App : Application() {
+
+
     override fun onCreate() {
         super.onCreate()
         

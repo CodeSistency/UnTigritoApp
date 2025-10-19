@@ -4,6 +4,9 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
 import com.thecodefather.untigrito.presentation.navigation.AppNavigation
 import com.thecodefather.untigrito.ui.theme.UnTigritoTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -21,6 +24,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         
         setContent {
+
             UnTigritoTheme {
                 AppNavigation()
             }

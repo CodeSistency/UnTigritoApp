@@ -1,5 +1,6 @@
 package com.thecodefather.untigrito.presentation.screens.auth.register
 
+import android.os.Build
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -41,6 +42,7 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -63,7 +65,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.thecodefather.untigrito.R
 import com.thecodefather.untigrito.auth.domain.model.AuthState
 import com.thecodefather.untigrito.presentation.screens.auth.login.AuthViewModel
+import com.thecodefather.untigrito.presentation.screens.auth.login.titleStyle
 
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegisterScreen(
@@ -127,17 +131,16 @@ fun RegisterScreen(
         ) {
 
             Image(
-                painter = painterResource(id = R.drawable.ic_launcher_foreground), // Usar un icono existente como marcador de posición
+                painter = painterResource(id = R.drawable.untiger), // Usar un icono existente como marcador de posición
                 contentDescription = "Logo de la aplicación",
-                modifier = Modifier.size(96.dp)
+                modifier = Modifier.size(140.dp)
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
                 text = "Crear Cuenta",
-                style = MaterialTheme.typography.headlineMedium,
-                fontSize = 28.sp,
+                style = titleStyle(),
                 color = Color.Black
             )
 
@@ -300,6 +303,7 @@ fun RegisterScreen(
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Preview(showBackground = true)
 @Composable
 fun PreviewRegisterScreen() {
