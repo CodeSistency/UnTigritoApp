@@ -66,7 +66,7 @@ class ServicesViewModel @Inject constructor(
                     _servicesWithProfessionals.value = activeServices
                     
                     val domainServices = activeServices.map { serviceWithProf ->
-                        Timber.d("Mapping service: id=${serviceWithProf.id}, title=${serviceWithProf.title}, price=${serviceWithProf.price}, professional=${serviceWithProf.professional.name}")
+                        Timber.d("Mapping service: id=${serviceWithProf.id}, title=${serviceWithProf.title}, price=${serviceWithProf.price}, professional=${serviceWithProf.professional?.name}")
                         mapServiceWithProfessionalToService(serviceWithProf)
                     }
                     Timber.d("Mapped ${domainServices.size} domain services successfully")
@@ -634,7 +634,7 @@ class ServicesViewModel @Inject constructor(
                 completedJobs = 0
             )
 
-            Timber.d("Successfully mapped service with professional: title=${domainService.title}, professional=${serviceWithProf.professional.name}")
+            Timber.d("Successfully mapped service with professional: title=${domainService.title}, professional=${serviceWithProf.professional?.name}")
             return domainService
         } catch (e: Exception) {
             Timber.e(e, "Error mapping ServiceWithProfessional to Service")

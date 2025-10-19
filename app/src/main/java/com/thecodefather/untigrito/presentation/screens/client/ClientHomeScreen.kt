@@ -132,7 +132,7 @@ fun AppTopBar(navController: NavController, userName: String? = null) {
     HomeHeader(
         userName = userName ?: "Usuario",
         onMessageClick = {
-            navController.navigate(Routes.createChatRoute("test_conversation"))
+            navController.navigate(ClientRoutes.MESSAGES)
         }
     )
 }

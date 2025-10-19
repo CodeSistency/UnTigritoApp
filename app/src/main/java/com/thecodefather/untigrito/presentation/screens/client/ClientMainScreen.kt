@@ -15,6 +15,8 @@ import com.thecodefather.untigrito.presentation.components.ClientBottomNavBar
 import com.thecodefather.untigrito.presentation.navigation.ClientRoutes
 import com.thecodefather.untigrito.presentation.navigation.Routes
 import com.thecodefather.untigrito.presentation.screens.account.AccountDetailsScreen
+import com.thecodefather.untigrito.presentation.screens.client.ClientMessagesScreen
+import com.thecodefather.untigrito.presentation.screens.professional.messages.ChatScreen
 
 @Composable
 fun ClientMainScreen(mainNavController: NavHostController) {
@@ -49,7 +51,7 @@ fun ClientMainScreen(mainNavController: NavHostController) {
         ) {
             composable(Routes.CLIENT_HOME) {
                 HomeScreenClient(
-                    navController = mainNavController,
+                    navController = navController,
                     onNavigateToAccountDetails = { navController.navigate(ClientRoutes.ACCOUNT_DETAILS) }
                 )
             }
@@ -64,6 +66,25 @@ fun ClientMainScreen(mainNavController: NavHostController) {
             }
             composable(ClientRoutes.ACCOUNT_DETAILS) {
                 AccountDetailsScreen(navController = navController)
+            }
+            composable(ClientRoutes.MESSAGES) {
+                ClientMessagesScreen(
+                    onConversationClick = { conversationId ->
+                        mainNavController.navigate(Routes.createChatRoute(conversationId))
+                    },
+                    onNavigateBack = { navController.popBackStack() },
+                    onSupportClick = { 
+                        mainNavController.navigate(Routes.SUPPORT_CHAT)
+                    },
+                    navController = mainNavController
+                )
+            }
+            composable(Routes.CHAT) { backStackEntry ->
+                val conversationId = backStackEntry.arguments?.getString("conversationId") ?: ""
+                ChatScreen(
+                    conversationId = conversationId,
+                    onNavigateBack = { navController.popBackStack() }
+                )
             }
         }
     }

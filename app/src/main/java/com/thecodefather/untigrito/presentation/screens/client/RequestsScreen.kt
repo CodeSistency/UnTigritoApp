@@ -39,6 +39,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import com.thecodefather.untigrito.domain.model.ClientRequest
 import com.thecodefather.untigrito.presentation.components.ClientBottomNavBar
 import com.thecodefather.untigrito.presentation.navigation.Routes
+import com.thecodefather.untigrito.presentation.navigation.ClientRoutes
 import com.thecodefather.untigrito.presentation.viewmodel.RequestsViewModel
 import com.thecodefather.untigrito.presentation.screens.client.components.HomeHeader
 import com.thecodefather.untigrito.presentation.screens.client.components.OrangeUntigrito
@@ -71,7 +72,7 @@ fun RequestsScreen(
         HomeHeader(
             userName = "Juan Pérez",
             onMessageClick = {
-                navController.navigate(Routes.createChatRoute("test_conversation"))
+                navController.navigate(ClientRoutes.MESSAGES)
             }
         )
         // Tab Row

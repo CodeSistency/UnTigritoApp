@@ -64,8 +64,8 @@ class ClientHomeViewModel @Inject constructor(
 
                 // Load services offered by professionals (NOT service_postings)
                 supabaseDatabaseService.getAllOrdered<SupabaseService>(
-                    "professional_services",
-                    "created_at",
+                    "ProfessionalService",
+                    "createdAt",
                     false
                 ).onSuccess { services ->
                     _services.value = services
@@ -80,7 +80,7 @@ class ClientHomeViewModel @Inject constructor(
 
                 // Load top professionals
                 supabaseDatabaseService.getAllOrdered<SupabaseProfessionalProfile>(
-                    "professional_profiles",
+                    "ProfessionalProfile",
                     "rating",
                     false
                 ).onSuccess { profiles ->
