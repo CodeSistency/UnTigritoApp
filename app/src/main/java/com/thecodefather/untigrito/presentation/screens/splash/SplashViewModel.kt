@@ -2,6 +2,8 @@ package com.thecodefather.untigrito.presentation.screens.splash
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.thecodefather.untigrito.auth.domain.usecase.AuthStateManager
+import com.thecodefather.untigrito.domain.model.UserType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,7 +17,8 @@ import javax.inject.Inject
  */
 sealed class SplashUiState {
     data object Loading : SplashUiState()
-    data object NavigateToHome : SplashUiState()
+    data object NavigateToClientHome : SplashUiState()
+    data object NavigateToProfessionalHome : SplashUiState()
     data object NavigateToLogin : SplashUiState()
     data class Error(val message: String) : SplashUiState()
 }
@@ -27,7 +30,9 @@ sealed class SplashUiState {
  * Typically used for app initialization tasks before showing the main UI.
  */
 @HiltViewModel
-class SplashViewModel @Inject constructor() : ViewModel() {
+class SplashViewModel @Inject constructor(
+    private val authStateManager: AuthStateManager
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow<SplashUiState>(SplashUiState.Loading)
     val uiState: StateFlow<SplashUiState> = _uiState.asStateFlow()
@@ -42,22 +47,24 @@ class SplashViewModel @Inject constructor() : ViewModel() {
                 // Simulate initialization tasks
                 delay(2000)
                 
-                // TODO: Perform actual initialization:
-                // - Check if user is authenticated (AuthRepository.getCurrentUser())
-                // - Load app configuration from SharedPreferences
-                // - Initialize other services (Analytics, Crashlytics, etc.)
-                // - Check network connectivity
-                // - Load user preferences
+                // Check if user is authenticated
+                val currentUser = authStateManager.getCurrentUser()
+                val isAuthenticated = authStateManager.isAuthenticated()
                 
-                // For now, always navigate to login
-                // TODO: Implement proper authentication check:
-                // val currentUser = authRepository.getCurrentUser()
-                // _uiState.value = if (currentUser != null) {
-                //     SplashUiState.NavigateToHome
-                // } else {
-                //     SplashUiState.NavigateToLogin
-                // }
-                _uiState.value = SplashUiState.NavigateToLogin
+                if (isAuthenticated && currentUser != null) {
+                    // User is authenticated, navigate based on user type
+                    when (currentUser.userType) {
+                        UserType.CLIENT -> {
+                            _uiState.value = SplashUiState.NavigateToClientHome
+                        }
+                        UserType.PROFESSIONAL -> {
+                            _uiState.value = SplashUiState.NavigateToProfessionalHome
+                        }
+                    }
+                } else {
+                    // User is not authenticated, navigate to login
+                    _uiState.value = SplashUiState.NavigateToLogin
+                }
             } catch (e: Exception) {
                 _uiState.value = SplashUiState.Error("Error initializing app: ${e.message}")
             }

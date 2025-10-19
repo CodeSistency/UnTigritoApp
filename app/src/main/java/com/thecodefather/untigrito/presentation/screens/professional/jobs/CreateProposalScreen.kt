@@ -20,7 +20,7 @@ fun CreateProposalScreen(
     jobId: String,
     onNavigateBack: () -> Unit,
     onProposalCreated: () -> Unit,
-    viewModel: JobDetailViewModel = hiltViewModel()
+    viewModel: com.thecodefather.untigrito.presentation.viewmodel.CreateProposalViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
     var proposedPrice by remember { mutableStateOf("") }
@@ -29,10 +29,16 @@ fun CreateProposalScreen(
     var includesMaterials by remember { mutableStateOf(false) }
     var offersWarranty by remember { mutableStateOf(false) }
     var termsAndConditions by remember { mutableStateOf("") }
-    var isLoading by remember { mutableStateOf(false) }
 
     LaunchedEffect(jobId) {
         viewModel.loadJob(jobId)
+    }
+    
+    // Navegar cuando se crea la propuesta
+    LaunchedEffect(uiState.proposalCreated) {
+        if (uiState.proposalCreated) {
+            onProposalCreated()
+        }
     }
 
     Scaffold(
@@ -202,22 +208,27 @@ fun CreateProposalScreen(
                     // Botón de enviar propuesta
                     Button(
                         onClick = {
-                            // Aquí implementarías la lógica para crear la propuesta
-                            isLoading = true
-                            // Simular envío
-                            onProposalCreated()
+                            viewModel.createProposal(
+                                jobId = jobId,
+                                proposedPrice = proposedPrice.toDoubleOrNull() ?: 0.0,
+                                description = description,
+                                estimatedDuration = estimatedDuration.toIntOrNull() ?: 0,
+                                includesMaterials = includesMaterials,
+                                offersWarranty = offersWarranty,
+                                termsAndConditions = termsAndConditions.ifBlank { null }
+                            )
                         },
                         modifier = Modifier
                             .fillMaxWidth(),
-                        enabled = !isLoading && proposedPrice.isNotEmpty() && description.isNotEmpty()
+                        enabled = !uiState.isLoading && proposedPrice.isNotEmpty() && description.isNotEmpty()
                     ) {
-                        if (isLoading) {
+                        if (uiState.isLoading) {
                             CircularProgressIndicator(
                                 modifier = Modifier.size(16.dp)
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                         }
-                        Text(if (isLoading) "Enviando..." else "Enviar Propuesta")
+                        Text(if (uiState.isLoading) "Enviando..." else "Enviar Propuesta")
                     }
                 }
             }

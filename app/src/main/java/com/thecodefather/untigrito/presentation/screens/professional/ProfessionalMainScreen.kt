@@ -1,13 +1,19 @@
 package com.thecodefather.untigrito.presentation.screens.professional
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -26,8 +32,53 @@ fun ProfessionalMainScreen(
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
+    var isClient by remember { mutableStateOf(false) } // Estado para el switch "Soy un cliente"
+
+    // Navegar al cliente cuando el switch esté en true
+    LaunchedEffect(isClient) {
+        if (isClient) {
+            onNavigateBack() // Navegar de vuelta al cliente
+        }
+    }
 
     Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Módulo Profesional") },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color(0xFFE67822),
+                    titleContentColor = Color.White
+                ),
+                actions = {
+                    // Switch "Soy un cliente"
+                    Card(
+                        modifier = Modifier
+                            .padding(end = 16.dp)
+                            .fillMaxHeight(),
+                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .padding(horizontal = 12.dp, vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Text(
+                                text = "Soy un cliente",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Normal,
+                                color = Color.Black
+                            )
+                            Switch(
+                                checked = isClient,
+                                onCheckedChange = { isClient = it }
+                            )
+                        }
+                    }
+                }
+            )
+        },
         bottomBar = {
             if (isMainScreen(currentRoute)) {
                 ProfessionalBottomNavigation(

@@ -8,35 +8,85 @@ import com.thecodefather.untigrito.data.database.entity.ClientRequestEntity
 import com.thecodefather.untigrito.data.database.entity.ClientUserEntity
 import com.thecodefather.untigrito.data.database.entity.ServicePostingEntity
 import com.thecodefather.untigrito.data.database.entity.TransactionEntity
+import com.thecodefather.untigrito.data.datasource.remote.SupabaseDatabaseService
+import com.thecodefather.untigrito.data.datasource.remote.SupabaseUser
+import com.thecodefather.untigrito.data.datasource.remote.SupabaseServicePosting
+import com.thecodefather.untigrito.data.datasource.remote.SupabasePayment
+import com.thecodefather.untigrito.data.preferences.FeatureFlags
 import com.thecodefather.untigrito.domain.model.ClientRequest
 import com.thecodefather.untigrito.domain.model.ClientUser
 import com.thecodefather.untigrito.domain.model.Professional
 import com.thecodefather.untigrito.domain.model.ServicePosting
 import com.thecodefather.untigrito.domain.model.Transaction
+import com.thecodefather.untigrito.domain.model.toClientUser
+import com.thecodefather.untigrito.domain.model.toSupabaseUser
+import com.thecodefather.untigrito.domain.model.toServicePosting
+import com.thecodefather.untigrito.domain.model.toTransaction
 import com.thecodefather.untigrito.domain.repository.ClientRepository
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
+import timber.log.Timber
 import javax.inject.Inject
 
 /**
  * Implementation of ClientRepository
- * Handles data access with local Room cache
+ * Handles data access with Supabase as primary source and Room as fallback
  */
 class ClientRepositoryImpl @Inject constructor(
     private val clientUserDao: ClientUserDao,
     private val servicePostingDao: ServicePostingDao,
     private val clientRequestDao: ClientRequestDao,
-    private val transactionDao: TransactionDao
+    private val transactionDao: TransactionDao,
+    private val supabaseDatabaseService: SupabaseDatabaseService
 ) : ClientRepository {
     
     // ========== User Operations ==========
     
     override suspend fun saveUser(user: ClientUser) {
-        clientUserDao.insert(user.toEntity())
+        if (FeatureFlags.useSupabaseIntegration) {
+            try {
+                supabaseDatabaseService.insert("users", user.toSupabaseUser())
+                    .onSuccess {
+                        Timber.d("User saved to Supabase successfully")
+                    }
+                    .onFailure { exception ->
+                        Timber.e(exception, "Error saving user to Supabase, using fallback")
+                        clientUserDao.insert(user.toEntity())
+                    }
+            } catch (e: Exception) {
+                Timber.e(e, "Exception saving user to Supabase, using fallback")
+                clientUserDao.insert(user.toEntity())
+            }
+        } else {
+            clientUserDao.insert(user.toEntity())
+        }
     }
     
-    override fun getUserById(userId: String): Flow<ClientUser?> {
-        return clientUserDao.getUserById(userId).map { it?.toModel() }
+    override fun getUserById(userId: String): Flow<ClientUser?> = flow {
+        if (FeatureFlags.useSupabaseIntegration) {
+            try {
+                supabaseDatabaseService.getById<SupabaseUser>("users", userId)
+                    .onSuccess { supabaseUser ->
+                        emit(supabaseUser?.toClientUser())
+                    }
+                    .onFailure { exception ->
+                        Timber.e(exception, "Error getting user from Supabase, using fallback")
+                        clientUserDao.getUserById(userId).collect { entity ->
+                            emit(entity?.toModel())
+                        }
+                    }
+            } catch (e: Exception) {
+                Timber.e(e, "Exception getting user from Supabase, using fallback")
+                clientUserDao.getUserById(userId).collect { entity ->
+                    emit(entity?.toModel())
+                }
+            }
+        } else {
+            clientUserDao.getUserById(userId).collect { entity ->
+                emit(entity?.toModel())
+            }
+        }
     }
     
     override fun getUserByEmail(email: String): Flow<ClientUser?> {
@@ -60,22 +110,99 @@ class ClientRepositoryImpl @Inject constructor(
     // ========== Service Posting Operations ==========
     
     override suspend fun saveServicePosting(posting: ServicePosting) {
-        servicePostingDao.insert(posting.toEntity())
-    }
-    
-    override fun getServicePostingById(postingId: String): Flow<ServicePosting?> {
-        return servicePostingDao.getPostingById(postingId).map { it?.toModel() }
-    }
-    
-    override fun getServicePostingsByClient(clientId: String): Flow<List<ServicePosting>> {
-        return servicePostingDao.getPostingsByClient(clientId).map { list ->
-            list.map { it.toModel() }
+        if (FeatureFlags.useSupabaseIntegration) {
+            try {
+                val supabasePosting = SupabaseServicePosting(
+                    id = posting.id,
+                    clientId = posting.clientId,
+                    title = posting.title,
+                    description = posting.description,
+                    categoryId = posting.category,
+                    budget = posting.budget,
+                    status = posting.status,
+                    address = posting.location,
+                    locationLat = posting.locationLat,
+                    locationLng = posting.locationLng,
+                    createdAt = posting.createdAt,
+                    updatedAt = posting.updatedAt
+                )
+                supabaseDatabaseService.insert("service_postings", supabasePosting)
+                    .onFailure { exception ->
+                        Timber.e(exception, "Error saving posting to Supabase, using fallback")
+                        servicePostingDao.insert(posting.toEntity())
+                    }
+            } catch (e: Exception) {
+                Timber.e(e, "Exception saving posting, using fallback")
+                servicePostingDao.insert(posting.toEntity())
+            }
+        } else {
+            servicePostingDao.insert(posting.toEntity())
         }
     }
     
-    override fun getServicePostingsByStatus(status: String): Flow<List<ServicePosting>> {
-        return servicePostingDao.getPostingsByStatus(status).map { list ->
-            list.map { it.toModel() }
+    override fun getServicePostingById(postingId: String): Flow<ServicePosting?> = flow {
+        if (FeatureFlags.useSupabaseIntegration) {
+            try {
+                supabaseDatabaseService.getById<SupabaseServicePosting>("service_postings", postingId)
+                    .onSuccess { supabasePosting ->
+                        emit(supabasePosting?.toServicePosting())
+                    }
+                    .onFailure {
+                        servicePostingDao.getPostingById(postingId).collect { emit(it?.toModel()) }
+                    }
+            } catch (e: Exception) {
+                servicePostingDao.getPostingById(postingId).collect { emit(it?.toModel()) }
+            }
+        } else {
+            servicePostingDao.getPostingById(postingId).collect { emit(it?.toModel()) }
+        }
+    }
+    
+    override fun getServicePostingsByClient(clientId: String): Flow<List<ServicePosting>> = flow {
+        if (FeatureFlags.useSupabaseIntegration) {
+            try {
+                supabaseDatabaseService.findBy<SupabaseServicePosting>("service_postings", "clientId", clientId)
+                    .onSuccess { postings ->
+                        emit(postings.map { it.toServicePosting() })
+                    }
+                    .onFailure {
+                        servicePostingDao.getPostingsByClient(clientId).collect { list ->
+                            emit(list.map { it.toModel() })
+                        }
+                    }
+            } catch (e: Exception) {
+                servicePostingDao.getPostingsByClient(clientId).collect { list ->
+                    emit(list.map { it.toModel() })
+                }
+            }
+        } else {
+            servicePostingDao.getPostingsByClient(clientId).collect { list ->
+                emit(list.map { it.toModel() })
+            }
+        }
+    }
+    
+    override fun getServicePostingsByStatus(status: String): Flow<List<ServicePosting>> = flow {
+        if (FeatureFlags.useSupabaseIntegration) {
+            try {
+                supabaseDatabaseService.findBy<SupabaseServicePosting>("service_postings", "status", status)
+                    .onSuccess { postings ->
+                        emit(postings.map { it.toServicePosting() })
+                    }
+                    .onFailure {
+                        servicePostingDao.getPostingsByStatus(status).collect { list ->
+                            emit(list.map { it.toModel() })
+                        }
+                    }
+            } catch (e: Exception) {
+                servicePostingDao.getPostingsByStatus(status).collect { list ->
+                    emit(list.map { it.toModel() })
+                }
+            }
+        } else {
+            servicePostingDao.getPostingsByStatus(status).collect { list ->
+                emit(list.map { it.toModel() })
+            }
         }
     }
     
@@ -156,27 +283,115 @@ class ClientRepositoryImpl @Inject constructor(
     // ========== Transaction Operations ==========
     
     override suspend fun saveTransaction(transaction: Transaction) {
-        transactionDao.insert(transaction.toEntity())
-    }
-    
-    override fun getTransactionsByUser(userId: String): Flow<List<Transaction>> {
-        return transactionDao.getTransactionsByUser(userId).map { list ->
-            list.map { it.toModel() }
+        if (FeatureFlags.useSupabaseIntegration) {
+            try {
+                val supabasePayment = SupabasePayment(
+                    id = transaction.id,
+                    userId = transaction.userId,
+                    amount = transaction.amount,
+                    method = transaction.type,
+                    status = transaction.status,
+                    details = transaction.description,
+                    createdAt = transaction.createdAt
+                )
+                supabaseDatabaseService.insert("payments", supabasePayment)
+                    .onFailure { exception ->
+                        Timber.e(exception, "Error saving transaction to Supabase, using fallback")
+                        transactionDao.insert(transaction.toEntity())
+                    }
+            } catch (e: Exception) {
+                Timber.e(e, "Exception saving transaction, using fallback")
+                transactionDao.insert(transaction.toEntity())
+            }
+        } else {
+            transactionDao.insert(transaction.toEntity())
         }
     }
     
-    override fun getTransactionsByUserAndType(userId: String, type: String): Flow<List<Transaction>> {
-        return transactionDao.getTransactionsByUserAndType(userId, type).map { list ->
-            list.map { it.toModel() }
+    override fun getTransactionsByUser(userId: String): Flow<List<Transaction>> = flow {
+        if (FeatureFlags.useSupabaseIntegration) {
+            try {
+                supabaseDatabaseService.findBy<SupabasePayment>("payments", "userId", userId)
+                    .onSuccess { payments ->
+                        emit(payments.map { it.toTransaction() })
+                    }
+                    .onFailure {
+                        transactionDao.getTransactionsByUser(userId).collect { list ->
+                            emit(list.map { it.toModel() })
+                        }
+                    }
+            } catch (e: Exception) {
+                transactionDao.getTransactionsByUser(userId).collect { list ->
+                    emit(list.map { it.toModel() })
+                }
+            }
+        } else {
+            transactionDao.getTransactionsByUser(userId).collect { list ->
+                emit(list.map { it.toModel() })
+            }
         }
     }
     
-    override fun getTotalRecharged(userId: String): Flow<Double> {
-        return transactionDao.getTotalRecharged(userId).map { it ?: 0.0 }
+    override fun getTransactionsByUserAndType(userId: String, type: String): Flow<List<Transaction>> = flow {
+        if (FeatureFlags.useSupabaseIntegration) {
+            try {
+                supabaseDatabaseService.findBy<SupabasePayment>("payments", "userId", userId)
+                    .onSuccess { payments ->
+                        emit(payments.filter { it.method == type }.map { it.toTransaction() })
+                    }
+                    .onFailure {
+                        transactionDao.getTransactionsByUserAndType(userId, type).collect { list ->
+                            emit(list.map { it.toModel() })
+                        }
+                    }
+            } catch (e: Exception) {
+                transactionDao.getTransactionsByUserAndType(userId, type).collect { list ->
+                    emit(list.map { it.toModel() })
+                }
+            }
+        } else {
+            transactionDao.getTransactionsByUserAndType(userId, type).collect { list ->
+                emit(list.map { it.toModel() })
+            }
+        }
     }
     
-    override fun getTotalWithdrawn(userId: String): Flow<Double> {
-        return transactionDao.getTotalWithdrawn(userId).map { it ?: 0.0 }
+    override fun getTotalRecharged(userId: String): Flow<Double> = flow {
+        if (FeatureFlags.useSupabaseIntegration) {
+            try {
+                supabaseDatabaseService.findBy<SupabasePayment>("payments", "userId", userId)
+                    .onSuccess { payments ->
+                        val total = payments.filter { it.method == "RECHARGE" }.sumOf { it.amount }
+                        emit(total)
+                    }
+                    .onFailure {
+                        transactionDao.getTotalRecharged(userId).collect { emit(it ?: 0.0) }
+                    }
+            } catch (e: Exception) {
+                transactionDao.getTotalRecharged(userId).collect { emit(it ?: 0.0) }
+            }
+        } else {
+            transactionDao.getTotalRecharged(userId).collect { emit(it ?: 0.0) }
+        }
+    }
+    
+    override fun getTotalWithdrawn(userId: String): Flow<Double> = flow {
+        if (FeatureFlags.useSupabaseIntegration) {
+            try {
+                supabaseDatabaseService.findBy<SupabasePayment>("payments", "userId", userId)
+                    .onSuccess { payments ->
+                        val total = payments.filter { it.method == "WITHDRAWAL" }.sumOf { it.amount }
+                        emit(total)
+                    }
+                    .onFailure {
+                        transactionDao.getTotalWithdrawn(userId).collect { emit(it ?: 0.0) }
+                    }
+            } catch (e: Exception) {
+                transactionDao.getTotalWithdrawn(userId).collect { emit(it ?: 0.0) }
+            }
+        } else {
+            transactionDao.getTotalWithdrawn(userId).collect { emit(it ?: 0.0) }
+        }
     }
     
     // ========== Professional Operations ==========

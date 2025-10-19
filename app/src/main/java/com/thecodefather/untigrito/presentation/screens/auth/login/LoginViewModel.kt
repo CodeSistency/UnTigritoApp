@@ -63,19 +63,15 @@ class AuthViewModel @Inject constructor(
      * Performs login using direct Supabase database query
      * Busca un usuario en la tabla User que coincida con email/phone y password
      */
-    fun loginWithSupabase(identifier: String, password: String) {
-        Timber.d("🔐 SUPABASE LOGIN_START - Identifier: $identifier")
-        Log.e("TAG", "🔐 SUPABASE LOGIN_START - Identifier: $identifier")
+    fun loginWithSupabase(email: String, password: String) {
+        Timber.d("🔐 SUPABASE LOGIN_START - Email: $email")
+        Log.e("TAG", "🔐 SUPABASE LOGIN_START - Email: $email")
         
-        // Determinar si es email o teléfono
-        val isEmail = EmailValidator.isValid(identifier)
-        val isPhone = PhoneValidator.isValidVenezuelanPhone(identifier)
-        
-        // Validar datos
-        if (!isEmail && !isPhone) {
-            Timber.w("⚠️ SUPABASE LOGIN - Identificador inválido")
-            Log.e("TAG", "⚠️ SUPABASE LOGIN - Identificador inválido")
-            _authState.value = AuthState.Error("Email o teléfono inválido")
+        // Validar email
+        if (!EmailValidator.isValid(email)) {
+            Timber.w("⚠️ SUPABASE LOGIN - Email inválido")
+            Log.e("TAG", "⚠️ SUPABASE LOGIN - Email inválido")
+            _authState.value = AuthState.Error("Email inválido")
             return
         }
         
@@ -94,25 +90,14 @@ class AuthViewModel @Inject constructor(
                 Log.e("TAG", "📊 SUPABASE - Consultando tabla User...")
                 
                 // Hacer consulta directa a la tabla User con Postgrest
-                val users = if (isEmail) {
-                    postgrest.from("User")
-                        .select {
-                            filter {
-                                eq("email", identifier)
-                                eq("password", password)
-                            }
+                val users = postgrest.from("User")
+                    .select {
+                        filter {
+                            eq("email", email)
+                            eq("password", password)
                         }
-                        .decodeList<SupabaseUser>()
-                } else {
-                    postgrest.from("User")
-                        .select {
-                            filter {
-                                eq("phone", identifier)
-                                eq("password", password)
-                            }
-                        }
-                        .decodeList<SupabaseUser>()
-                }
+                    }
+                    .decodeList<SupabaseUser>()
                 
                 Timber.d("📊 SUPABASE - Resultados encontrados: ${users.size}")
                 Log.e("TAG", "📊 SUPABASE - Resultados encontrados: ${users.size}")
@@ -154,7 +139,7 @@ class AuthViewModel @Inject constructor(
                     // No se encontró usuario con esas credenciales
                     Timber.w("⚠️ SUPABASE LOGIN_FAILED - Usuario no encontrado o credenciales incorrectas")
                     Log.e("TAG", "⚠️ SUPABASE LOGIN_FAILED - Usuario no encontrado")
-                    _authState.value = AuthState.Error("Email/teléfono o contraseña incorrectos")
+                    _authState.value = AuthState.Error("Email o contraseña incorrectos")
                 }
                 
             } catch (exception: Exception) {
@@ -172,21 +157,18 @@ class AuthViewModel @Inject constructor(
      * Inserta un nuevo usuario en la tabla User
      */
     @RequiresApi(Build.VERSION_CODES.O)
-    fun registerWithSupabase(name: String, identifier: String, password: String, confirmPassword: String) {
-        Timber.d("🔐 SUPABASE REGISTER_START - Name: $name, Identifier: $identifier")
-        Log.e("TAG", "🔐 SUPABASE REGISTER_START - Identifier: $identifier")
+    fun registerWithSupabase(name: String, email: String, password: String, confirmPassword: String) {
+        Timber.d("🔐 SUPABASE REGISTER_START - Name: $name, Email: $email")
+        Log.e("TAG", "🔐 SUPABASE REGISTER_START - Email: $email")
         
         // Validaciones
-        val isEmail = EmailValidator.isValid(identifier)
-        val isPhone = PhoneValidator.isValidVenezuelanPhone(identifier)
-        
         if (name.isBlank()) {
             _authState.value = AuthState.Error("El nombre es requerido")
             return
         }
         
-        if (!isEmail && !isPhone) {
-            _authState.value = AuthState.Error("Email o teléfono inválido")
+        if (!EmailValidator.isValid(email)) {
+            _authState.value = AuthState.Error("Email inválido")
             return
         }
         
@@ -206,21 +188,15 @@ class AuthViewModel @Inject constructor(
             try {
                 // 1. Verificar si el usuario ya existe
                 Log.e("TAG", "📝 STEP 1: Verificando si usuario existe...")
-                val existingUsers = if (isEmail) {
-                    postgrest.from("User")
-                        .select { filter { eq("email", identifier) } }
-                        .decodeList<SupabaseUser>()
-                } else {
-                    postgrest.from("User")
-                        .select { filter { eq("phone", identifier) } }
-                        .decodeList<SupabaseUser>()
-                }
+                val existingUsers = postgrest.from("User")
+                    .select { filter { eq("email", email) } }
+                    .decodeList<SupabaseUser>()
                 
                 Log.e("TAG", "📝 STEP 1 COMPLETE: Usuarios encontrados: ${existingUsers.size}")
                 
                 if (existingUsers.isNotEmpty()) {
                     Log.e("TAG", "⚠️ SUPABASE REGISTER - Usuario ya existe")
-                    _authState.value = AuthState.Error("Este email/teléfono ya está registrado")
+                    _authState.value = AuthState.Error("Este email ya está registrado")
                     return@launch
                 }
                 
@@ -229,8 +205,8 @@ class AuthViewModel @Inject constructor(
                 val currentTimestamp = java.time.Instant.now().toString()
                 val newUser = SupabaseUser(
                     id = "", // Se genera automáticamente en Supabase
-                    email = if (isEmail) identifier else null,
-                    phone = if (isPhone) identifier else null,
+                    email = email,
+                    phone = null,
                     password = password,
                     name = name,
                     role = "CLIENT",
@@ -241,7 +217,7 @@ class AuthViewModel @Inject constructor(
                     createdAt = currentTimestamp,
                     updatedAt = currentTimestamp
                 )
-                Log.e("TAG", "📝 STEP 2 COMPLETE: Usuario creado - email=${newUser.email}, phone=${newUser.phone}, name=${newUser.name}")
+                Log.e("TAG", "📝 STEP 2 COMPLETE: Usuario creado - email=${newUser.email}, name=${newUser.name}")
                 
                 // 3. Insertar en base de datos
                 Log.e("TAG", "📝 STEP 3: Insertando en base de datos...")

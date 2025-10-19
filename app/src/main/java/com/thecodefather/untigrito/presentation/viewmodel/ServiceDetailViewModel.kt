@@ -1,79 +1,145 @@
 package com.thecodefather.untigrito.presentation.viewmodel
 
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.thecodefather.untigrito.data.repository.ClientRepositoryImpl
+import com.thecodefather.untigrito.data.datasource.remote.SupabaseDatabaseService
+import com.thecodefather.untigrito.data.datasource.remote.SupabaseService
+import com.thecodefather.untigrito.domain.model.Service
+import com.thecodefather.untigrito.domain.model.ServiceStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.util.Date
 import javax.inject.Inject
-import com.thecodefather.untigrito.domain.model.ClientRequest
-import com.thecodefather.untigrito.domain.model.ServicePosting
-import com.thecodefather.untigrito.domain.repository.ClientRepository
 
 @HiltViewModel
 class ServiceDetailViewModel @Inject constructor(
-    private val repository: ClientRepositoryImpl,
-    savedStateHandle: SavedStateHandle
+    private val supabaseDatabase: SupabaseDatabaseService
 ) : ViewModel() {
 
-    private val serviceId: String = savedStateHandle["serviceId"] ?: ""
+    private val _uiState = MutableStateFlow(ServiceDetailUiState())
+    val uiState: StateFlow<ServiceDetailUiState> = _uiState.asStateFlow()
 
-    private val _service = MutableStateFlow<ServicePosting?>(null)
-    val service = _service.asStateFlow()
-
-    private val _offers = MutableStateFlow<List<ClientRequest>>(emptyList())
-    val offers = _offers.asStateFlow()
-
-    private val _loading = MutableStateFlow(false)
-    val loading = _loading.asStateFlow()
-
-    init {
-        if (serviceId.isNotEmpty()) {
-            loadServiceDetails()
-        }
-    }
-
-    private fun loadServiceDetails() {
-        _loading.value = true
+    /**
+     * Load service details by ID
+     */
+    fun loadServiceDetails(serviceId: String) {
         viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null)
+            
             try {
-                repository.getServicePostingById(serviceId).collect { service ->
-                    _service.value = service
+                val result = supabaseDatabase.getById<SupabaseService>("ProfessionalService", serviceId)
+                
+                result.onSuccess { supabaseService ->
+                    if (supabaseService != null) {
+                        val service = mapSupabaseToService(supabaseService)
+                        _uiState.value = _uiState.value.copy(
+                            isLoading = false,
+                            service = service,
+                            errorMessage = null
+                        )
+                    } else {
+                        _uiState.value = _uiState.value.copy(
+                            isLoading = false,
+                            service = null,
+                            errorMessage = "Servicio no encontrado"
+                        )
+                    }
+                }.onFailure { exception ->
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        service = null,
+                        errorMessage = exception.message ?: "Error al cargar el servicio"
+                    )
                 }
-
-                repository.getClientRequestsByPosting(serviceId).collect { requests ->
-                    _offers.value = requests
-                }
             } catch (e: Exception) {
-                // Error handling
-            } finally {
-                _loading.value = false
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    service = null,
+                    errorMessage = e.message ?: "Error inesperado"
+                )
             }
         }
     }
 
-    fun acceptOffer(offerId: String) {
+    /**
+     * Request service - placeholder for future implementation
+     */
+    fun requestService() {
         viewModelScope.launch {
-            try {
-                repository.updateClientRequestStatus(offerId, ClientRequest.STATUS_ACCEPTED)
-                loadServiceDetails()
-            } catch (e: Exception) {
-                // Error handling
-            }
+            _uiState.value = _uiState.value.copy(isLoading = true)
+            
+            // TODO: Implement service request logic
+            // This would typically create a service request/booking
+            
+            _uiState.value = _uiState.value.copy(
+                isLoading = false,
+                showRequestSuccess = true
+            )
         }
     }
 
-    fun rejectOffer(offerId: String) {
+    /**
+     * Contact professional - placeholder for future implementation
+     */
+    fun contactProfessional() {
         viewModelScope.launch {
-            try {
-                repository.updateClientRequestStatus(offerId, ClientRequest.STATUS_REJECTED)
-                loadServiceDetails()
-            } catch (e: Exception) {
-                // Error handling
-            }
+            // TODO: Implement contact professional logic
+            // This would typically open chat or contact form
         }
+    }
+
+    /**
+     * Clear success messages
+     */
+    fun clearSuccessMessages() {
+        _uiState.value = _uiState.value.copy(showRequestSuccess = false)
+    }
+
+    /**
+     * Clear error messages
+     */
+    fun clearError() {
+        _uiState.value = _uiState.value.copy(errorMessage = null)
+    }
+
+    /**
+     * Mapper helper to convert SupabaseService to Service domain model
+     */
+    private fun mapSupabaseToService(supabaseService: SupabaseService): Service {
+        return Service(
+            id = supabaseService.id,
+            title = supabaseService.title,
+            description = supabaseService.description,
+            category = supabaseService.categoryId,
+            minPrice = supabaseService.price,
+            maxPrice = supabaseService.price, // Use same price for both min and max
+            serviceArea = supabaseService.serviceLocations ?: "",
+            status = if (supabaseService.isActive) ServiceStatus.ACTIVE else ServiceStatus.INACTIVE,
+            images = emptyList(), // TODO: Implement image loading
+            createdAt = try {
+                Date(supabaseService.createdAt?.toLongOrNull() ?: System.currentTimeMillis())
+            } catch (e: Exception) {
+                Date()
+            },
+            updatedAt = try {
+                Date(supabaseService.updatedAt?.toLongOrNull() ?: System.currentTimeMillis())
+            } catch (e: Exception) {
+                Date()
+            },
+            isActive = supabaseService.isActive,
+            rating = 4.5, // TODO: Get real rating from reviews
+            reviewCount = 0, // TODO: Get real review count
+            completedJobs = 0 // TODO: Get real completed jobs count
+        )
     }
 }
+
+data class ServiceDetailUiState(
+    val isLoading: Boolean = false,
+    val service: Service? = null,
+    val errorMessage: String? = null,
+    val showRequestSuccess: Boolean = false
+)

@@ -12,6 +12,8 @@ import javax.inject.Singleton
 @Singleton
 class ServicesRepositoryImpl @Inject constructor() : ServicesRepository {
 
+    // TODO: Reemplazar con datos reales de Supabase en producción
+    // Estos son datos dummy para desarrollo y testing
     private val dummyServices = listOf(
         Service(
             id = "service1",

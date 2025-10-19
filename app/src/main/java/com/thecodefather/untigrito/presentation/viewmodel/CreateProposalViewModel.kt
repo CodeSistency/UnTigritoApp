@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.thecodefather.untigrito.auth.domain.usecase.AuthStateManager
 import com.thecodefather.untigrito.data.datasource.remote.SupabaseDatabaseService
+import com.thecodefather.untigrito.data.datasource.remote.SupabaseOffer
 import com.thecodefather.untigrito.data.datasource.remote.SupabaseServicePosting
 import com.thecodefather.untigrito.domain.model.*
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -12,20 +13,22 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.util.Date
+import java.util.UUID
 import javax.inject.Inject
 
 @HiltViewModel
-class JobDetailViewModel @Inject constructor(
+class CreateProposalViewModel @Inject constructor(
     private val supabaseDatabase: SupabaseDatabaseService,
     private val authStateManager: AuthStateManager
 ) : ViewModel() {
-
-    private val _uiState = MutableStateFlow(JobDetailUiState())
-    val uiState: StateFlow<JobDetailUiState> = _uiState.asStateFlow()
-
+    
+    private val _uiState = MutableStateFlow(CreateProposalUiState())
+    val uiState: StateFlow<CreateProposalUiState> = _uiState.asStateFlow()
+    
+    // Cargar trabajo para contexto
     fun loadJob(jobId: String) {
         viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null)
+            _uiState.value = _uiState.value.copy(isLoading = true)
             
             try {
                 val result = supabaseDatabase.getById<SupabaseServicePosting>("ServicePosting", jobId)
@@ -58,20 +61,69 @@ class JobDetailViewModel @Inject constructor(
             }
         }
     }
-
-    fun toggleFavorite() {
-        _uiState.value.job?.let { job ->
-            viewModelScope.launch {
-                try {
-                    // Actualizar estado local
+    
+    // Crear propuesta directamente en Supabase
+    fun createProposal(
+        jobId: String,
+        proposedPrice: Double,
+        description: String,
+        estimatedDuration: Int,
+        includesMaterials: Boolean,
+        offersWarranty: Boolean,
+        termsAndConditions: String?
+    ) {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null)
+            
+            try {
+                // Obtener ID del profesional actual
+                val professionalId = authStateManager.getCurrentUserId()
+                
+                if (professionalId == null) {
                     _uiState.value = _uiState.value.copy(
-                        job = job.copy(isFavorite = !job.isFavorite)
+                        isLoading = false,
+                        errorMessage = "Usuario no autenticado"
                     )
-                } catch (e: Exception) {
+                    return@launch
+                }
+                
+                val proposal = SupabaseOffer(
+                    id = UUID.randomUUID().toString(),
+                    postingId = jobId,
+                    professionalId = professionalId,
+                    price = proposedPrice,
+                    proposedPrice = proposedPrice,
+                    message = description,
+                    status = "PENDING",
+                    createdAt = System.currentTimeMillis().toString()
+                )
+                
+                val result = supabaseDatabase.insert("Offer", proposal)
+                
+                result.onSuccess { insertedProposal ->
+                    if (insertedProposal != null) {
+                        _uiState.value = _uiState.value.copy(
+                            isLoading = false,
+                            proposalCreated = true,
+                            errorMessage = null
+                        )
+                    } else {
+                        _uiState.value = _uiState.value.copy(
+                            isLoading = false,
+                            errorMessage = "Error al crear propuesta"
+                        )
+                    }
+                }.onFailure { exception ->
                     _uiState.value = _uiState.value.copy(
-                        errorMessage = e.message ?: "Error al actualizar favorito"
+                        isLoading = false,
+                        errorMessage = exception.message ?: "Error al crear propuesta"
                     )
                 }
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    errorMessage = e.message ?: "Error inesperado"
+                )
             }
         }
     }
@@ -124,15 +176,16 @@ class JobDetailViewModel @Inject constructor(
             attachments = emptyList()
         )
     }
-
+    
     fun clearError() {
         _uiState.value = _uiState.value.copy(errorMessage = null)
     }
 }
 
-data class JobDetailUiState(
-    val isFavorite: Boolean = false,
-    val isLoading: Boolean = false,
+data class CreateProposalUiState(
     val job: Job? = null,
-    val errorMessage: String? = null
+    val isLoading: Boolean = false,
+    val errorMessage: String? = null,
+    val proposalCreated: Boolean = false
 )
+

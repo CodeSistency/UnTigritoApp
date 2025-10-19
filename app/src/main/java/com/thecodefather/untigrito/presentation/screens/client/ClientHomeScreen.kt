@@ -14,7 +14,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -32,65 +34,102 @@ import com.thecodefather.untigrito.presentation.components.ClientBottomNavBar
 import com.thecodefather.untigrito.presentation.navigation.ClientRoutes // Importar ClientRoutes
 import com.thecodefather.untigrito.presentation.navigation.Routes
 import com.thecodefather.untigrito.presentation.screens.client.components.RequestServiceCard
+import com.thecodefather.untigrito.presentation.viewmodel.ClientHomeViewModel
 import androidx.navigation.compose.rememberNavController
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreenClient(
     navController: NavController,
-    onNavigateToAccountDetails: () -> Unit // Cambiado de onNavigateToRechargeMethods
+    onNavigateToAccountDetails: () -> Unit, // Cambiado de onNavigateToRechargeMethods
+    viewModel: ClientHomeViewModel = hiltViewModel()
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .background(Color(0xFFF0F0F0)) // Fondo ligeramente gris
-    ) {
-        AppTopBar(navController = navController)
-        Spacer(modifier = Modifier.height(16.dp))
+    val user by viewModel.user.collectAsState()
+    val services by viewModel.services.collectAsState()
+    val topProfessionals by viewModel.topProfessionals.collectAsState()
+    val loading by viewModel.loading.collectAsState()
+    val error by viewModel.error.collectAsState()
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .background(Color(0xFFF0F0F0)) // Fondo ligeramente gris
+        ) {
+            AppTopBar(navController = navController, userName = user?.name)
+            Spacer(modifier = Modifier.height(16.dp))
 
 
-        // Tarjeta de historial
-        HistoryCard(onNavigateToAccountDetails) // Pasando la nueva lambda
+            // Tarjeta de historial con balance real
+            HistoryCard(
+                balance = user?.balance ?: 0.0,
+                onNavigateToAccountDetails = onNavigateToAccountDetails
+            )
 
-        Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
-        // Explora categorías
-        CategorySection()
+            // Explora categorías
+            CategorySection()
 
-        Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
-        // Tigres mejor calificados
-        TopRatedTigersSection(
-            onTigerClick = {
-                // TODO: Eventualmente, pasar el ID del profesional. Por ahora, navega al perfil de ejemplo.
-                navController.navigate(ClientRoutes.PROFESSIONAL_PROFILE)
+            // Tigres mejor calificados
+            TopRatedTigersSection(
+                professionals = topProfessionals,
+                onTigerClick = {
+                    // TODO: Eventualmente, pasar el ID del profesional. Por ahora, navega al perfil de ejemplo.
+                    navController.navigate(ClientRoutes.PROFESSIONAL_PROFILE)
+                }
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Publica tu Solicitud
+            PublishRequestCard(
+                onNavigateToRequestService = {
+                    navController.navigate(ClientRoutes.CREATE_REQUEST)
+                }
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Servicios
+            ServicesSection(services = services)
+
+            Spacer(modifier = Modifier.height(16.dp)) // Espacio al final del contenido
+        }
+
+        // Loading indicator
+        if (loading) {
+            CircularProgressIndicator(
+                modifier = Modifier.align(Alignment.Center),
+                color = Color(0xFFE67822)
+            )
+        }
+
+        // Error message
+        error?.let { errorMessage ->
+            Snackbar(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(16.dp),
+                action = {
+                    TextButton(onClick = { viewModel.refresh() }) {
+                        Text("Reintentar")
+                    }
+                }
+            ) {
+                Text(errorMessage)
             }
-        )
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        // Publica tu Solicitud
-        PublishRequestCard(
-            onNavigateToRequestService = {
-                navController.navigate(ClientRoutes.CREATE_REQUEST)
-            }
-        )
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        // Servicios
-        ServicesSection()
-
-        Spacer(modifier = Modifier.height(16.dp)) // Espacio al final del contenido
+        }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AppTopBar(navController: NavController) {
+fun AppTopBar(navController: NavController, userName: String? = null) {
     HomeHeader(
-        userName = "Juan Pérez",
+        userName = userName ?: "Usuario",
         onMessageClick = {
             navController.navigate(Routes.createChatRoute("test_conversation"))
         }
@@ -99,7 +138,10 @@ fun AppTopBar(navController: NavController) {
 
 
 @Composable
-fun HistoryCard(onNavigateToAccountDetails: () -> Unit) { // Cambiado el parámetro
+fun HistoryCard(
+    balance: Double,
+    onNavigateToAccountDetails: () -> Unit
+) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -111,7 +153,7 @@ fun HistoryCard(onNavigateToAccountDetails: () -> Unit) { // Cambiado el paráme
         Column(
             modifier = Modifier
                 .padding(16.dp)
-                .clickable(onClick = onNavigateToAccountDetails) // Usando la nueva lambda
+                .clickable(onClick = onNavigateToAccountDetails)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -127,7 +169,7 @@ fun HistoryCard(onNavigateToAccountDetails: () -> Unit) { // Cambiado el paráme
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "15.000,00 Bs",
+                        text = String.format("%,.2f", balance) + " Bs",
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
                         color = Color.Black
@@ -228,7 +270,10 @@ fun CategoryItem(name: String, iconRes: Int) {
 
 
 @Composable
-fun TopRatedTigersSection(onTigerClick: () -> Unit) {
+fun TopRatedTigersSection(
+    professionals: List<com.thecodefather.untigrito.domain.model.Professional>,
+    onTigerClick: () -> Unit
+) {
     Column(modifier = Modifier.fillMaxWidth()) {
         Text(
             text = "Tigres mejor calificados",
@@ -238,20 +283,30 @@ fun TopRatedTigersSection(onTigerClick: () -> Unit) {
             modifier = Modifier.padding(horizontal = 24.dp)
         )
         Spacer(modifier = Modifier.height(16.dp))
-        LazyRow(
-            modifier = Modifier.fillMaxWidth(),
-            contentPadding = PaddingValues(horizontal = 24.dp),
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            items(3) { index -> // 3 profesionales de ejemplo
-                TopRatedTigerItem(
-                    name = "Profesional ${index + 1}",
-                    rating = 4.8f,
-                    reviews = 120,
-                    profession = "Electricista",
-                    location = "Valencia",
-                    onClick = onTigerClick
-                )
+        
+        if (professionals.isEmpty()) {
+            Text(
+                text = "No hay profesionales disponibles",
+                modifier = Modifier.padding(horizontal = 24.dp),
+                color = Color.Gray
+            )
+        } else {
+            LazyRow(
+                modifier = Modifier.fillMaxWidth(),
+                contentPadding = PaddingValues(horizontal = 24.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                items(professionals.size) { index ->
+                    val prof = professionals[index]
+                    TopRatedTigerItem(
+                        name = prof.userId,
+                        rating = prof.rating?.toFloat() ?: 0f,
+                        reviews = prof.totalReviews ?: 0,
+                        profession = prof.specialties.firstOrNull() ?: "Profesional",
+                        location = "Valencia",
+                        onClick = onTigerClick
+                    )
+                }
             }
         }
     }
@@ -311,7 +366,7 @@ fun PublishRequestCard(onNavigateToRequestService: () -> Unit) {
 }
 
 @Composable
-fun ServicesSection() {
+fun ServicesSection(services: List<com.thecodefather.untigrito.domain.model.ProfessionalService>) {
     Column(modifier = Modifier.fillMaxWidth()) {
         Text(
             text = "Servicios",
@@ -321,19 +376,28 @@ fun ServicesSection() {
             modifier = Modifier.padding(horizontal = 24.dp)
         )
         Spacer(modifier = Modifier.height(16.dp))
-        Column(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            repeat(4) { index -> // 4 servicios de ejemplo
-                ServiceItem(
-                    title = "Reparación de Fugas",
-                    description = "Servicio de plomería urgente 24/7",
-                    provider = "Andrés Rodríguez",
-                    rating = 4.8f,
-                    reviews = 120,
-                    price = "$${(index + 1) * 10}.00"
-                )
+        
+        if (services.isEmpty()) {
+            Text(
+                text = "No hay servicios disponibles",
+                modifier = Modifier.padding(horizontal = 24.dp),
+                color = Color.Gray
+            )
+        } else {
+            Column(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                services.take(4).forEach { service ->
+                    ServiceItem(
+                        title = service.title,
+                        description = service.description,
+                        provider = service.professionalId,
+                        rating = 4.8f, // TODO: Get rating from professional
+                        reviews = 0,
+                        price = "$${service.price}"
+                    )
+                }
             }
         }
     }
@@ -384,7 +448,10 @@ fun ServiceItem(title: String, description: String, provider: String, rating: Fl
 @Composable
 fun PreviewHomeScreen() {
     val navController = rememberNavController()
-    HomeScreenClient(navController = navController, onNavigateToAccountDetails = {}) // Cambiado aquí
+    HomeScreenClient(
+        navController = navController, 
+        onNavigateToAccountDetails = {}
+    )
 }
 
 

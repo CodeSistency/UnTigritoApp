@@ -27,6 +27,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -43,6 +44,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.thecodefather.untigrito.presentation.components.ClientBottomNavBar
 import com.thecodefather.untigrito.presentation.navigation.Routes
+import com.thecodefather.untigrito.presentation.navigation.ProfessionalNavigation
 import com.thecodefather.untigrito.presentation.screens.client.components.HomeHeader
 import com.thecodefather.untigrito.presentation.viewmodel.ClientProfileViewModel
 
@@ -57,10 +59,27 @@ fun ClientProfileScreen(
 ) {
     val user by viewModel.user.collectAsState(initial = null)
     val loading by viewModel.loading.collectAsState()
+    val logoutSuccess by viewModel.logoutSuccess.collectAsState()
     var isProfessional by remember { mutableStateOf(false) } // Estado para el switch "Soy un profesional"
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
+
+    // Navegar al login cuando el logout sea exitoso
+    LaunchedEffect(logoutSuccess) {
+        if (logoutSuccess) {
+            navController.navigate(Routes.LOGIN) {
+                popUpTo(Routes.CLIENT_MAIN) { inclusive = true }
+            }
+        }
+    }
+
+    // Navegar a la sección de profesionales cuando el switch esté en true
+    LaunchedEffect(isProfessional) {
+        if (isProfessional) {
+            navController.navigate(ProfessionalNavigation.PROFESSIONAL_MAIN)
+        }
+    }
 
     LazyColumn(
         modifier = Modifier

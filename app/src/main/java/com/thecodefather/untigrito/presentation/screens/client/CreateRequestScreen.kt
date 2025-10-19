@@ -157,15 +157,15 @@ fun CreateRequestScreen(
             // Submit Button
             item {
                 Button(
-                    onClick = { viewModel.submitRequest("current_user_id") },
+                    onClick = { viewModel.submitRequest() },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(48.dp),
+                    enabled = !loading,
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color(0xFFE67822)
                     ),
-                    shape = RoundedCornerShape(12.dp),
-                    enabled = !loading
+                    shape = RoundedCornerShape(12.dp)
                 ) {
                     Text(
                         text = if (loading) "Enviando..." else "Crear Solicitud",

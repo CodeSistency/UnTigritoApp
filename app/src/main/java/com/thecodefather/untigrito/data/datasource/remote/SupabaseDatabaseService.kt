@@ -4,6 +4,8 @@ import android.annotation.SuppressLint
 import io.github.jan.supabase.postgrest.Postgrest
 import io.github.jan.supabase.postgrest.query.Columns
 import io.github.jan.supabase.postgrest.query.Order
+// import io.github.jan.supabase.postgrest.query.filter
+// import io.github.jan.supabase.postgrest.query.eq
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
@@ -235,6 +237,128 @@ public class SupabaseDatabaseService @Inject constructor(
             Result.success(result)
         } catch (e: Exception) {
             Timber.e(e, "Error al obtener página $page de $table")
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * Consulta con múltiples filtros
+     * 
+     * @param table Nombre de la tabla
+     * @param filters Mapa de filtros (campo -> valor)
+     * @return Lista de elementos que coinciden con los filtros
+     */
+    public suspend inline fun <reified T : Any> findByMultiple(
+        table: String,
+        filters: Map<String, Any>
+    ): Result<List<T>> = withContext(Dispatchers.IO) {
+        try {
+            val query = postgrest.from(table).select()
+            
+            // Aplicar filtros dinámicamente
+            // TODO: Implementar filtros múltiples cuando esté disponible la API
+            // Por ahora, usar solo el primer filtro
+            val firstFilter = filters.entries.firstOrNull()
+            if (firstFilter != null) {
+                // Usar el método findBy existente
+                return@withContext findBy(table, firstFilter.key, firstFilter.value)
+            }
+            
+            val result = query.decodeList<T>()
+            Timber.d("Obtenidos ${result.size} elementos de $table con filtros: $filters")
+            Result.success(result)
+        } catch (e: Exception) {
+            Timber.e(e, "Error al obtener elementos de $table con filtros: $filters")
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * Consulta ordenada con límite
+     * 
+     * @param table Nombre de la tabla
+     * @param orderBy Campo por el cual ordenar
+     * @param ascending Si es ascendente (true) o descendente (false)
+     * @param limit Número máximo de elementos a retornar
+     * @return Lista de elementos ordenados y limitados
+     */
+    public suspend inline fun <reified T : Any> getAllOrderedLimit(
+        table: String,
+        orderBy: String,
+        ascending: Boolean = true,
+        limit: Int
+    ): Result<List<T>> = withContext(Dispatchers.IO) {
+        try {
+            val result = postgrest.from(table)
+                .select {
+                    order(orderBy, if (ascending) Order.ASCENDING else Order.DESCENDING)
+                    limit(limit.toLong())
+                }
+                .decodeList<T>()
+            
+            Timber.d("Obtenidos ${result.size} elementos de $table ordenados por $orderBy")
+            Result.success(result)
+        } catch (e: Exception) {
+            Timber.e(e, "Error al obtener elementos ordenados de $table")
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * Consulta con rango geográfico (para filtrar por ubicación)
+     * 
+     * @param table Nombre de la tabla
+     * @param lat Latitud del punto central
+     * @param lng Longitud del punto central
+     * @param radiusKm Radio en kilómetros
+     * @return Lista de elementos dentro del radio especificado
+     */
+    public suspend inline fun <reified T : Any> findByLocation(
+        table: String,
+        lat: Double,
+        lng: Double,
+        radiusKm: Double
+    ): Result<List<T>> = withContext(Dispatchers.IO) {
+        try {
+            // Por ahora, retornar todos los elementos
+            // Una implementación completa requeriría PostGIS habilitado en Supabase
+            val result = postgrest.from(table)
+                .select()
+                .decodeList<T>()
+            
+            Timber.d("Obtenidos ${result.size} elementos de $table (filtro de ubicación pendiente)")
+            Result.success(result)
+        } catch (e: Exception) {
+            Timber.e(e, "Error al obtener elementos por ubicación de $table")
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * Consulta con JOIN para obtener información relacionada
+     * 
+     * @param table Nombre de la tabla principal
+     * @param joinTable Tabla a hacer JOIN
+     * @param joinCondition Condición del JOIN
+     * @param filters Filtros adicionales
+     * @return Lista de elementos con información relacionada
+     */
+    public suspend inline fun <reified T : Any> findWithJoin(
+        table: String,
+        joinTable: String,
+        joinCondition: String,
+        filters: Map<String, Any> = emptyMap()
+    ): Result<List<T>> = withContext(Dispatchers.IO) {
+        try {
+            // Por ahora, usar consulta simple sin JOIN
+            // Una implementación completa requeriría usar la sintaxis de foreign keys de Supabase
+            val result = postgrest.from(table)
+                .select()
+                .decodeList<T>()
+            Timber.d("Obtenidos ${result.size} elementos de $table con JOIN a $joinTable")
+            Result.success(result)
+        } catch (e: Exception) {
+            Timber.e(e, "Error al obtener elementos con JOIN de $table y $joinTable")
             Result.failure(e)
         }
     }

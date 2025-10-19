@@ -28,7 +28,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.thecodefather.untigrito.R
-import com.thecodefather.untigrito.presentation.screens.professionals.profile.dummyProfessional
+// import com.thecodefather.untigrito.presentation.screens.professionals.profile.dummyProfessional
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -36,12 +36,12 @@ fun EditProfessionalProfileScreen(
     onBackClick: () -> Unit = {},
     onSaveChanges: (Any) -> Unit = {} // Parameter would be a view model state object
 ) {
-    var name by rememberSaveable { mutableStateOf(dummyProfessional.name) }
-    var phone by rememberSaveable { mutableStateOf("+57 310 123 4567") } // Dummy phone
-    var email by rememberSaveable { mutableStateOf("luisjose@gmail.com") } // Dummy email
-    var about by rememberSaveable { mutableStateOf(dummyProfessional.about) }
-    var services by remember { mutableStateOf(dummyProfessional.services.toMutableList()) }
-    var portfolio by remember { mutableStateOf(dummyProfessional.portfolio.toMutableList()) }
+    var name by rememberSaveable { mutableStateOf("") }
+    var phone by rememberSaveable { mutableStateOf("") }
+    var email by rememberSaveable { mutableStateOf("") }
+    var about by rememberSaveable { mutableStateOf("") }
+    var services by remember { mutableStateOf(mutableListOf<String>()) }
+    var portfolio by remember { mutableStateOf(mutableListOf<String>()) }
 
     Scaffold(
         topBar = {
@@ -98,14 +98,14 @@ fun EditProfessionalProfileScreen(
             ServicesEditor(
                 services = services,
                 onAddService = { services.add(it) },
-                onRemoveService = { services.remove(it) }
+                onRemoveService = { services.removeAt(services.indexOf(it)) }
             )
             Spacer(modifier = Modifier.height(24.dp))
-            PortfolioEditor(
-                portfolio = portfolio,
-                onAddImage = { /* TODO */ },
-                onRemoveImage = { portfolio.remove(it) }
-            )
+            // PortfolioEditor(
+            //     portfolio = portfolio,
+            //     onAddImage = { /* TODO */ },
+            //     onRemoveImage = { portfolio.removeAt(portfolio.indexOf(it)) }
+            // )
             Spacer(modifier = Modifier.height(32.dp))
             Button(
                 onClick = { /* onSaveChanges(/* updated data */) */ },

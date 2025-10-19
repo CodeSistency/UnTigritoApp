@@ -34,7 +34,8 @@ fun SplashScreen(
     // Handle navigation based on state
     LaunchedEffect(uiState.value) {
         when (uiState.value) {
-            is SplashUiState.NavigateToHome -> onNavigateToHome()
+            is SplashUiState.NavigateToClientHome -> onNavigateToHome()
+            is SplashUiState.NavigateToProfessionalHome -> onNavigateToHome() // TODO: Implement professional home navigation
             is SplashUiState.NavigateToLogin -> onNavigateToLogin()
             SplashUiState.Loading -> {} // Stay on splash screen
             is SplashUiState.Error -> {

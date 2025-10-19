@@ -1,5 +1,7 @@
 package com.thecodefather.untigrito.domain.model
 
+import com.thecodefather.untigrito.data.datasource.remote.SupabaseServicePosting
+
 /**
  * Service Posting model
  * Represents a service request posted by a client
@@ -31,4 +33,26 @@ data class ServicePosting(
         const val CATEGORY_LIMPIEZA = "LIMPIEZA"
         const val CATEGORY_MUDANZA = "MUDANZA"
     }
+}
+
+// ========== Extension Functions for Supabase Integration ==========
+
+/**
+ * Converts SupabaseServicePosting to ServicePosting domain model
+ */
+fun SupabaseServicePosting.toServicePosting(): ServicePosting {
+    return ServicePosting(
+        id = this.id,
+        clientId = this.clientId,
+        title = this.title,
+        description = this.description,
+        category = this.categoryId,
+        budget = this.budget ?: 0.0,
+        status = this.status,
+        location = this.address,
+        locationLat = this.locationLat,
+        locationLng = this.locationLng,
+        createdAt = this.createdAt ?: "",
+        updatedAt = this.updatedAt ?: ""
+    )
 }

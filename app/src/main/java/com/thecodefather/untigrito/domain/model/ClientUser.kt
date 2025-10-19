@@ -1,5 +1,7 @@
 package com.thecodefather.untigrito.domain.model
 
+import com.thecodefather.untigrito.data.datasource.remote.SupabaseUser
+
 /**
  * Extended User model for client module
  * Represents a user with client-specific fields
@@ -20,3 +22,49 @@ data class ClientUser(
     val locationLng: Double? = null,
     val locationAddress: String? = null
 )
+
+// ========== Extension Functions for Supabase Integration ==========
+
+/**
+ * Converts SupabaseUser to ClientUser domain model
+ */
+fun SupabaseUser.toClientUser(): ClientUser {
+    return ClientUser(
+        id = this.id,
+        email = this.email,
+        phone = this.phone,
+        name = this.name,
+        role = this.role,
+        isVerified = this.isVerified,
+        isIDVerified = this.isIDVerified,
+        balance = this.balance,
+        isSuspended = this.isSuspended,
+        locationLat = this.locationLat,
+        locationLng = this.locationLng,
+        locationAddress = this.locationAddress,
+        createdAt = this.createdAt ?: "",
+        updatedAt = this.updatedAt ?: ""
+    )
+}
+
+/**
+ * Converts ClientUser domain model to SupabaseUser
+ */
+fun ClientUser.toSupabaseUser(): SupabaseUser {
+    return SupabaseUser(
+        id = this.id,
+        email = this.email,
+        phone = this.phone,
+        name = this.name,
+        role = this.role,
+        isVerified = this.isVerified,
+        isIDVerified = this.isIDVerified,
+        balance = this.balance,
+        isSuspended = this.isSuspended,
+        locationLat = this.locationLat,
+        locationLng = this.locationLng,
+        locationAddress = this.locationAddress,
+        createdAt = this.createdAt,
+        updatedAt = this.updatedAt
+    )
+}

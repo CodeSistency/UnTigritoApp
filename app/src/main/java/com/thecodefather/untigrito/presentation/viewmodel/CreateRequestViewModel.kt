@@ -2,6 +2,9 @@ package com.thecodefather.untigrito.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.thecodefather.untigrito.auth.domain.usecase.AuthStateManager
+import com.thecodefather.untigrito.data.datasource.remote.SupabaseDatabaseService
+import com.thecodefather.untigrito.data.datasource.remote.SupabaseServicePosting
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -9,10 +12,15 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 import com.thecodefather.untigrito.domain.model.ServicePosting
 import com.thecodefather.untigrito.domain.repository.ClientRepository
+import timber.log.Timber
+import java.time.Instant
+import java.util.UUID
 
 @HiltViewModel
 class CreateRequestViewModel @Inject constructor(
-    private val repository: ClientRepository
+    private val repository: ClientRepository,
+    private val supabaseDatabaseService: SupabaseDatabaseService,
+    private val authStateManager: AuthStateManager
 ) : ViewModel() {
 
     private val _title = MutableStateFlow("")
@@ -52,24 +60,46 @@ class CreateRequestViewModel @Inject constructor(
         _budget.value = newBudget
     }
 
-    fun submitRequest(clientId: String) {
+    fun submitRequest() {
         if (validateForm()) {
             _loading.value = true
             viewModelScope.launch {
                 try {
-                    val posting = ServicePosting(
-                        id = "",
-                        clientId = clientId,
+                    val currentUserId = authStateManager.getCurrentUserId()
+                    if (currentUserId == null) {
+                        _error.value = "Usuario no autenticado"
+                        _loading.value = false
+                        return@launch
+                    }
+                    
+                    val currentTimestamp = Instant.now().toString()
+                    val newId = UUID.randomUUID().toString()
+                    
+                    // Create service posting in Supabase
+                    val supabasePosting = SupabaseServicePosting(
+                        id = newId,
+                        clientId = currentUserId,
                         title = _title.value,
                         description = _description.value,
-                        category = _category.value,
+                        categoryId = _category.value,
                         budget = _budget.value.toDoubleOrNull() ?: 0.0,
-                        status = ServicePosting.STATUS_OPEN
+                        status = "OPEN",
+                        createdAt = currentTimestamp,
+                        updatedAt = currentTimestamp
                     )
-                    repository.saveServicePosting(posting)
-                    _success.value = true
-                    _error.value = null
+                    
+                    supabaseDatabaseService.insert("service_postings", supabasePosting)
+                        .onSuccess {
+                            _success.value = true
+                            _error.value = null
+                            Timber.d("Service posting created successfully with id: $newId")
+                        }
+                        .onFailure { exception ->
+                            Timber.e(exception, "Error creating service posting")
+                            _error.value = "Error: ${exception.message}"
+                        }
                 } catch (e: Exception) {
+                    Timber.e(e, "Exception creating service posting")
                     _error.value = "Error: ${e.message}"
                 } finally {
                     _loading.value = false

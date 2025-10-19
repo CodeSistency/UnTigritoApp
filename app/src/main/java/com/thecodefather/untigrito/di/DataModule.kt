@@ -8,7 +8,9 @@ import com.thecodefather.untigrito.data.database.dao.ClientUserDao
 import com.thecodefather.untigrito.data.database.dao.ServicePostingDao
 import com.thecodefather.untigrito.data.database.dao.TransactionDao
 import com.thecodefather.untigrito.data.repository.ClientRepositoryImpl
+import com.thecodefather.untigrito.data.repository.ProposalsRepositoryImpl
 import com.thecodefather.untigrito.domain.repository.ClientRepository
+import com.thecodefather.untigrito.domain.repository.ProposalsRepository
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -36,6 +38,10 @@ abstract class DataModule {
     @Binds
     @Singleton
     abstract fun bindClientRepository(impl: ClientRepositoryImpl): ClientRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindProposalsRepository(impl: ProposalsRepositoryImpl): ProposalsRepository
 
     companion object {
 

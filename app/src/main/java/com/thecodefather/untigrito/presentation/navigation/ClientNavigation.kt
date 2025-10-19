@@ -7,6 +7,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.thecodefather.untigrito.presentation.screens.account.AccountDetailsScreen
 import com.thecodefather.untigrito.presentation.screens.client.request.RequestServiceScreen
+import com.thecodefather.untigrito.presentation.screens.client.ServiceDetailScreen
 import com.thecodefather.untigrito.presentation.screens.professionals.profile.ProfessionalProfileScreen
 
 /**
@@ -63,8 +64,11 @@ fun ClientNavGraph(navController: NavHostController) {
         // Service Detail Screen
         composable(ClientRoutes.SERVICE_DETAIL) { backStackEntry ->
             val serviceId = backStackEntry.arguments?.getString("serviceId") ?: ""
-            // ServiceDetailScreen(serviceId = serviceId, navController = navController)
-            // TODO: Implement ServiceDetailScreen
+            ServiceDetailScreen(
+                serviceId = serviceId,
+                onBackClick = { navController.popBackStack() },
+                onContactClick = { /* TODO: Implement contact */ }
+            )
         }
 
         // Create Request Screen
@@ -94,7 +98,10 @@ fun ClientNavGraph(navController: NavHostController) {
         }
 
         composable(ClientRoutes.PROFESSIONAL_PROFILE) {
-            ProfessionalProfileScreen(onBackClick = { navController.popBackStack() })
+            ProfessionalProfileScreen(
+                professionalId = "default-id", // TODO: Get from navigation arguments
+                onBackClick = { navController.popBackStack() }
+            )
         }
     }
 }

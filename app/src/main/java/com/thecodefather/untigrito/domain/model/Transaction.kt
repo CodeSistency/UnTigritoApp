@@ -1,5 +1,7 @@
 package com.thecodefather.untigrito.domain.model
 
+import com.thecodefather.untigrito.data.datasource.remote.SupabasePayment
+
 /**
  * Transaction model
  * Represents payment and transaction history
@@ -22,4 +24,21 @@ data class Transaction(
         const val STATUS_COMPLETED = "COMPLETED"
         const val STATUS_FAILED = "FAILED"
     }
+}
+
+// ========== Extension Functions for Supabase Integration ==========
+
+/**
+ * Converts SupabasePayment to Transaction domain model
+ */
+fun SupabasePayment.toTransaction(): Transaction {
+    return Transaction(
+        id = this.id,
+        userId = this.userId,
+        type = this.method,
+        amount = this.amount,
+        description = this.details ?: "",
+        status = this.status,
+        createdAt = this.createdAt ?: ""
+    )
 }

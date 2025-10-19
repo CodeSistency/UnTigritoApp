@@ -25,7 +25,7 @@ fun JobDetailScreen(
     jobId: String,
     onNavigateBack: () -> Unit,
     onNavigateToProposal: (String) -> Unit,
-    viewModel: com.thecodefather.untigrito.presentation.viewmodel.JobDetailViewModel = hiltViewModel()
+    viewModel: com.thecodefather.untigrito.presentation.viewmodel.JobsViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
     
@@ -44,7 +44,7 @@ fun JobDetailScreen(
                 },
                 actions = {
                     uiState.job?.let { job ->
-                        IconButton(onClick = { viewModel.toggleFavorite() }) {
+                        IconButton(onClick = { viewModel.toggleFavorite(jobId) }) {
                             Icon(
                                 imageVector = if (job.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
                                 contentDescription = "Favorito",

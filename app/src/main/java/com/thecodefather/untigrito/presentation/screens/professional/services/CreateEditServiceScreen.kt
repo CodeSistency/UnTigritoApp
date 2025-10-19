@@ -39,17 +39,23 @@ fun CreateEditServiceScreen(
     // Cargar datos del servicio si estamos editando
     LaunchedEffect(serviceId) {
         if (isEditMode && serviceId != null) {
-            // Aquí cargarías los datos del servicio desde el ViewModel
-            // Por ahora usamos datos dummy
-            title = "Servicio de ejemplo"
-            description = "Descripción del servicio"
-            category = "Plomería"
-            minPrice = "50"
-            maxPrice = "200"
-            serviceArea = "Caracas"
-            isActive = true
+            // Cargar datos del servicio desde el ViewModel
+            // viewModel.loadService(serviceId)
         }
     }
+    
+    // Observar cambios en el estado del ViewModel
+    // LaunchedEffect(uiState.service) {
+    //     uiState.service?.let { service ->
+    //         title = service.title
+    //         description = service.description
+    //         category = service.categoryId
+    //         minPrice = service.price.toString()
+    //         maxPrice = service.price.toString()
+    //         serviceArea = ""
+    //         isActive = service.isActive
+    //     }
+    // }
 
     Scaffold(
         topBar = {

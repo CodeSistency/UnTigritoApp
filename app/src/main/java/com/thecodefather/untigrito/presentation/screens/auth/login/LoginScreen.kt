@@ -68,13 +68,12 @@ fun LoginScreen(
     onNavigateToForgotPassword: () -> Unit,
     onLoginSuccess: () -> Unit
 ) {
-    var identifier by remember { mutableStateOf("luisjose@gmail.com") } // Can be email or phone
-    var password by remember { mutableStateOf("1234567") }
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
 
     val authState by viewModel.authState.collectAsState()
     val emailError by viewModel.emailError.collectAsState()
-    val phoneError by viewModel.phoneError.collectAsState()
     val passwordError by viewModel.passwordError.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -137,19 +136,17 @@ fun LoginScreen(
             Spacer(modifier = Modifier.height(32.dp))
 
             OutlinedTextField(
-                value = identifier,
+                value = email,
                 onValueChange = {
-                    identifier = it
+                    email = it
                     viewModel.validateEmail(it) // Validate in real-time
-                    viewModel.validatePhone(it) // Validate in real-time
                 },
-                label = { Text("Correo o teléfono") },
+                label = { Text("Correo electrónico") },
                 modifier = Modifier.fillMaxWidth(),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
-                isError = (emailError != null || phoneError != null),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                isError = emailError != null,
                 supportingText = {
                     emailError?.let { Text(it, color = MaterialTheme.colorScheme.error) }
-                    phoneError?.let { Text(it, color = MaterialTheme.colorScheme.error) }
                 }
             )
 
@@ -194,7 +191,7 @@ fun LoginScreen(
                 onClick = {
                     Log.e("TAG", "LoginScreen: Iniciando login con Supabase", )
                     // Usar el nuevo método que consulta directamente a Supabase
-                    viewModel.loginWithSupabase(identifier, password)
+                    viewModel.loginWithSupabase(email, password)
                 },
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE67822)),
@@ -211,41 +208,42 @@ fun LoginScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            // Google Sign-In temporalmente deshabilitado hasta configurar Google Services
+            // Spacer(modifier = Modifier.height(24.dp))
 
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Divider(modifier = Modifier.weight(1f), color = Color.LightGray)
-                Text(
-                    text = " o continuar con ",
-                    modifier = Modifier.padding(horizontal = 8.dp),
-                    color = Color.Gray
-                )
-                Divider(modifier = Modifier.weight(1f), color = Color.LightGray)
-            }
+            // Row(
+            //     verticalAlignment = Alignment.CenterVertically,
+            //     modifier = Modifier.fillMaxWidth()
+            // ) {
+            //     Divider(modifier = Modifier.weight(1f), color = Color.LightGray)
+            //     Text(
+            //         text = " o continuar con ",
+            //         modifier = Modifier.padding(horizontal = 8.dp),
+            //         color = Color.Gray
+            //     )
+            //     Divider(modifier = Modifier.weight(1f), color = Color.LightGray)
+            // }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            // Spacer(modifier = Modifier.height(24.dp))
 
-            OutlinedButton(
-                onClick = {
-                    val signInIntent = viewModel.getGoogleSignInIntent()
-                    googleSignInLauncher.launch(signInIntent)
-                },
-                modifier = Modifier.fillMaxWidth(),
-                border = BorderStroke(1.dp, Color.LightGray),
-                contentPadding = PaddingValues(vertical = 12.dp),
-                enabled = authState != AuthState.Loading
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Home, // Usar un icono de Material Design para simular el logo de Google
-                    contentDescription = "Logo de Google",
-                    modifier = Modifier.size(24.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(text = "Iniciar sesión con Google", color = Color.DarkGray, fontSize = 16.sp)
-            }
+            // OutlinedButton(
+            //     onClick = {
+            //         val signInIntent = viewModel.getGoogleSignInIntent()
+            //         googleSignInLauncher.launch(signInIntent)
+            //     },
+            //     modifier = Modifier.fillMaxWidth(),
+            //     border = BorderStroke(1.dp, Color.LightGray),
+            //     contentPadding = PaddingValues(vertical = 12.dp),
+            //     enabled = authState != AuthState.Loading
+            // ) {
+            //     Icon(
+            //         imageVector = Icons.Default.Home, // Usar un icono de Material Design para simular el logo de Google
+            //         contentDescription = "Logo de Google",
+            //         modifier = Modifier.size(24.dp)
+            //     )
+            //     Spacer(modifier = Modifier.width(8.dp))
+            //     Text(text = "Iniciar sesión con Google", color = Color.DarkGray, fontSize = 16.sp)
+            // }
 
             Spacer(modifier = Modifier.weight(1f))
 

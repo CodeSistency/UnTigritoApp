@@ -84,40 +84,48 @@ object ProfessionalModule {
     // ==================== REPOSITORIES ====================
     
     /**
+     * COMENTADO: Los ViewModels ahora usan SupabaseDatabaseService directamente
+     * 
      * Proporciona el repositorio de trabajos
      */
-    @Provides
-    @Singleton
-    fun provideJobsRepository(): JobsRepository {
-        return com.thecodefather.untigrito.data.repository.JobsRepositoryImpl()
-    }
+    // @Provides
+    // @Singleton
+    // fun provideJobsRepository(): JobsRepository {
+    //     return com.thecodefather.untigrito.data.repository.JobsRepositoryImpl()
+    // }
     
     /**
+     * COMENTADO: Los ViewModels ahora usan SupabaseDatabaseService directamente
+     * 
      * Proporciona el repositorio de propuestas
      */
-    @Provides
-    @Singleton
-    fun provideProposalsRepository(): ProposalsRepository {
-        return com.thecodefather.untigrito.data.repository.ProposalsRepositoryImpl()
-    }
+    // @Provides
+    // @Singleton
+    // fun provideProposalsRepository(): ProposalsRepository {
+    //     return com.thecodefather.untigrito.data.repository.ProposalsRepositoryImpl()
+    // }
     
     /**
+     * COMENTADO: Los ViewModels ahora usan SupabaseDatabaseService directamente
+     * 
      * Proporciona el repositorio de servicios
      */
-    @Provides
-    @Singleton
-    fun provideServicesRepository(): ServicesRepository {
-        return com.thecodefather.untigrito.data.repository.ServicesRepositoryImpl()
-    }
+    // @Provides
+    // @Singleton
+    // fun provideServicesRepository(): ServicesRepository {
+    //     return com.thecodefather.untigrito.data.repository.ServicesRepositoryImpl()
+    // }
     
     /**
+     * COMENTADO: Los ViewModels ahora usan SupabaseDatabaseService directamente
+     * 
      * Proporciona el repositorio de mensajes
      */
-    @Provides
-    @Singleton
-    fun provideMessagesRepository(): MessagesRepository {
-        return com.thecodefather.untigrito.data.repository.MessagesRepositoryImpl()
-    }
+    // @Provides
+    // @Singleton
+    // fun provideMessagesRepository(): MessagesRepository {
+    //     return com.thecodefather.untigrito.data.repository.MessagesRepositoryImpl()
+    // }
     
     /**
      * Proporciona el repositorio de calificaciones
@@ -143,99 +151,104 @@ object ProfessionalModule {
     
     // ==================== USE CASES ====================
     
+    /**
+     * COMENTADO: Los ViewModels ahora usan SupabaseDatabaseService directamente
+     * sin pasar por repositorios ni use cases
+     */
+    
     // --- Casos de uso de trabajos ---
-    @Provides
-    @Singleton
-    fun provideGetJobsUseCase(repository: JobsRepository): GetJobsUseCase {
-        return GetJobsUseCase(repository)
-    }
+    // @Provides
+    // @Singleton
+    // fun provideGetJobsUseCase(repository: JobsRepository): GetJobsUseCase {
+    //     return GetJobsUseCase(repository)
+    // }
     
-    @Provides
-    @Singleton
-    fun provideSearchJobsUseCase(repository: JobsRepository): SearchJobsUseCase {
-        return SearchJobsUseCase(repository)
-    }
+    // @Provides
+    // @Singleton
+    // fun provideSearchJobsUseCase(repository: JobsRepository): SearchJobsUseCase {
+    //     return SearchJobsUseCase(repository)
+    // }
     
-    @Provides
-    @Singleton
-    fun provideGetJobDetailsUseCase(repository: JobsRepository): GetJobDetailsUseCase {
-        return GetJobDetailsUseCase(repository)
-    }
+    // @Provides
+    // @Singleton
+    // fun provideGetJobDetailsUseCase(repository: JobsRepository): GetJobDetailsUseCase {
+    //     return GetJobDetailsUseCase(repository)
+    // }
     
-    @Provides
-    @Singleton
-    fun provideToggleFavoriteUseCase(repository: JobsRepository): ToggleFavoriteUseCase {
-        return ToggleFavoriteUseCase(repository)
-    }
+    // @Provides
+    // @Singleton
+    // fun provideToggleFavoriteUseCase(repository: JobsRepository): ToggleFavoriteUseCase {
+    //     return ToggleFavoriteUseCase(repository)
+    // }
     
     // --- Casos de uso de propuestas ---
-    @Provides
-    @Singleton
-    fun provideGetProposalsUseCase(repository: ProposalsRepository): GetProposalsUseCase {
-        return GetProposalsUseCase(repository)
-    }
+    // @Provides
+    // @Singleton
+    // fun provideGetProposalsUseCase(repository: ProposalsRepository): GetProposalsUseCase {
+    //     return GetProposalsUseCase(repository)
+    // }
     
-    @Provides
-    @Singleton
-    fun provideGetProposalDetailsUseCase(repository: ProposalsRepository): GetProposalDetailsUseCase {
-        return GetProposalDetailsUseCase(repository)
-    }
+    // @Provides
+    // @Singleton
+    // fun provideGetProposalDetailsUseCase(repository: ProposalsRepository): GetProposalDetailsUseCase {
+    //     return GetProposalDetailsUseCase(repository)
+    // }
     
-    @Provides
-    @Singleton
-    fun provideCreateProposalUseCase(repository: ProposalsRepository): CreateProposalUseCase {
-        return CreateProposalUseCase(repository)
-    }
+    // @Provides
+    // @Singleton
+    // fun provideCreateProposalUseCase(repository: ProposalsRepository): CreateProposalUseCase {
+    //     return CreateProposalUseCase(repository)
+    // }
     
-    @Provides
-    @Singleton
-    fun provideCancelProposalUseCase(repository: ProposalsRepository): CancelProposalUseCase {
-        return CancelProposalUseCase(repository)
-    }
+    // @Provides
+    // @Singleton
+    // fun provideCancelProposalUseCase(repository: ProposalsRepository): CancelProposalUseCase {
+    //     return CancelProposalUseCase(repository)
+    // }
     
     // --- Casos de uso de servicios ---
-    @Provides
-    @Singleton
-    fun provideGetServicesUseCase(repository: ServicesRepository): GetServicesUseCase {
-        return GetServicesUseCase(repository)
-    }
+    // @Provides
+    // @Singleton
+    // fun provideGetServicesUseCase(repository: ServicesRepository): GetServicesUseCase {
+    //     return GetServicesUseCase(repository)
+    // }
     
-    @Provides
-    @Singleton
-    fun provideGetServiceDetailsUseCase(repository: ServicesRepository): GetServiceDetailsUseCase {
-        return GetServiceDetailsUseCase(repository)
-    }
+    // @Provides
+    // @Singleton
+    // fun provideGetServiceDetailsUseCase(repository: ServicesRepository): GetServiceDetailsUseCase {
+    //     return GetServiceDetailsUseCase(repository)
+    // }
     
-    @Provides
-    @Singleton
-    fun provideCreateServiceUseCase(repository: ServicesRepository): CreateServiceUseCase {
-        return CreateServiceUseCase(repository)
-    }
+    // @Provides
+    // @Singleton
+    // fun provideCreateServiceUseCase(repository: ServicesRepository): CreateServiceUseCase {
+    //     return CreateServiceUseCase(repository)
+    // }
     
-    @Provides
-    @Singleton
-    fun provideUpdateServiceUseCase(repository: ServicesRepository): UpdateServiceUseCase {
-        return UpdateServiceUseCase(repository)
-    }
+    // @Provides
+    // @Singleton
+    // fun provideUpdateServiceUseCase(repository: ServicesRepository): UpdateServiceUseCase {
+    //     return UpdateServiceUseCase(repository)
+    // }
     
     // --- Casos de uso de mensajes ---
-    @Provides
-    @Singleton
-    fun provideGetConversationsUseCase(repository: MessagesRepository): GetConversationsUseCase {
-        return GetConversationsUseCase(repository)
-    }
+    // @Provides
+    // @Singleton
+    // fun provideGetConversationsUseCase(repository: MessagesRepository): GetConversationsUseCase {
+    //     return GetConversationsUseCase(repository)
+    // }
     
-    @Provides
-    @Singleton
-    fun provideGetMessagesUseCase(repository: MessagesRepository): GetMessagesUseCase {
-        return GetMessagesUseCase(repository)
-    }
+    // @Provides
+    // @Singleton
+    // fun provideGetMessagesUseCase(repository: MessagesRepository): GetMessagesUseCase {
+    //     return GetMessagesUseCase(repository)
+    // }
     
-    @Provides
-    @Singleton
-    fun provideSendMessageUseCase(repository: MessagesRepository): SendMessageUseCase {
-        return SendMessageUseCase(repository)
-    }
+    // @Provides
+    // @Singleton
+    // fun provideSendMessageUseCase(repository: MessagesRepository): SendMessageUseCase {
+    //     return SendMessageUseCase(repository)
+    // }
     
     // --- Casos de uso de calificaciones ---
     @Provides

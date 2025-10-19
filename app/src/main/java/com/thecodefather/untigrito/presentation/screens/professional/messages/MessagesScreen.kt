@@ -29,6 +29,7 @@ fun MessagesScreen(
     LaunchedEffect(Unit) {
         viewModel.loadConversations()
         viewModel.loadUnreadCount()
+        viewModel.subscribeToRealtimeUpdates()
     }
 
     Column(

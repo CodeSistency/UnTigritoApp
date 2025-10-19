@@ -19,6 +19,7 @@ import com.thecodefather.untigrito.presentation.screens.client.ServicesScreen
 import com.thecodefather.untigrito.presentation.screens.client.ClientMainScreen
 import com.thecodefather.untigrito.presentation.screens.professional.messages.ChatScreen
 import com.thecodefather.untigrito.presentation.screens.professionals.profile.ProfessionalProfileScreen
+import com.thecodefather.untigrito.presentation.screens.professional.ProfessionalMainScreen
 
 /**
  * Route definitions for navigation
@@ -76,13 +77,19 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
         composable(Routes.LOGIN) {
             val viewModel: AuthViewModel = hiltViewModel()
             LoginScreen(
+                viewModel = viewModel,
                 onNavigateToRegister = {
                     navController.navigate(Routes.REGISTER)
                 },
                 onNavigateToForgotPassword = {
                     navController.navigate(Routes.FORGOT_PASSWORD)
+                },
+                onLoginSuccess = {
+                    navController.navigate(Routes.CLIENT_MAIN) {
+                        popUpTo(Routes.LOGIN) { inclusive = true }
+                    }
                 }
-            ){}
+            )
         }
 
         composable(Routes.CLIENT_REQUESTS){
@@ -92,6 +99,20 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
         }
 
         composable(Routes.REGISTER) {
+            val viewModel: AuthViewModel = hiltViewModel()
+            RegisterScreen(
+                viewModel = viewModel,
+                onNavigateToLogin = {
+                    navController.navigate(Routes.LOGIN) {
+                        popUpTo(Routes.REGISTER) { inclusive = true }
+                    }
+                },
+                onRegisterSuccess = {
+                    navController.navigate(Routes.CLIENT_MAIN) {
+                        popUpTo(Routes.REGISTER) { inclusive = true }
+                    }
+                }
+            )
         }
 
         composable(Routes.FORGOT_PASSWORD) {
@@ -132,7 +153,15 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
 
         composable(Routes.PROFESSIONAL_PROFILE) {
             ProfessionalProfileScreen(
+                professionalId = "default-id",
                 onBackClick = { navController.popBackStack() }
+            )
+        }
+
+        // Ruta para el módulo profesional
+        composable(ProfessionalNavigation.PROFESSIONAL_MAIN) {
+            ProfessionalMainScreen(
+                onNavigateBack = { navController.popBackStack() }
             )
         }
     }
