@@ -1,7 +1,9 @@
 package com.thecodefather.untigrito.presentation.screens.professional.jobs
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -13,6 +15,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -34,6 +37,7 @@ fun JobDetailScreen(
     }
 
     Scaffold(
+        containerColor = Color(0xFFF5F5F5), // Fondo gris claro
         topBar = {
             TopAppBar(
                 title = { Text("Detalle del Trabajo") },
@@ -42,13 +46,17 @@ fun JobDetailScreen(
                         Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
                     }
                 },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color(0xFFF5F5F5),
+                    titleContentColor = Color(0xFF212121)
+                ),
                 actions = {
                     uiState.job?.let { job ->
                         IconButton(onClick = { viewModel.toggleFavorite(jobId) }) {
                             Icon(
                                 imageVector = if (job.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
                                 contentDescription = "Favorito",
-                                tint = if (job.isFavorite) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                                tint = if (job.isFavorite) Color(0xFFE67822) else Color(0xFF616161)
                             )
                         }
                     }
@@ -64,7 +72,9 @@ fun JobDetailScreen(
                         .padding(paddingValues),
                     contentAlignment = Alignment.Center
                 ) {
-                    CircularProgressIndicator()
+                    CircularProgressIndicator(
+                        color = Color(0xFFE67822)
+                    )
                 }
             }
             uiState.job == null -> {
@@ -89,7 +99,7 @@ fun JobDetailScreen(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(paddingValues)
-                        .padding(horizontal = 16.dp)
+                        .padding(horizontal = 24.dp) // Padding consistente con client
                         .verticalScroll(rememberScrollState())
                 ) {
                     // Título
@@ -116,7 +126,10 @@ fun JobDetailScreen(
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(bottom = 16.dp)
+                            .padding(bottom = 16.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                        shape = RoundedCornerShape(12.dp)
                     ) {
                         Column(
                             modifier = Modifier.padding(16.dp)
@@ -130,7 +143,7 @@ fun JobDetailScreen(
                                 text = "$${String.format("%.2f", job.budget)}",
                                 style = MaterialTheme.typography.headlineSmall,
                                 fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.primary
+                                color = Color(0xFFE67822) // Color naranja
                             )
                         }
                     }
@@ -139,7 +152,10 @@ fun JobDetailScreen(
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(bottom = 16.dp)
+                            .padding(bottom = 16.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                        shape = RoundedCornerShape(12.dp)
                     ) {
                         Column(
                             modifier = Modifier.padding(16.dp)
@@ -161,7 +177,10 @@ fun JobDetailScreen(
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(bottom = 16.dp)
+                            .padding(bottom = 16.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                        shape = RoundedCornerShape(12.dp)
                     ) {
                         Column(
                             modifier = Modifier.padding(16.dp)
@@ -253,7 +272,10 @@ fun JobDetailScreen(
                         Card(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(bottom = 16.dp)
+                                .padding(bottom = 16.dp),
+                            colors = CardDefaults.cardColors(containerColor = Color.White),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                            shape = RoundedCornerShape(12.dp)
                         ) {
                             Column(
                                 modifier = Modifier.padding(16.dp)
@@ -280,7 +302,11 @@ fun JobDetailScreen(
                         onClick = { onNavigateToProposal(job.id) },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(top = 16.dp)
+                            .padding(top = 16.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFFE67822)
+                        ),
+                        shape = RoundedCornerShape(12.dp)
                     ) {
                         Text("Crear Propuesta")
                     }

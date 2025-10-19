@@ -1,9 +1,11 @@
 package com.thecodefather.untigrito.presentation.screens.professional.messages
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Send
@@ -11,6 +13,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -45,6 +48,7 @@ fun ChatScreen(
     }
 
     Scaffold(
+        containerColor = Color(0xFFF5F5F5), // Fondo gris claro
         topBar = {
             TopAppBar(
                 title = { 
@@ -58,7 +62,11 @@ fun ChatScreen(
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color(0xFFF5F5F5),
+                    titleContentColor = Color(0xFF212121)
+                )
             )
         }
     ) { paddingValues ->
@@ -76,7 +84,9 @@ fun ChatScreen(
                             .weight(1f),
                         contentAlignment = Alignment.Center
                     ) {
-                        CircularProgressIndicator()
+                        CircularProgressIndicator(
+                            color = Color(0xFFE67822)
+                        )
                     }
                 }
                 uiState.messages.isEmpty() -> {
@@ -86,11 +96,19 @@ fun ChatScreen(
                             .weight(1f),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(
-                            text = "No hay mensajes en esta conversación",
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                        Card(
+                            modifier = Modifier.padding(16.dp),
+                            colors = CardDefaults.cardColors(containerColor = Color.White),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Text(
+                                text = "No hay mensajes en esta conversación",
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = Color(0xFF616161),
+                                modifier = Modifier.padding(16.dp)
+                            )
+                        }
                     }
                 }
                 else -> {
@@ -118,7 +136,9 @@ fun ChatScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp),
-                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                shape = RoundedCornerShape(12.dp)
             ) {
                 Row(
                     modifier = Modifier
@@ -132,7 +152,14 @@ fun ChatScreen(
                         modifier = Modifier.weight(1f),
                         placeholder = { Text("Escribe un mensaje...") },
                         maxLines = 3,
-                        singleLine = false
+                        singleLine = false,
+                        shape = RoundedCornerShape(12.dp),
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = Color.White,
+                            unfocusedContainerColor = Color.White,
+                            focusedIndicatorColor = Color(0xFFE67822),
+                            unfocusedIndicatorColor = Color(0xFFE0E0E0)
+                        )
                     )
                     
                     Spacer(modifier = Modifier.width(8.dp))
@@ -144,16 +171,23 @@ fun ChatScreen(
                                 messageText = ""
                             }
                         },
-                        enabled = !uiState.isSendingMessage && messageText.isNotBlank()
+                        enabled = !uiState.isSendingMessage && messageText.isNotBlank(),
+                        modifier = Modifier
+                            .background(
+                                color = if (messageText.isNotBlank()) Color(0xFFE67822) else Color(0xFFE0E0E0),
+                                shape = RoundedCornerShape(12.dp)
+                            )
                     ) {
                         if (uiState.isSendingMessage) {
                             CircularProgressIndicator(
-                                modifier = Modifier.size(24.dp)
+                                modifier = Modifier.size(24.dp),
+                                color = Color.White
                             )
                         } else {
                             Icon(
                                 Icons.Default.Send,
-                                contentDescription = "Enviar mensaje"
+                                contentDescription = "Enviar mensaje",
+                                tint = Color.White
                             )
                         }
                     }

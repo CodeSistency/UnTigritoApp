@@ -38,6 +38,7 @@ fun ProfessionalPublicProfileScreen(
     }
     
     Scaffold(
+        containerColor = Color(0xFFF5F5F5), // Fondo gris claro
         topBar = {
             TopAppBar(
                 title = { Text("Perfil Profesional") },
@@ -48,7 +49,11 @@ fun ProfessionalPublicProfileScreen(
                             contentDescription = "Atrás"
                         )
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color(0xFFF5F5F5),
+                    titleContentColor = Color(0xFF212121)
+                )
             )
         }
     ) { paddingValues ->
@@ -65,6 +70,7 @@ fun ProfessionalPublicProfileScreen(
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     colors = CardDefaults.cardColors(containerColor = Color.White),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     Column(

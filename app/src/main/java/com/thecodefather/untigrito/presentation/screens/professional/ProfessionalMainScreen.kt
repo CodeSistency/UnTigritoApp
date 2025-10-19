@@ -133,6 +133,7 @@ fun ProfessionalMainScreen(
         }
     ) {
         Scaffold(
+        containerColor = Color(0xFFF5F5F5), // Fondo gris claro como en client
         topBar = {
             if(isMainScreen(currentRoute)) {
                 CenterAlignedTopAppBar(
@@ -150,8 +151,8 @@ fun ProfessionalMainScreen(
                         }
                     },
                     colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.background,
-                        titleContentColor = MaterialTheme.colorScheme.onBackground
+                        containerColor = Color(0xFFF5F5F5), // Fondo gris claro
+                        titleContentColor = Color(0xFF212121) // Texto oscuro
                     )
                 )
             }
@@ -335,7 +336,7 @@ fun ProfessionalBottomNavigation(
     list: List<ProfessionalNavigationItem>
 ) {
     NavigationBar(
-        containerColor = MaterialTheme.colorScheme.surface
+        containerColor = Color.White // Fondo blanco como en client
     ) {
         list.forEach { item ->
             NavigationBarItem(
@@ -345,10 +346,10 @@ fun ProfessionalBottomNavigation(
                 onClick = { onNavigate(item.route) },
                 colors = NavigationBarItemDefaults.colors(
                     selectedIconColor = Color.White,
-                    selectedTextColor = MaterialTheme.colorScheme.primary,
-                    unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                    unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                    indicatorColor = MaterialTheme.colorScheme.primary
+                    selectedTextColor = Color.White,
+                    unselectedIconColor = Color(0xFF616161), // Gris cuando inactivo
+                    unselectedTextColor = Color(0xFF616161), // Gris cuando inactivo
+                    indicatorColor = Color(0xFFE67822) // Naranja para indicador
                 )
             )
         }
@@ -406,6 +407,7 @@ fun ProfessionalDrawerContent(
                 .fillMaxWidth()
                 .padding(bottom = 16.dp),
             colors = CardDefaults.cardColors(containerColor = Color.White),
+            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
             shape = RoundedCornerShape(12.dp)
         ) {
             Column(

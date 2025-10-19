@@ -67,6 +67,7 @@ fun MyServicesScreen(
     }
 
     Scaffold(
+        containerColor = Color(0xFFF5F5F5), // Fondo gris claro
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
@@ -78,13 +79,20 @@ fun MyServicesScreen(
                             contentDescription = "Atrás"
                         )
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color(0xFFF5F5F5),
+                    titleContentColor = Color(0xFF212121)
+                )
             )
         },
         floatingActionButton = {
             FloatingActionButton(
                 onClick = onCreateService,
-                containerColor = Color(0xFFE67822)
+                containerColor = Color(0xFFE67822),
+                elevation = FloatingActionButtonDefaults.elevation(
+                    defaultElevation = 4.dp
+                )
             ) {
                 Icon(
                     imageVector = Icons.Default.Add,
@@ -122,39 +130,48 @@ fun MyServicesScreen(
                     .padding(paddingValues),
                 contentAlignment = Alignment.Center
             ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally
+                Card(
+                    modifier = Modifier.padding(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                    shape = RoundedCornerShape(12.dp)
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Work,
-                        contentDescription = "Sin servicios",
-                        modifier = Modifier.size(64.dp),
-                        tint = Color.Gray
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        text = "No tienes servicios publicados",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = Color.Gray
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = "Crea tu primer servicio para comenzar",
-                        fontSize = 14.sp,
-                        color = Color.Gray
-                    )
-                    Spacer(modifier = Modifier.height(24.dp))
-                    Button(
-                        onClick = onCreateService,
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE67822))
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.padding(16.dp)
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Add,
-                            contentDescription = "Agregar",
-                            modifier = Modifier.padding(end = 8.dp)
+                            imageVector = Icons.Default.Work,
+                            contentDescription = "Sin servicios",
+                            modifier = Modifier.size(64.dp),
+                            tint = Color(0xFF616161)
                         )
-                        Text("Crear Servicio")
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = "No tienes servicios publicados",
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = Color(0xFF616161)
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "Crea tu primer servicio para comenzar",
+                            fontSize = 14.sp,
+                            color = Color.Gray
+                        )
+                        Spacer(modifier = Modifier.height(24.dp))
+                        Button(
+                            onClick = onCreateService,
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE67822)),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Add,
+                                contentDescription = "Agregar",
+                                modifier = Modifier.padding(end = 8.dp)
+                            )
+                            Text("Crear Servicio")
+                        }
                     }
                 }
             }
@@ -197,8 +214,9 @@ private fun ServiceCard(
             .fillMaxWidth()
             .clickable { onEdit() },
         colors = CardDefaults.cardColors(
-            containerColor = if (service.isActive) Color.White else Color(0xFFF5F5F5)
+            containerColor = Color.White
         ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         shape = RoundedCornerShape(12.dp)
     ) {
         Column(
@@ -251,7 +269,7 @@ private fun ServiceCard(
                     text = "Bs. ${service.price}",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF4CAF50)
+                    color = Color(0xFFE67822) // Color naranja
                 )
                 
                 Row(
@@ -309,4 +327,3 @@ private fun ServiceCard(
         )
     }
 }
-

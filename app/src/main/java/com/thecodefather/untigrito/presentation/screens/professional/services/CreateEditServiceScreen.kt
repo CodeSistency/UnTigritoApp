@@ -1,5 +1,6 @@
 package com.thecodefather.untigrito.presentation.screens.professional.services
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -79,6 +80,7 @@ fun CreateEditServiceScreen(
     }
 
     Scaffold(
+        containerColor = Color(0xFFF5F5F5), // Fondo gris claro
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
@@ -95,6 +97,10 @@ fun CreateEditServiceScreen(
                         )
                     }
                 },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color(0xFFF5F5F5),
+                    titleContentColor = Color(0xFF212121)
+                ),
                 actions = {
                     if (serviceId != null) {
                         IconButton(
@@ -120,7 +126,7 @@ fun CreateEditServiceScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(16.dp)
+                .padding(24.dp) // Padding consistente con client
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
@@ -128,6 +134,7 @@ fun CreateEditServiceScreen(
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(containerColor = Color.White),
+                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
                 shape = RoundedCornerShape(12.dp)
             ) {
                 Column(
@@ -145,10 +152,17 @@ fun CreateEditServiceScreen(
             OutlinedTextField(
                 value = title,
                 onValueChange = { title = it },
-                        label = { Text("Título del servicio") },
-                        modifier = Modifier.fillMaxWidth(),
-                        enabled = !isLoading,
-                        isError = title.isBlank() && title.isNotEmpty()
+                label = { Text("Título del servicio") },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = !isLoading,
+                isError = title.isBlank() && title.isNotEmpty(),
+                shape = RoundedCornerShape(12.dp),
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = Color.White,
+                    unfocusedContainerColor = Color.White,
+                    focusedIndicatorColor = Color(0xFFE67822),
+                    unfocusedIndicatorColor = Color(0xFFE0E0E0)
+                )
             )
 
             // Descripción
@@ -156,20 +170,34 @@ fun CreateEditServiceScreen(
                 value = description,
                 onValueChange = { description = it },
                 label = { Text("Descripción") },
-                        modifier = Modifier.fillMaxWidth(),
-                        maxLines = 4,
-                        enabled = !isLoading,
-                        isError = description.isBlank() && description.isNotEmpty()
-                    )
+                modifier = Modifier.fillMaxWidth(),
+                maxLines = 4,
+                enabled = !isLoading,
+                isError = description.isBlank() && description.isNotEmpty(),
+                shape = RoundedCornerShape(12.dp),
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = Color.White,
+                    unfocusedContainerColor = Color.White,
+                    focusedIndicatorColor = Color(0xFFE67822),
+                    unfocusedIndicatorColor = Color(0xFFE0E0E0)
+                )
+            )
 
                     // Precio
-            OutlinedTextField(
+                    OutlinedTextField(
                         value = price,
                         onValueChange = { price = it },
                         label = { Text("Precio (Bs.)") },
                         modifier = Modifier.fillMaxWidth(),
                         enabled = !isLoading,
-                        isError = price.toDoubleOrNull()?.let { it <= 0 } == true
+                        isError = price.toDoubleOrNull()?.let { it <= 0 } == true,
+                        shape = RoundedCornerShape(12.dp),
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = Color.White,
+                            unfocusedContainerColor = Color.White,
+                            focusedIndicatorColor = Color(0xFFE67822),
+                            unfocusedIndicatorColor = Color(0xFFE0E0E0)
+                        )
                     )
 
                     // Categoría
@@ -243,7 +271,8 @@ fun CreateEditServiceScreen(
             if (title.isNotBlank() && description.isNotBlank() && price.isNotBlank()) {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFFF5F5F5)),
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     Column(
@@ -284,7 +313,7 @@ fun CreateEditServiceScreen(
                                 text = "Bs. $price",
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFF4CAF50)
+                                color = Color(0xFFE67822) // Color naranja
                             )
                             
                             AssistChip(
@@ -343,8 +372,12 @@ fun CreateEditServiceScreen(
                     },
                     modifier = Modifier.weight(1f),
                     enabled = !isLoading && title.isNotBlank() && description.isNotBlank() && 
-                             price.toDoubleOrNull()?.let { it > 0 } == true && selectedCategoryId.isNotBlank()
-            ) {
+                             price.toDoubleOrNull()?.let { it > 0 } == true && selectedCategoryId.isNotBlank(),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFFE67822)
+                    ),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
                 if (isLoading) {
                     CircularProgressIndicator(
                             modifier = Modifier.size(16.dp),

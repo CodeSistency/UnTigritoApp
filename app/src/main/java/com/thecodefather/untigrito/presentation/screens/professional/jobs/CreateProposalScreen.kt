@@ -1,7 +1,9 @@
 package com.thecodefather.untigrito.presentation.screens.professional.jobs
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -9,6 +11,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -42,6 +45,7 @@ fun CreateProposalScreen(
     }
 
     Scaffold(
+        containerColor = Color(0xFFF5F5F5), // Fondo gris claro
         topBar = {
             TopAppBar(
                 title = { Text("Crear Propuesta") },
@@ -49,7 +53,11 @@ fun CreateProposalScreen(
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color(0xFFF5F5F5),
+                    titleContentColor = Color(0xFF212121)
+                )
             )
         }
     ) { paddingValues ->
@@ -61,7 +69,9 @@ fun CreateProposalScreen(
                         .padding(paddingValues),
                     contentAlignment = Alignment.Center
                 ) {
-                    CircularProgressIndicator()
+                    CircularProgressIndicator(
+                        color = Color(0xFFE67822)
+                    )
                 }
             }
             uiState.job == null -> {
@@ -85,14 +95,17 @@ fun CreateProposalScreen(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(paddingValues)
-                        .padding(16.dp)
+                        .padding(24.dp) // Padding consistente con client
                         .verticalScroll(rememberScrollState())
                 ) {
                     // Información del trabajo
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(bottom = 16.dp)
+                            .padding(bottom = 16.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                        shape = RoundedCornerShape(12.dp)
                     ) {
                         Column(
                             modifier = Modifier.padding(16.dp)
@@ -119,7 +132,14 @@ fun CreateProposalScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(bottom = 16.dp),
-                        supportingText = { Text("Ingresa tu precio propuesto") }
+                        supportingText = { Text("Ingresa tu precio propuesto") },
+                        shape = RoundedCornerShape(12.dp),
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = Color.White,
+                            unfocusedContainerColor = Color.White,
+                            focusedIndicatorColor = Color(0xFFE67822),
+                            unfocusedIndicatorColor = Color(0xFFE0E0E0)
+                        )
                     )
 
                     // Descripción de la propuesta
@@ -132,7 +152,14 @@ fun CreateProposalScreen(
                             .padding(bottom = 16.dp),
                         minLines = 3,
                         maxLines = 5,
-                        supportingText = { Text("Explica por qué eres la mejor opción para este trabajo") }
+                        supportingText = { Text("Explica por qué eres la mejor opción para este trabajo") },
+                        shape = RoundedCornerShape(12.dp),
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = Color.White,
+                            unfocusedContainerColor = Color.White,
+                            focusedIndicatorColor = Color(0xFFE67822),
+                            unfocusedIndicatorColor = Color(0xFFE0E0E0)
+                        )
                     )
 
                     // Duración estimada
@@ -143,14 +170,24 @@ fun CreateProposalScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(bottom = 16.dp),
-                        supportingText = { Text("¿Cuántos días necesitas para completar el trabajo?") }
+                        supportingText = { Text("¿Cuántos días necesitas para completar el trabajo?") },
+                        shape = RoundedCornerShape(12.dp),
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = Color.White,
+                            unfocusedContainerColor = Color.White,
+                            focusedIndicatorColor = Color(0xFFE67822),
+                            unfocusedIndicatorColor = Color(0xFFE0E0E0)
+                        )
                     )
 
                     // Opciones adicionales
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(bottom = 16.dp)
+                            .padding(bottom = 16.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                        shape = RoundedCornerShape(12.dp)
                     ) {
                         Column(
                             modifier = Modifier.padding(16.dp)
@@ -202,7 +239,14 @@ fun CreateProposalScreen(
                             .padding(bottom = 24.dp),
                         minLines = 2,
                         maxLines = 4,
-                        supportingText = { Text("Especifica cualquier término especial de tu propuesta") }
+                        supportingText = { Text("Especifica cualquier término especial de tu propuesta") },
+                        shape = RoundedCornerShape(12.dp),
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = Color.White,
+                            unfocusedContainerColor = Color.White,
+                            focusedIndicatorColor = Color(0xFFE67822),
+                            unfocusedIndicatorColor = Color(0xFFE0E0E0)
+                        )
                     )
 
                     // Botón de enviar propuesta
@@ -220,11 +264,16 @@ fun CreateProposalScreen(
                         },
                         modifier = Modifier
                             .fillMaxWidth(),
-                        enabled = !uiState.isLoading && proposedPrice.isNotEmpty() && description.isNotEmpty()
+                        enabled = !uiState.isLoading && proposedPrice.isNotEmpty() && description.isNotEmpty(),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFFE67822)
+                        ),
+                        shape = RoundedCornerShape(12.dp)
                     ) {
                         if (uiState.isLoading) {
                             CircularProgressIndicator(
-                                modifier = Modifier.size(16.dp)
+                                modifier = Modifier.size(16.dp),
+                                color = Color.White
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                         }

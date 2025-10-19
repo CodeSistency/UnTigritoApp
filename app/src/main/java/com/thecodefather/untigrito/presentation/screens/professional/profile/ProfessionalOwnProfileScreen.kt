@@ -106,6 +106,7 @@ fun ProfessionalOwnProfileScreen(
     }
     
     Scaffold(
+        containerColor = Color(0xFFF5F5F5), // Fondo gris claro
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
@@ -118,6 +119,10 @@ fun ProfessionalOwnProfileScreen(
                         )
                     }
                 },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color(0xFFF5F5F5),
+                    titleContentColor = Color(0xFF212121)
+                ),
                 actions = {
                     if (!isEditing) {
                         TextButton(onClick = { isEditing = true }) {
@@ -164,6 +169,7 @@ fun ProfessionalOwnProfileScreen(
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     colors = CardDefaults.cardColors(containerColor = Color.White),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     Column(
@@ -191,7 +197,14 @@ fun ProfessionalOwnProfileScreen(
                                 onValueChange = { viewModel.updateField("name", it) },
                                 label = { Text("Nombre") },
                                 modifier = Modifier.fillMaxWidth(),
-                                enabled = !isUpdating
+                                enabled = !isUpdating,
+                                shape = RoundedCornerShape(12.dp),
+                                colors = TextFieldDefaults.colors(
+                                    focusedContainerColor = Color.White,
+                                    unfocusedContainerColor = Color.White,
+                                    focusedIndicatorColor = Color(0xFFE67822),
+                                    unfocusedIndicatorColor = Color(0xFFE0E0E0)
+                                )
                             )
                             
                             Spacer(modifier = Modifier.height(8.dp))
@@ -201,7 +214,14 @@ fun ProfessionalOwnProfileScreen(
                                 onValueChange = { viewModel.updateField("email", it) },
                                 label = { Text("Email") },
                                 modifier = Modifier.fillMaxWidth(),
-                                enabled = !isUpdating
+                                enabled = !isUpdating,
+                                shape = RoundedCornerShape(12.dp),
+                                colors = TextFieldDefaults.colors(
+                                    focusedContainerColor = Color.White,
+                                    unfocusedContainerColor = Color.White,
+                                    focusedIndicatorColor = Color(0xFFE67822),
+                                    unfocusedIndicatorColor = Color(0xFFE0E0E0)
+                                )
                             )
                             
                             Spacer(modifier = Modifier.height(8.dp))
@@ -212,7 +232,14 @@ fun ProfessionalOwnProfileScreen(
                                 label = { Text("Biografía") },
                                 modifier = Modifier.fillMaxWidth(),
                                 maxLines = 3,
-                                enabled = !isUpdating
+                                enabled = !isUpdating,
+                                shape = RoundedCornerShape(12.dp),
+                                colors = TextFieldDefaults.colors(
+                                    focusedContainerColor = Color.White,
+                                    unfocusedContainerColor = Color.White,
+                                    focusedIndicatorColor = Color(0xFFE67822),
+                                    unfocusedIndicatorColor = Color(0xFFE0E0E0)
+                                )
                             )
                         } else {
                             Text(
