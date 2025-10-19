@@ -1,5 +1,6 @@
 package com.thecodefather.untigrito.presentation.screens.client
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -41,6 +42,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -78,6 +80,9 @@ fun ClientProfileScreen(
             }
         }
     }
+    
+    val context= LocalContext.current
+
 
     // Navegar a la sección de profesionales cuando el switch esté en true
     LaunchedEffect(isProfessional) {
@@ -87,9 +92,9 @@ fun ClientProfileScreen(
                 // Ya es profesional, navegar directamente
                 navController.navigate(ProfessionalNavigation.PROFESSIONAL_MAIN)
             } else {
-                // No es profesional, ir a verificación
-                navController.navigate(Routes.IDENTITY_VERIFICATION)
+                Toast.makeText(context, "Verifica tu cuenta para activar tu perfil profesional", Toast.LENGTH_SHORT).show()
                 isProfessional = false // Reset toggle
+                
             }
         }
     }
@@ -163,10 +168,20 @@ fun ClientProfileScreen(
                         .fillMaxWidth()
                         .padding(16.dp)
                 ) {
+                    val currentUser = user
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable { /* Navegar a Verificaciones */ }
+                            .clickable {
+                                if (currentUser?.role == "PROFESSIONAL") {
+                                    // Ya es profesional, navegar directamente
+                                    navController.navigate(ProfessionalNavigation.PROFESSIONAL_MAIN)
+                                } else {
+                                    // No es profesional, ir a verificación
+                                    navController.navigate(Routes.IDENTITY_VERIFICATION)
+                                    isProfessional = false // Reset toggle
+                                }
+                            }
                             .padding(vertical = 8.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
