@@ -43,6 +43,8 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -87,13 +89,6 @@ fun RegisterScreen(
     val passwordError by viewModel.passwordError.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
 
-    // Google Sign-In launcher
-    val googleSignInLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.StartActivityForResult()
-    ) { result ->
-        viewModel.handleGoogleSignInResult(result.data)
-    }
-
     // Handle authentication state changes
     LaunchedEffect(authState) {
         when (authState) {
@@ -122,10 +117,11 @@ fun RegisterScreen(
     ) { paddingValues ->
         Column(
             modifier =
-                Modifier.verticalScroll(rememberScrollState())
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(horizontal = 24.dp),
+                Modifier
+                    .verticalScroll(rememberScrollState())
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .padding(horizontal = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Top
         ) {
@@ -133,10 +129,10 @@ fun RegisterScreen(
             Image(
                 painter = painterResource(id = R.drawable.untiger), // Usar un icono existente como marcador de posición
                 contentDescription = "Logo de la aplicación",
-                modifier = Modifier.size(140.dp)
+                modifier = Modifier.size(160.dp)
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(4.dp))
 
             Text(
                 text = "Crear Cuenta",
@@ -148,7 +144,7 @@ fun RegisterScreen(
 
             Text(
                 text = "Crea tu cuenta y empieza a encontrar a los mejores profesionales.",
-                style = MaterialTheme.typography.bodyLarge,
+                style = MaterialTheme.typography.bodyMedium,
                 color = Color.Gray,
                 modifier = Modifier.padding(horizontal = 16.dp),
                 textAlign = TextAlign.Center
@@ -159,15 +155,21 @@ fun RegisterScreen(
             OutlinedTextField(
                 value = name,
                 onValueChange = { name = it },
+                shape = RoundedCornerShape(15.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = Color(0xFFE67822)
+                ),
                 label = { Text("Nombre y apellido") },
                 modifier = Modifier.fillMaxWidth(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
-
             OutlinedTextField(
                 value = email,
+                shape = RoundedCornerShape(15.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = Color(0xFFE67822)
+                ),
                 onValueChange = {
                     email = it
                     viewModel.validateEmail(it) // Validate in real-time
@@ -176,12 +178,13 @@ fun RegisterScreen(
                 modifier = Modifier.fillMaxWidth(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                 isError = emailError != null,
-                supportingText = {
-                    emailError?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+                supportingText =if(emailError == null) null else {
+                    {
+                        emailError?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+                    }
                 }
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
 
             OutlinedTextField(
                 value = password,
@@ -189,14 +192,21 @@ fun RegisterScreen(
                     password = it
                     viewModel.validatePassword(it) // Validate in real-time
                 },
+
+                shape = RoundedCornerShape(15.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = Color(0xFFE67822)
+                ),
                 label = { Text("Contraseña") },
                 modifier = Modifier.fillMaxWidth(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 isError = passwordError != null,
-                supportingText = {
-                    passwordError?.let { Text(it, color = MaterialTheme.colorScheme.error) }
-                },
+                supportingText = if(passwordError != null) {
+                    {
+                        passwordError?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+                    }
+                } else null,
                 trailingIcon = {
                     val image = if (passwordVisible)
                         Icons.Filled.Visibility
@@ -207,9 +217,12 @@ fun RegisterScreen(
                 },
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
-
             OutlinedTextField(
+
+                shape = RoundedCornerShape(15.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = Color(0xFFE67822)
+                ),
                 value = confirmPassword,
                 onValueChange = { confirmPassword = it },
                 label = { Text("Confirmación de contraseña") },
@@ -233,6 +246,7 @@ fun RegisterScreen(
                     android.util.Log.e("TAG", "RegisterScreen: Iniciando registro con Supabase")
                     viewModel.registerWithSupabase(name, email, password, confirmPassword)
                 },
+                shape = RoundedCornerShape(10.dp),
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE67822)),
                 contentPadding = PaddingValues(vertical = 12.dp),
@@ -244,7 +258,7 @@ fun RegisterScreen(
                         color = Color.White
                     )
                 } else {
-                    Text(text = "Registrarse", fontSize = 18.sp, color = Color.White)
+                    Text(text = "Registrarse", color = Color.White)
                 }
             }
 

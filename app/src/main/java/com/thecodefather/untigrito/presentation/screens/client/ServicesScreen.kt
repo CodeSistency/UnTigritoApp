@@ -23,6 +23,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -54,6 +55,7 @@ import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.launch
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import com.thecodefather.untigrito.domain.model.toProfessionalService
 
 /**
@@ -70,7 +72,7 @@ fun ServicesScreen(
     val servicesWithProfessionals by viewModel.servicesWithProfessionals.collectAsState()
     var selectedContentTypeIndex by remember { mutableStateOf(0) }
     val contentTypeTabs = listOf("Servicios", "Profesionales")
-    
+
     // Pull-to-refresh state
     val pullToRefreshState = rememberPullToRefreshState()
     val coroutineScope = rememberCoroutineScope()
@@ -84,7 +86,7 @@ fun ServicesScreen(
             viewModel.loadProfessionals()
         }
     }
-    
+
     // Cargar datos cuando cambie la pestaña
     LaunchedEffect(selectedContentTypeIndex) {
         if (selectedContentTypeIndex == 0) {
@@ -93,7 +95,7 @@ fun ServicesScreen(
             viewModel.loadProfessionals()
         }
     }
-    
+
     // Pull-to-refresh logic
     LaunchedEffect(pullToRefreshState.isRefreshing) {
         if (pullToRefreshState.isRefreshing) {
@@ -117,7 +119,7 @@ fun ServicesScreen(
                 navController.navigate(Routes.createChatRoute("test_conversation"))
             }
         )
-        
+
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -135,14 +137,14 @@ fun ServicesScreen(
                         value = uiState.searchQuery,
                         onValueChange = { viewModel.searchServices(it) },
                         modifier = Modifier.fillMaxWidth(),
-                        placeholder = { Text("Busca servicios o profesionales...") },
+                        placeholder = { Text("Busca servicios o profesionales...", style = MaterialTheme.typography.bodySmall,
+                            ) },
                         leadingIcon = {
                             Icon(Icons.Default.Search, contentDescription = "Search")
                         },
-                        shape = RoundedCornerShape(12.dp),
-                        colors = TextFieldDefaults.colors().copy(
-                            focusedContainerColor = Color(0xFFF0F0F0),
-                            unfocusedContainerColor = Color(0xFFF0F0F0)
+                        shape = RoundedCornerShape(15.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = Color(0xFFE67822)
                         )
                     )
                     Spacer(modifier = Modifier.height(16.dp))
@@ -156,7 +158,7 @@ fun ServicesScreen(
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.padding(bottom = 12.dp)
                     )
-                    
+
                     // LazyRow de categorías
                     LazyRow(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -166,13 +168,13 @@ fun ServicesScreen(
                             CategoryChip(
                                 category = category,
                                 isSelected = uiState.selectedCategory == category.id,
-                                onClick = { 
+                                onClick = {
                                     viewModel.filterByCategory(category.id)
                                 }
                             )
                         }
                     }
-                    
+
                     Spacer(modifier = Modifier.height(16.dp))
                 }
 
@@ -257,7 +259,7 @@ fun ServicesScreen(
                                     userLng = null,
                                     serviceWithProf = serviceWithProf
                                 )
-                                
+
                                 ServiceCard(
                                     service = service.toProfessionalService(),
                                     professionalName = professionalName,
@@ -292,7 +294,7 @@ fun ServicesScreen(
                         }
                     }
                 }
-                
+
                 // Pull-to-refresh container
                 // PullToRefreshContainer(
                 //     state = pullToRefreshState,

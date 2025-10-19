@@ -78,12 +78,6 @@ fun LoginScreen(
     val passwordError by viewModel.passwordError.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
 
-    // Google Sign-In launcher
-    val googleSignInLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.StartActivityForResult()
-    ) { result ->
-        viewModel.handleGoogleSignInResult(result.data)
-    }
 
     // Handle authentication state changes
     LaunchedEffect(authState) {
@@ -112,10 +106,10 @@ fun LoginScreen(
             Image(
                 painter = painterResource(id = R.drawable.untiger), // Usar un icono existente como marcador de posición
                 contentDescription = "Logo de la aplicación",
-                modifier = Modifier.size(140.dp)
+                modifier = Modifier.size(160.dp)
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(4.dp))
 
             Text(
                 text = "Iniciar Sesión",
@@ -127,7 +121,7 @@ fun LoginScreen(
 
             Text(
                 text = "Estamos aquí para ayudarte. Inicia sesión y encuentra el servicio que necesitas.",
-                style = MaterialTheme.typography.bodyLarge,
+                style = MaterialTheme.typography.bodyMedium,
                 color = Color.Gray,
                 modifier = Modifier.padding(horizontal = 16.dp),
                 textAlign = TextAlign.Center
@@ -141,11 +135,10 @@ fun LoginScreen(
                     email = it
                     viewModel.validateEmail(it)
                 },
-                shape = RoundedCornerShape(10.dp),
+                shape = RoundedCornerShape(15.dp),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = Color(0xFFE67822)
                 ),
-
                 label = { Text("Correo electrónico") },
                 modifier = Modifier.fillMaxWidth(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
@@ -161,6 +154,10 @@ fun LoginScreen(
                     password = it
                     viewModel.validatePassword(it) // Validate in real-time
                 },
+                shape = RoundedCornerShape(15.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = Color(0xFFE67822)
+                ),
                 label = { Text("Contraseña") },
                 modifier = Modifier.fillMaxWidth(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
@@ -179,7 +176,7 @@ fun LoginScreen(
                 },
                 )
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(2.dp))
 
             TextButton(
                 onClick = onNavigateToForgotPassword,
