@@ -6,6 +6,8 @@ import androidx.lifecycle.viewModelScope
 import android.content.Context
 import com.thecodefather.untigrito.data.datasource.remote.SupabaseDatabaseService
 import com.thecodefather.untigrito.data.datasource.remote.SupabaseStorageService
+import com.thecodefather.untigrito.data.datasource.remote.SupabaseUser
+import com.thecodefather.untigrito.auth.domain.usecase.AuthStateManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.jan.supabase.gotrue.Auth
@@ -29,6 +31,7 @@ class IdentityVerificationViewModel @Inject constructor(
     private val supabaseStorageService: SupabaseStorageService,
     private val postgrest: Postgrest,
     private val supabaseAuth: Auth,
+    private val authStateManager: AuthStateManager,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
 
@@ -55,12 +58,11 @@ class IdentityVerificationViewModel @Inject constructor(
 
         viewModelScope.launch {
             try {
-                // Obtener el ID del usuario actual desde Supabase Auth
+                // Obtener el ID del usuario actual desde AuthStateManager
                 Timber.d("🔐 AUTH - Verificando usuario autenticado...")
-                val currentUser = supabaseAuth.currentUserOrNull()
-                Timber.d("🔐 AUTH - Current user: $currentUser")
+                val currentUserId = authStateManager.getCurrentUserId()
+                Timber.d("🔐 AUTH - Current user ID: $currentUserId")
                 
-                val currentUserId = currentUser?.id
                 if (currentUserId == null) {
                     Timber.w("⚠️ AUTH - Usuario no autenticado")
                     _uiState.value = _uiState.value.copy(
@@ -79,31 +81,36 @@ class IdentityVerificationViewModel @Inject constructor(
                 // 1. Actualizar el usuario a PROFESSIONAL (sin subir imagen)
                 Timber.d("📤 DATABASE - Actualizando usuario a PROFESSIONAL...")
                 
-                val updatedFields = mapOf(
-                    "role" to "PROFESSIONAL",
-                    "isIDVerified" to true
+                // Crear un objeto SupabaseUser con los campos actualizados
+                val updatedUser = SupabaseUser(
+                    id = currentUserId,
+                    role = "PROFESSIONAL",
+                    isIDVerified = true
                 )
-
-                val result = postgrest.from("User")
-                    .update(updatedFields) {
-                        filter {
-                            eq("id", currentUserId)
-                        }
+                
+                // Usar el método genérico update del SupabaseDatabaseService
+                val result = supabaseDatabaseService.update("User", currentUserId, updatedUser)
+                
+                result.onSuccess { updatedUserResult ->
+                    if (updatedUserResult != null) {
+                        Timber.d("✅ IDENTITY_VERIFICATION_SUCCESS - Usuario actualizado a PROFESSIONAL")
+                        _uiState.value = _uiState.value.copy(
+                            isLoading = false,
+                            verificationSuccess = true,
+                            errorMessage = null
+                        )
+                    } else {
+                        Timber.w("⚠️ IDENTITY_VERIFICATION_FAILED - No se pudo actualizar el usuario")
+                        _uiState.value = _uiState.value.copy(
+                            isLoading = false,
+                            errorMessage = "No se pudo actualizar tu perfil. Inténtalo de nuevo."
+                        )
                     }
-                    .decodeSingleOrNull<Map<String, Any>>()
-
-                if (result != null) {
-                    Timber.d("✅ IDENTITY_VERIFICATION_SUCCESS - Usuario actualizado a PROFESSIONAL")
+                }.onFailure { exception ->
+                    Timber.e(exception, "❌ IDENTITY_VERIFICATION_ERROR - Error en actualización")
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
-                        verificationSuccess = true,
-                        errorMessage = null
-                    )
-                } else {
-                    Timber.w("⚠️ IDENTITY_VERIFICATION_FAILED - No se pudo actualizar el usuario")
-                    _uiState.value = _uiState.value.copy(
-                        isLoading = false,
-                        errorMessage = "No se pudo actualizar tu perfil. Inténtalo de nuevo."
+                        errorMessage = "Error al actualizar tu perfil: ${exception.message}"
                     )
                 }
                 } // Cerrar withTimeout
