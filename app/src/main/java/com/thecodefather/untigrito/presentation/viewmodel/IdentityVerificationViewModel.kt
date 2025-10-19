@@ -4,6 +4,7 @@ import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import android.content.Context
+import com.thecodefather.untigrito.auth.domain.usecase.AuthStateManager
 import com.thecodefather.untigrito.data.datasource.remote.SupabaseDatabaseService
 import com.thecodefather.untigrito.data.datasource.remote.SupabaseStorageService
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -29,6 +30,7 @@ class IdentityVerificationViewModel @Inject constructor(
     private val supabaseStorageService: SupabaseStorageService,
     private val postgrest: Postgrest,
     private val supabaseAuth: Auth,
+    private val authStateManager: AuthStateManager,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
 
@@ -55,14 +57,13 @@ class IdentityVerificationViewModel @Inject constructor(
 
         viewModelScope.launch {
             try {
-                // Obtener el ID del usuario actual desde Supabase Auth
+                // Obtener el usuario actual desde AuthStateManager
                 Timber.d("🔐 AUTH - Verificando usuario autenticado...")
-                val currentUser = supabaseAuth.currentUserOrNull()
+                val currentUser = authStateManager.getCurrentUser()
                 Timber.d("🔐 AUTH - Current user: $currentUser")
                 
-                val currentUserId = currentUser?.id
-                if (currentUserId == null) {
-                    Timber.w("⚠️ AUTH - Usuario no autenticado")
+                if (currentUser == null) {
+                    Timber.w("⚠️ AUTH - Usuario no autenticado en AuthStateManager")
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
                         errorMessage = "Usuario no autenticado. Por favor, inicia sesión nuevamente."
@@ -74,38 +75,30 @@ class IdentityVerificationViewModel @Inject constructor(
                 // Timeout de 30 segundos para evitar cuelgues
                 withTimeout(30000) {
                 Timber.d("🔐 IDENTITY_VERIFICATION_START - Verificando identidad...")
-                Timber.d("🔐 IDENTITY_VERIFICATION - User ID: $currentUserId")
+                Timber.d("🔐 IDENTITY_VERIFICATION - User email: ${currentUser.email}")
 
-                // 1. Actualizar el usuario a PROFESSIONAL (sin subir imagen)
+                // 1. Actualizar el usuario a PROFESSIONAL usando email como identificador
                 Timber.d("📤 DATABASE - Actualizando usuario a PROFESSIONAL...")
                 
                 val updatedFields = mapOf(
                     "role" to "PROFESSIONAL",
-                    "isIDVerified" to true
+                    "isIDVerified" to "true"
                 )
 
-                val result = postgrest.from("User")
+                // Ejecutar la actualización sin decodificar la respuesta
+                postgrest.from("User")
                     .update(updatedFields) {
                         filter {
-                            eq("id", currentUserId)
+                            eq("email", currentUser.email)
                         }
                     }
-                    .decodeSingleOrNull<Map<String, Any>>()
 
-                if (result != null) {
-                    Timber.d("✅ IDENTITY_VERIFICATION_SUCCESS - Usuario actualizado a PROFESSIONAL")
-                    _uiState.value = _uiState.value.copy(
-                        isLoading = false,
-                        verificationSuccess = true,
-                        errorMessage = null
-                    )
-                } else {
-                    Timber.w("⚠️ IDENTITY_VERIFICATION_FAILED - No se pudo actualizar el usuario")
-                    _uiState.value = _uiState.value.copy(
-                        isLoading = false,
-                        errorMessage = "No se pudo actualizar tu perfil. Inténtalo de nuevo."
-                    )
-                }
+                Timber.d("✅ IDENTITY_VERIFICATION_SUCCESS - Usuario actualizado a PROFESSIONAL")
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    verificationSuccess = true,
+                    errorMessage = null
+                )
                 } // Cerrar withTimeout
 
             } catch (exception: Exception) {
