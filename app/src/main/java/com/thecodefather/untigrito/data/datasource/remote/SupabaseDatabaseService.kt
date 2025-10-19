@@ -229,6 +229,52 @@ public class SupabaseDatabaseService @Inject constructor(
         }
 
     /**
+     * Obtiene servicios con información del profesional
+     */
+    suspend fun getServicesWithProfessional(): Result<List<ServiceWithProfessional>> =
+        withContext(Dispatchers.IO) {
+            try {
+                val result = postgrest.from("ProfessionalService")
+                    .select(
+                        columns = Columns.raw("""
+                            *,
+                            professional:User!professionalId(name, locationLat, locationLng)
+                        """)
+                    )
+                    .decodeList<ServiceWithProfessional>()
+                
+                Timber.d("Servicios con profesional obtenidos: ${result.size}")
+                Result.success(result)
+            } catch (e: Exception) {
+                Timber.e(e, "Error al obtener servicios con profesional")
+                Result.failure(e)
+            }
+        }
+
+    /**
+     * Obtiene servicios filtrados por categoría
+     */
+    suspend fun getServicesByCategory(categoryId: String): Result<List<SupabaseService>> =
+        withContext(Dispatchers.IO) {
+            try {
+                val result = postgrest.from("ProfessionalService")
+                    .select {
+                        filter {
+                            eq("categoryId", categoryId)
+                            eq("isActive", true)
+                        }
+                    }
+                    .decodeList<SupabaseService>()
+                
+                Timber.d("Servicios por categoría $categoryId: ${result.size}")
+                Result.success(result)
+            } catch (e: Exception) {
+                Timber.e(e, "Error al obtener servicios por categoría $categoryId")
+                Result.failure(e)
+            }
+        }
+
+    /**
      * Crea un nuevo servicio profesional
      */
     suspend fun createProfessionalService(service: SupabaseService): Result<SupabaseService?> =
@@ -748,9 +794,11 @@ data class SupabasePayment(
 data class SupabaseProfession(
     val id: String,
     val name: String,
-    val slug: String,
     val description: String? = null,
-    val createdAt: String? = null
+    val icon: String? = null,
+    val isActive: Boolean = true,
+    val createdAt: String? = null,
+    val updatedAt: String? = null
 )
 
 /**
@@ -1004,6 +1052,33 @@ data class SupabaseConversationParticipant(
     val conversationId: String,
     val userId: String,
     val joinedAt: String? = null
+)
+
+/**
+ * Modelo para servicios con información del profesional
+ */
+@SuppressLint("UnsafeOptInUsageError")
+@Serializable
+data class ServiceWithProfessional(
+    val id: String,
+    val professionalId: String,
+    val title: String,
+    val description: String,
+    val price: Double,
+    val categoryId: String,
+    val isActive: Boolean,
+    val createdAt: String?,
+    val professional: ProfessionalBasicInfo
+)
+
+/**
+ * Información básica del profesional
+ */
+@Serializable
+data class ProfessionalBasicInfo(
+    val name: String?,
+    val locationLat: Double?,
+    val locationLng: Double?
 )
 
 /**

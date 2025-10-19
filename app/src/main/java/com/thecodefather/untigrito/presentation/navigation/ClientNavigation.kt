@@ -24,7 +24,7 @@ object ClientRoutes {
     const val ACCOUNT_DETAILS = "account_details"
     const val RECHARGE = "recharge"
     const val WITHDRAW = "withdraw"
-    const val PROFESSIONAL_PROFILE = "professional_profile" // TODO: Provisional. Eventualmente, esta ruta debería aceptar un ID.
+    const val PROFESSIONAL_PROFILE = "professional_profile/{professionalId}"
 }
 
 /**

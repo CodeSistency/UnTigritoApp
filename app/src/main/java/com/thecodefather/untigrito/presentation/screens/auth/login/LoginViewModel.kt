@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.android.gms.internal.auth.zzm
 import com.thecodefather.untigrito.auth.domain.model.AuthState
 import com.thecodefather.untigrito.domain.model.User
 import com.thecodefather.untigrito.domain.model.UserType
@@ -204,7 +205,7 @@ class AuthViewModel @Inject constructor(
                 Log.e("TAG", "📝 STEP 2: Creando objeto usuario...")
                 val currentTimestamp = java.time.Instant.now().toString()
                 val newUser = SupabaseUser(
-                    id = "", // Se genera automáticamente en Supabase
+                    id = (1..100000).random().toString(), // Se genera automáticamente en Supabase
                     email = email,
                     phone = null,
                     password = password,

@@ -5,7 +5,11 @@ import androidx.lifecycle.viewModelScope
 import com.thecodefather.untigrito.auth.domain.usecase.AuthStateManager
 import com.thecodefather.untigrito.data.datasource.remote.SupabaseDatabaseService
 import com.thecodefather.untigrito.data.datasource.remote.SupabaseService
+import com.thecodefather.untigrito.data.datasource.remote.SupabaseProfession
+import com.thecodefather.untigrito.data.datasource.remote.ServiceWithProfessional
+import com.thecodefather.untigrito.data.datasource.remote.SupabaseProfessionalProfile
 import com.thecodefather.untigrito.domain.model.Professional
+import com.thecodefather.untigrito.domain.model.toProfessional
 import com.thecodefather.untigrito.domain.model.Service
 import com.thecodefather.untigrito.domain.model.ServiceFilter
 import com.thecodefather.untigrito.domain.model.ServiceStatus
@@ -28,6 +32,10 @@ class ServicesViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(ServicesUiState())
     val uiState: StateFlow<ServicesUiState> = _uiState.asStateFlow()
     val professionals: StateFlow<ServicesUiState> = _uiState.asStateFlow()
+    
+    // Cache para datos de profesionales por servicio
+    private val _servicesWithProfessionals = MutableStateFlow<List<ServiceWithProfessional>>(emptyList())
+    val servicesWithProfessionals: StateFlow<List<ServiceWithProfessional>> = _servicesWithProfessionals.asStateFlow()
 
     init {
         Timber.d("ServicesViewModel initialized")
@@ -40,23 +48,26 @@ class ServicesViewModel @Inject constructor(
             _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null)
             
             try {
-                // Consulta directa a ProfessionalService - TODOS los servicios activos
+                // Consulta con JOIN para obtener información del profesional
                 Timber.d("========== SUPABASE CONNECTION ==========")
-                Timber.d("TABLE: ProfessionalService")
-                Timber.d("OPERATION: getAll()")
-                Timber.d("Fetching all professional services from Supabase...")
-                val result = supabaseDatabase.getAll<SupabaseService>("ProfessionalService")
+                Timber.d("TABLE: ProfessionalService with User JOIN")
+                Timber.d("OPERATION: getServicesWithProfessional()")
+                Timber.d("Fetching services with professional info from Supabase...")
+                val result = supabaseDatabase.getServicesWithProfessional()
                 
-                result.onSuccess { services ->
-                    Timber.d("Successfully fetched ${services.size} services from table 'ProfessionalService'")
-                    Timber.d("Raw services data: $services")
+                result.onSuccess { servicesWithProfessionals ->
+                    Timber.d("Successfully fetched ${servicesWithProfessionals.size} services with professional info")
+                    Timber.d("Raw services data: $servicesWithProfessionals")
 
-                    val activeServices = services.filter { it.isActive }
+                    val activeServices = servicesWithProfessionals.filter { it.isActive }
                     Timber.d("Filtered to ${activeServices.size} active services")
 
-                    val domainServices = activeServices.map { service ->
-                        Timber.d("Mapping service: id=${service.id}, title=${service.title}, price=${service.price}, isActive=${service.isActive}")
-                        mapSupabaseToService(service)
+                    // Guardar datos de profesionales para uso posterior
+                    _servicesWithProfessionals.value = activeServices
+                    
+                    val domainServices = activeServices.map { serviceWithProf ->
+                        Timber.d("Mapping service: id=${serviceWithProf.id}, title=${serviceWithProf.title}, price=${serviceWithProf.price}, professional=${serviceWithProf.professional.name}")
+                        mapServiceWithProfessionalToService(serviceWithProf)
                     }
                     Timber.d("Mapped ${domainServices.size} domain services successfully")
 
@@ -162,19 +173,57 @@ class ServicesViewModel @Inject constructor(
             _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null)
             
             try {
-                // TODO: Implementar carga de profesionales desde Supabase
-                Timber.w("loadProfessionals() - Not yet implemented, returning empty list")
-                // Por ahora, retornar lista vacía hasta implementar la integración real
-                val exampleProfessionals = emptyList<Professional>()
+                Timber.d("========== SUPABASE CONNECTION ==========")
+                Timber.d("TABLE: ProfessionalProfile")
+                Timber.d("OPERATION: getAll()")
+                Timber.d("Fetching all professional profiles from Supabase...")
+                val result = supabaseDatabase.getAll<SupabaseProfessionalProfile>("ProfessionalProfile")
                 
-                _uiState.value = _uiState.value.copy(
-                    isLoading = false,
-                    professional = exampleProfessionals,
-                    errorMessage = null
-                )
-                Timber.d("Professionals list loaded (empty for now)")
+                result.onSuccess { profiles ->
+                    Timber.d("Successfully fetched ${profiles.size} professional profiles")
+                    Timber.d("Raw profiles data: $profiles")
+
+                    val activeProfessionals = profiles.filter { it.isVerified }
+                    Timber.d("Filtered to ${activeProfessionals.size} verified professionals")
+
+                    val domainProfessionals = activeProfessionals.map { profile ->
+                        Timber.d("Mapping profile: id=${profile.id}, bio=${profile.bio}, rating=${profile.rating}")
+                        profile.toProfessional()
+                    }
+                    Timber.d("Mapped ${domainProfessionals.size} domain professionals successfully")
+
+                    // Aplicar filtro de búsqueda
+                    var filteredProfessionals = domainProfessionals
+                    if (_uiState.value.searchQuery.isNotEmpty()) {
+                        Timber.d("Applying search query: ${_uiState.value.searchQuery}")
+                        filteredProfessionals = filteredProfessionals.filter { professional ->
+                            professional.bio?.contains(_uiState.value.searchQuery, ignoreCase = true) == true ||
+                            professional.specialties.any { it.contains(_uiState.value.searchQuery, ignoreCase = true) }
+                        }
+                        Timber.d("After search: ${filteredProfessionals.size} professionals")
+                    }
+
+                    val sortedProfessionals = filteredProfessionals.sortedByDescending { it.rating ?: 0.0 }
+                    Timber.d("Final professionals count: ${sortedProfessionals.size}")
+
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        professional = sortedProfessionals,
+                        errorMessage = null
+                    )
+                    Timber.d("UI state updated successfully")
+                    Timber.d("==========================================")
+                }.onFailure { exception ->
+                    Timber.e(exception, "Failed to load professional profiles")
+                    Timber.d("==========================================")
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        errorMessage = exception.message ?: "Error al cargar profesionales"
+                    )
+                }
             } catch (e: Exception) {
                 Timber.e(e, "Unexpected error in loadProfessionals()")
+                Timber.d("==========================================")
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
                     errorMessage = e.message ?: "Error inesperado"
@@ -557,6 +606,42 @@ class ServicesViewModel @Inject constructor(
         }
     }
 
+    // Mapper helper para ServiceWithProfessional
+    private fun mapServiceWithProfessionalToService(serviceWithProf: ServiceWithProfessional): Service {
+        Timber.d("Mapping ServiceWithProfessional to Service: id=${serviceWithProf.id}")
+
+        try {
+            val domainService = Service(
+                id = serviceWithProf.id,
+                title = serviceWithProf.title,
+                description = serviceWithProf.description,
+                category = serviceWithProf.categoryId,
+                minPrice = serviceWithProf.price,
+                maxPrice = serviceWithProf.price,
+                serviceArea = "", // Se obtiene por separado si es necesario
+                status = if (serviceWithProf.isActive) ServiceStatus.ACTIVE else ServiceStatus.INACTIVE,
+                images = emptyList(),
+                createdAt = try {
+                    Date(serviceWithProf.createdAt ?: System.currentTimeMillis().toString())
+                } catch (e: Exception) {
+                    Timber.w(e, "Failed to parse createdAt: ${serviceWithProf.createdAt}")
+                    Date()
+                },
+                updatedAt = Date(), // Usar fecha actual como fallback
+                isActive = serviceWithProf.isActive,
+                rating = 0.0,
+                reviewCount = 0,
+                completedJobs = 0
+            )
+
+            Timber.d("Successfully mapped service with professional: title=${domainService.title}, professional=${serviceWithProf.professional.name}")
+            return domainService
+        } catch (e: Exception) {
+            Timber.e(e, "Error mapping ServiceWithProfessional to Service")
+            throw e
+        }
+    }
+
     fun clearError() {
         Timber.d("clearError() called")
         _uiState.value = _uiState.value.copy(errorMessage = null)
@@ -571,12 +656,37 @@ class ServicesViewModel @Inject constructor(
             showToggleSuccess = false
         )
     }
+
+    // Cargar categorías desde Supabase
+    fun loadCategories() {
+        viewModelScope.launch {
+            Timber.d("loadCategories() called")
+            try {
+                val result = supabaseDatabase.getProfessions()
+                result.onSuccess { categories ->
+                    _uiState.value = _uiState.value.copy(categories = categories)
+                    Timber.d("Categories loaded: ${categories.size}")
+                }.onFailure { exception ->
+                    Timber.e(exception, "Error loading categories")
+                    _uiState.value = _uiState.value.copy(
+                        errorMessage = exception.message ?: "Error al cargar categorías"
+                    )
+                }
+            } catch (e: Exception) {
+                Timber.e(e, "Unexpected error in loadCategories()")
+                _uiState.value = _uiState.value.copy(
+                    errorMessage = e.message ?: "Error inesperado"
+                )
+            }
+        }
+    }
 }
 
 data class ServicesUiState(
     val isLoading: Boolean = false,
     val services: List<Service> = emptyList(),
     val professional: List<Professional> = emptyList(),
+    val categories: List<SupabaseProfession> = emptyList(),
     val selectedFilter: ServiceFilter = ServiceFilter.ALL,
     val searchQuery: String = "",
     val selectedCategory: String? = null,

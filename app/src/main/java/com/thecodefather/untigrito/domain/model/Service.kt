@@ -61,3 +61,20 @@ fun SupabaseService.toProfessionalService(): ProfessionalService {
         updatedAt = this.updatedAt ?: ""
     )
 }
+
+/**
+ * Converts Service to ProfessionalService domain model
+ */
+fun Service.toProfessionalService(): ProfessionalService {
+    return ProfessionalService(
+        id = this.id,
+        professionalId = "", // No disponible en Service
+        title = this.title,
+        description = this.description,
+        price = this.minPrice, // Usar minPrice como precio base
+        categoryId = this.category,
+        isActive = this.isActive,
+        createdAt = this.createdAt.time.toString(),
+        updatedAt = this.updatedAt.time.toString()
+    )
+}
