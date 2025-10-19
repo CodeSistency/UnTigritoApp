@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.hilt)
     alias(libs.plugins.ksp)
     alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 android{
@@ -96,7 +97,9 @@ dependencies {
     
     // Serialization
     implementation(libs.kotlinx.serialization.json)
-    implementation(libs.gson)
+
+    // Supabase
+    implementation(libs.bundles.supabase)
 
     // Image Loading
     implementation(libs.coil.compose)
@@ -106,10 +109,16 @@ dependencies {
 
     // Security
     implementation(libs.androidx.security.crypto)
+    implementation(libs.jwt)
+
+    // Google Sign-In
+    implementation(libs.google.auth)
 
     // Logging
     implementation(libs.timber)
     implementation(libs.logcat)
+    implementation("com.google.code.gson:gson:2.13.2")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
 
     // Core Library Desugaring
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")

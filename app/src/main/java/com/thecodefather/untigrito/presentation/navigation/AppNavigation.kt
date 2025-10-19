@@ -81,13 +81,8 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
                 },
                 onNavigateToForgotPassword = {
                     navController.navigate(Routes.FORGOT_PASSWORD)
-                },
-                onNavigateToClientFlow = { // Cambiado de onNavigateToHome
-                    navController.navigate(Routes.CLIENT_MAIN) { // Cambiado
-                        popUpTo(Routes.LOGIN) { inclusive = true }
-                    }
                 }
-            )
+            ){}
         }
 
         composable(Routes.CLIENT_REQUESTS){
@@ -97,18 +92,6 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
         }
 
         composable(Routes.REGISTER) {
-            RegisterScreen(
-                onNavigateToLogin = {
-                    navController.navigate(Routes.LOGIN) {
-                        popUpTo(Routes.REGISTER) { inclusive = true }
-                    }
-                },
-                onNavigateToHome = {
-                    navController.navigate(Routes.CLIENT_MAIN) { // Cambiado
-                        popUpTo(Routes.REGISTER) { inclusive = true }
-                    }
-                }
-            )
         }
 
         composable(Routes.FORGOT_PASSWORD) {

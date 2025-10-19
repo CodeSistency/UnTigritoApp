@@ -1,6 +1,6 @@
 [versions]
 # Core Android
-androidGradlePlugin = "8.11.2"
+androidGradlePlugin = "8.7.3"
 kotlin = "2.0.0"
 ksp = "2.0.0-1.0.21"
 kotlinxSerializationJson = "1.6.0"
@@ -91,10 +91,16 @@ okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhtt
 okhttp-logging = { group = "com.squareup.okhttp3", name = "logging-interceptor", version.ref = "okhttp" }
 ktor-client-core = { group = "io.ktor", name = "ktor-client-core", version.ref = "ktor" }
 ktor-client-android = { group = "io.ktor", name = "ktor-client-android", version.ref = "ktor" }
+ktor-client-logging = { group = "io.ktor", name = "ktor-client-logging", version.ref = "ktor" }
+ktor-serialization = { group = "io.ktor", name = "ktor-serialization-kotlinx-json", version.ref = "ktor" }
+ktor-content-negotiation = { group = "io.ktor", name = "ktor-client-content-negotiation", version.ref = "ktor" }
+supabase-postgrest = { group = "io.github.jan-tennert.supabase", name = "postgrest-kt", version.ref = "supabase" }
+supabase-gotrue = { group = "io.github.jan-tennert.supabase", name = "gotrue-kt", version.ref = "supabase" }
+supabase-realtime = { group = "io.github.jan-tennert.supabase", name = "realtime-kt", version.ref = "supabase" }
+supabase-storage = { group = "io.github.jan-tennert.supabase", name = "storage-kt", version.ref = "supabase" }
 
 # Serialization
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
-gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
 
 # Image Loading
 coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil" }
@@ -105,6 +111,8 @@ logcat = { group = "com.squareup.logcat", name = "logcat", version.ref = "logcat
 
 # Security
 androidx-security-crypto = { group = "androidx.security", name = "security-crypto", version = "1.1.0-alpha06" }
+jwt = { group = "com.auth0", name = "java-jwt", version = "4.4.0" }
+google-auth = { group = "com.google.android.gms", name = "play-services-auth", version = "20.7.0" }
 
 # Testing
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -155,7 +163,20 @@ networking = [
     "retrofit",
     "retrofit-kotlinx-serialization",
     "okhttp",
-    "okhttp-logging"
+    "okhttp-logging",
+    "ktor-client-core",
+    "ktor-client-android",
+    "ktor-client-logging",
+    "ktor-serialization",
+    "ktor-content-negotiation"
+]
+
+# Supabase Bundle
+supabase = [
+    "supabase-postgrest",
+    "supabase-gotrue",
+    "supabase-realtime",
+    "supabase-storage"
 ]
 
 [plugins]

@@ -195,6 +195,8 @@ fun homeScreen_displaysWelcomeText() {
 - **Retrofit 2.9.0**: HTTP client
 - **OkHttp 4.11.0**: HTTP interceptor
 - **Kotlinx Serialization 1.6.0**: JSON serialization
+- **Supabase 2.0.0**: Backend as a Service (BaaS)
+- **Ktor Client 2.3.6**: HTTP client para Supabase
 
 ### Image & Media
 - **Coil 2.4.0**: Image loading
@@ -226,12 +228,89 @@ The app uses Material Design 3 with:
 - `Type.kt`: Typography scale
 - `Theme.kt`: Theme composition
 
+## 🔥 Supabase Integration
+
+### Backend as a Service (BaaS)
+
+El proyecto integra **Supabase** como backend alternativo/complementario, proporcionando:
+
+- **Autenticación**: Email/password, OAuth (Google), MFA
+- **Base de datos PostgreSQL**: Con Postgrest para consultas REST
+- **Tiempo Real**: WebSockets para actualizaciones en vivo
+- **Almacenamiento**: Bucket storage para archivos e imágenes
+- **Row Level Security (RLS)**: Seguridad a nivel de fila
+
+### Configuración Rápida
+
+1. **Copia el archivo de ejemplo**:
+   ```bash
+   cp local.properties.example local.properties
+   ```
+
+2. **Obtén tus credenciales**:
+   - Ve a [https://app.supabase.com](https://app.supabase.com)
+   - Crea un proyecto o selecciona uno existente
+   - Ve a `Settings` → `API`
+   - Copia la URL y la clave anónima
+
+3. **Configura en `local.properties`**:
+   ```properties
+   supabase.url=https://tu-proyecto.supabase.co
+   supabase.anonKey=tu_clave_anon_key
+   ```
+
+4. **Ejecuta los scripts SQL**:
+   - Abre el SQL Editor en Supabase
+   - Ejecuta el contenido de `app/docs/supabase-setup.sql`
+
+### Documentación
+
+- **Guía completa**: `app/docs/SUPABASE_INTEGRATION.md`
+- **Scripts SQL**: `app/docs/supabase-setup.sql`
+- **Ejemplos de uso**: `SupabaseExampleViewModel.kt`
+
+### Servicios Disponibles
+
+```kotlin
+// Autenticación
+@Inject lateinit var supabaseAuth: SupabaseAuthService
+
+// Base de datos
+@Inject lateinit var supabaseDb: SupabaseDatabaseService
+
+// Módulos directos
+@Inject lateinit var auth: Auth
+@Inject lateinit var postgrest: Postgrest
+@Inject lateinit var storage: Storage
+@Inject lateinit var realtime: Realtime
+```
+
+### Ejemplo de Uso
+
+```kotlin
+viewModelScope.launch {
+    // Login
+    supabaseAuth.signInWithEmail(email, password)
+        .onSuccess { user ->
+            println("Usuario: ${user?.email}")
+        }
+    
+    // Consultar datos
+    supabaseDb.getAll<Service>("services")
+        .onSuccess { services ->
+            _services.value = services
+        }
+}
+```
+
 ## 🔒 Security
 
 - EncryptedSharedPreferences for sensitive data
 - TLS for network communications
 - Certificate pinning (future phases)
 - Input validation
+- **Supabase RLS**: Row Level Security configurado
+- **JWT tokens**: Manejo seguro de tokens de autenticación
 
 ## 📝 Code Style & Standards
 
@@ -311,6 +390,7 @@ The project follows:
 - [x] Reusable Components
 - [x] Testing infrastructure
 - [x] Build configuration
+- [x] **Supabase Integration** (Auth, Database, Realtime, Storage)
 
 ## 🤝 Contributing
 

@@ -64,7 +64,7 @@ fun HomeScreenClient(
         TopRatedTigersSection(
             onTigerClick = {
                 // TODO: Eventualmente, pasar el ID del profesional. Por ahora, navega al perfil de ejemplo.
-                navController.navigate(Routes.PROFESSIONAL_PROFILE)
+                navController.navigate(ClientRoutes.PROFESSIONAL_PROFILE)
             }
         )
 

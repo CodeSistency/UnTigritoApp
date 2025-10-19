@@ -16,11 +16,11 @@ class App : Application() {
         super.onCreate()
         
         // Initialize Timber for logging
-//        if (BuildConfig.DEBUG) {
-//            Timber.plant(Timber.DebugTree())
-//        }
-//
-//        Timber.d("Application initialized")
+        if (BuildConfig.DEBUG) {
+            Timber.plant(Timber.DebugTree())
+        }
+
+        Timber.d("Application initialized")
     }
 }
 

@@ -23,6 +23,7 @@ object ClientRoutes {
     const val ACCOUNT_DETAILS = "account_details"
     const val RECHARGE = "recharge"
     const val WITHDRAW = "withdraw"
+    const val PROFESSIONAL_PROFILE = "professional_profile" // TODO: Provisional. Eventualmente, esta ruta debería aceptar un ID.
 }
 
 /**
@@ -90,6 +91,10 @@ fun ClientNavGraph(navController: NavHostController) {
         // Withdraw Screen (Placeholder)
         composable(ClientRoutes.WITHDRAW) {
             Text(text = "Pantalla de Retiro") // TODO: Implement WithdrawScreen
+        }
+
+        composable(ClientRoutes.PROFESSIONAL_PROFILE) {
+            ProfessionalProfileScreen(onBackClick = { navController.popBackStack() })
         }
     }
 }
