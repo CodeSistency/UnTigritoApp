@@ -1,6 +1,8 @@
 package com.thecodefather.untigrito.presentation.screens.auth.login
 
+import android.os.Build
 import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.thecodefather.untigrito.auth.domain.model.AuthState
@@ -158,6 +160,141 @@ class AuthViewModel @Inject constructor(
             } catch (exception: Exception) {
                 Timber.e(exception, "❌ SUPABASE LOGIN_ERROR")
                 Log.e("TAG", "❌ SUPABASE LOGIN_ERROR: ${exception.message}", exception)
+                _authState.value = AuthState.Error(
+                    exception.message ?: "Error al conectar con la base de datos"
+                )
+            }
+        }
+    }
+
+    /**
+     * Performs registration using direct Supabase database insert
+     * Inserta un nuevo usuario en la tabla User
+     */
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun registerWithSupabase(name: String, identifier: String, password: String, confirmPassword: String) {
+        Timber.d("🔐 SUPABASE REGISTER_START - Name: $name, Identifier: $identifier")
+        Log.e("TAG", "🔐 SUPABASE REGISTER_START - Identifier: $identifier")
+        
+        // Validaciones
+        val isEmail = EmailValidator.isValid(identifier)
+        val isPhone = PhoneValidator.isValidVenezuelanPhone(identifier)
+        
+        if (name.isBlank()) {
+            _authState.value = AuthState.Error("El nombre es requerido")
+            return
+        }
+        
+        if (!isEmail && !isPhone) {
+            _authState.value = AuthState.Error("Email o teléfono inválido")
+            return
+        }
+        
+        if (password.length < 6) {
+            _authState.value = AuthState.Error("La contraseña debe tener al menos 6 caracteres")
+            return
+        }
+        
+        if (password != confirmPassword) {
+            _authState.value = AuthState.Error("Las contraseñas no coinciden")
+            return
+        }
+        
+        _authState.value = AuthState.Loading
+        
+        viewModelScope.launch {
+            try {
+                // 1. Verificar si el usuario ya existe
+                Log.e("TAG", "📝 STEP 1: Verificando si usuario existe...")
+                val existingUsers = if (isEmail) {
+                    postgrest.from("User")
+                        .select { filter { eq("email", identifier) } }
+                        .decodeList<SupabaseUser>()
+                } else {
+                    postgrest.from("User")
+                        .select { filter { eq("phone", identifier) } }
+                        .decodeList<SupabaseUser>()
+                }
+                
+                Log.e("TAG", "📝 STEP 1 COMPLETE: Usuarios encontrados: ${existingUsers.size}")
+                
+                if (existingUsers.isNotEmpty()) {
+                    Log.e("TAG", "⚠️ SUPABASE REGISTER - Usuario ya existe")
+                    _authState.value = AuthState.Error("Este email/teléfono ya está registrado")
+                    return@launch
+                }
+                
+                // 2. Crear nuevo usuario
+                Log.e("TAG", "📝 STEP 2: Creando objeto usuario...")
+                val currentTimestamp = java.time.Instant.now().toString()
+                val newUser = SupabaseUser(
+                    id = "", // Se genera automáticamente en Supabase
+                    email = if (isEmail) identifier else null,
+                    phone = if (isPhone) identifier else null,
+                    password = password,
+                    name = name,
+                    role = "CLIENT",
+                    isVerified = false,
+                    isIDVerified = false,
+                    balance = 0.0,
+                    isSuspended = false,
+                    createdAt = currentTimestamp,
+                    updatedAt = currentTimestamp
+                )
+                Log.e("TAG", "📝 STEP 2 COMPLETE: Usuario creado - email=${newUser.email}, phone=${newUser.phone}, name=${newUser.name}")
+                
+                // 3. Insertar en base de datos
+                Log.e("TAG", "📝 STEP 3: Insertando en base de datos...")
+                val result = supabaseDatabase.insert<SupabaseUser>("User", newUser)
+                Log.e("TAG", "📝 STEP 3 COMPLETE: Insert result received")
+                
+                result.onSuccess { insertedUser ->
+                    Log.e("TAG", "📝 STEP 4: onSuccess callback - insertedUser=$insertedUser")
+                    if (insertedUser != null) {
+                        Log.e("TAG", "✅ SUPABASE REGISTER_SUCCESS - User: ${insertedUser.id}")
+                        Log.e("TAG", "📝 Usuario insertado: id=${insertedUser.id}, email=${insertedUser.email}, name=${insertedUser.name}")
+                        
+                        // Convertir a User del dominio
+                        Log.e("TAG", "📝 STEP 5: Convirtiendo a User del dominio...")
+                        val domainUser = User(
+                            id = insertedUser.id,
+                            name = insertedUser.name ?: "Usuario",
+                            email = insertedUser.email ?: "",
+                            userType = UserType.CLIENT,
+                            phoneNumber = insertedUser.phone ?: "",
+                            cedula = "",
+                            isPhoneVerified = false,
+                            isCedulaVerified = false,
+                            createdAt = System.currentTimeMillis()
+                        )
+                        Log.e("TAG", "📝 STEP 5 COMPLETE: Domain user creado")
+                        
+                        _authState.value = AuthState.Authenticated(domainUser)
+                        Log.e("TAG", "📝 STEP 6: Auth state actualizado a Authenticated")
+                        
+                        // Persistir estado
+                        authStateManager.updateAuthState(
+                            AuthState.Authenticated(domainUser),
+                            domainUser
+                        )
+                        Log.e("TAG", "📝 STEP 7: Estado persistido - REGISTRO COMPLETO ✅")
+                    } else {
+                        Log.e("TAG", "❌ insertedUser es null")
+                        _authState.value = AuthState.Error("Error al crear usuario")
+                    }
+                }.onFailure { exception ->
+                    Log.e("TAG", "❌ STEP 4 FAILED: onFailure callback")
+                    Log.e("TAG", "❌ Exception type: ${exception.javaClass.simpleName}")
+                    Log.e("TAG", "❌ SUPABASE REGISTER_ERROR: ${exception.message}")
+                    Log.e("TAG", "❌ Stack trace:", exception)
+                    _authState.value = AuthState.Error(
+                        exception.message ?: "Error al registrar usuario"
+                    )
+                }
+                
+            } catch (exception: Exception) {
+                Timber.e(exception, "❌ SUPABASE REGISTER_ERROR")
+                Log.e("TAG", "❌ SUPABASE REGISTER_ERROR: ${exception.message}", exception)
                 _authState.value = AuthState.Error(
                     exception.message ?: "Error al conectar con la base de datos"
                 )

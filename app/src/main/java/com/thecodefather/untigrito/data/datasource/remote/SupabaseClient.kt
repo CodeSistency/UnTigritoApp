@@ -6,7 +6,9 @@ import io.github.jan.supabase.gotrue.Auth
 import io.github.jan.supabase.postgrest.Postgrest
 import io.github.jan.supabase.realtime.Realtime
 import io.github.jan.supabase.storage.Storage
+import io.github.jan.supabase.serializer.KotlinXSerializer
 import io.ktor.client.engine.android.*
+import kotlinx.serialization.json.Json
 
 /**
  * Cliente de Supabase para la aplicación UnTigrito
@@ -42,6 +44,16 @@ object SupabaseClientProvider {
         ) {
             // Motor HTTP de Android para Ktor
             httpEngine = Android.create()
+            
+            // Configurar serializador JSON para ignorar claves desconocidas
+            // Esto evita errores cuando la BD tiene campos que no están en el modelo
+            defaultSerializer = KotlinXSerializer(
+                Json {
+                    ignoreUnknownKeys = true
+                    isLenient = true
+                    coerceInputValues = true
+                }
+            )
             
             // Módulo Postgrest para consultas a la base de datos
             install(Postgrest)
