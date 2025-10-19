@@ -26,6 +26,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -433,7 +434,10 @@ fun TopRatedTigerItem(
             Spacer(modifier = Modifier.width(12.dp))
             Column {
                 Text(text = name, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, color = Color.Black)
-                Text(text = "$profession | $location", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+                Text(text = "$profession | $location", style = MaterialTheme.typography.bodySmall, color = Color.Gray
+                , overflow = TextOverflow.Ellipsis,
+                    maxLines = 1
+                )
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Default.Star, "Rating", tint = Color(0xFFFFC107), modifier = Modifier.size(16.dp))
                     Text(text = "$rating ($reviews)", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
@@ -514,8 +518,9 @@ fun ServicesSection(services: List<com.thecodefather.untigrito.domain.model.Prof
     )
 
     // Usar datos de prueba si no hay servicios del ViewModel
-    val displayServices = if (services.isEmpty()) testServices else services
-    
+//    val displayServices = if (services.isEmpty()) testServices else services
+    val displayServices = services
+
     Column(modifier = Modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier.padding(horizontal = 24.dp),
