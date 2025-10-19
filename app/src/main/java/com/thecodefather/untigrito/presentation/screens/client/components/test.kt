@@ -22,6 +22,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -35,8 +36,7 @@ fun RequestServiceCard(
 ) {
     Card(
         modifier = modifier
-            .fillMaxWidth()
-            .padding(16.dp),
+            .fillMaxWidth(),
         shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(
             containerColor = Color(0xFFE67822),
@@ -51,25 +51,25 @@ fun RequestServiceCard(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Icon(
-                    imageVector = Icons.Rounded.Wifi,
+                    painter = painterResource(R.drawable.radar),
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.tertiaryContainer,
+                    tint = Color.White,
                     modifier = Modifier
                         .padding(start = 8.dp, end = 8.dp)
                         .size(48.dp)
                 )
                 Column {
                     Text(
-                        text = stringResource(R.string.app_name),
+                        text = "Publica tu Solicitud",
                         style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.tertiaryContainer
+                        color = Color.White
                     )
                     Text(
-                        text = stringResource(R.string.app_name),
+                        text = "Describe tu problema y resive ofertas al instante",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.tertiaryContainer,
-                        modifier = Modifier.padding(top = 4.dp)
+                        color = Color.White,
+                        modifier = Modifier.padding(top = 4.dp, end = 10.dp)
                     )
                 }
             }
@@ -84,7 +84,7 @@ fun RequestServiceCard(
                 Button(
                     colors =
                         ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                            containerColor =  Color.White,
                         )
                     ,
                     onClick = onPublishServiceClick,
@@ -93,8 +93,8 @@ fun RequestServiceCard(
 
                 ) {
                     Text(
-                        color = MaterialTheme.colorScheme.onTertiaryContainer,
-                        text = stringResource(R.string.app_name),
+                        color = MaterialTheme.colorScheme.onBackground,
+                        text = "Publicar Servicio",
                         style = MaterialTheme.typography.labelLarge
                     )
                 }

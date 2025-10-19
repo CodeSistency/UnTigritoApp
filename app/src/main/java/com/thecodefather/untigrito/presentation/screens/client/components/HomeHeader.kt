@@ -51,7 +51,6 @@ fun HomeHeader(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .background(Color.White) // Añadir fondo blanco al encabezado
             .padding(horizontal = 16.dp, vertical = 8.dp) // Relleno global para el encabezado
     ) {
         // --- Parte Superior: Logo ---
@@ -59,15 +58,14 @@ fun HomeHeader(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                text = "UnTigrito",
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Black,
-                color = OrangeUntigrito
+            Image(
+                painter = painterResource(id = R.drawable.untiger), // Placeholder
+                contentDescription = "Avatar de usuario",
+                modifier.width(100.dp).height(40.dp)
             )
         }
 
-        Spacer(modifier = Modifier.height(16.dp)) // Espacio entre el logo y la sección de bienvenida
+        Spacer(modifier = Modifier.height(5.dp)) // Espacio entre el logo y la sección de bienvenida
 
         // --- Parte Inferior: Bienvenida, Avatar y Acciones ---
         Row(

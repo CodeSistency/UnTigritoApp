@@ -12,6 +12,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.rounded.ArrowForwardIos
+import androidx.compose.material.icons.rounded.Assignment
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -161,10 +163,10 @@ fun HistoryCard(
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
-                        painter = painterResource(id = R.drawable.ic_launcher_foreground), // Reemplaza con el icono de billetera
+                        painter = painterResource(id = R.drawable.wallet_2), // Reemplaza con el icono de billetera
                         contentDescription = "Wallet Icon",
                         tint = Color(0xFFE67822),
-                        modifier = Modifier.size(28.dp)
+                        modifier = Modifier.size(40.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
@@ -175,13 +177,13 @@ fun HistoryCard(
                     )
                 }
                 Icon(
-                    painter = painterResource(id = R.drawable.ic_launcher_foreground), // Reemplaza con el icono de exclamación
+                    painter = painterResource(id = R.drawable.info_circle), // Reemplaza con el icono de exclamación
                     contentDescription = "Info Icon",
                     tint = Color(0xFFE67822),
                     modifier = Modifier.size(24.dp)
                 )
             }
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(2.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     text = "Historial",
@@ -190,17 +192,17 @@ fun HistoryCard(
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Icon(
-                    painter = painterResource(id = R.drawable.ic_launcher_foreground), // Reemplaza con el icono de historial
+                    painter = painterResource(id = R.drawable.arrow_circle_down), // Reemplaza con el icono de historial
                     contentDescription = "History Icon",
                     tint = Color.Gray,
-                    modifier = Modifier.size(18.dp)
+                    modifier = Modifier.size(30.dp)
                 )
                 Spacer(modifier = Modifier.width(4.dp))
                 Icon(
-                    painter = painterResource(id = R.drawable.ic_launcher_foreground), // Reemplaza con el icono de flecha
+                    painter = painterResource(id = R.drawable.arrow_circle_up), // Reemplaza con el icono de flecha
                     contentDescription = "Arrow Icon",
                     tint = Color.Gray,
-                    modifier = Modifier.size(18.dp)
+                    modifier = Modifier.size(30.dp)
                 )
             }
         }
@@ -217,14 +219,25 @@ fun CategorySection() {
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                text = "Explora categorías",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = Color.Black
-            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ){
+                Icon(
+                   Icons.Rounded.Assignment,
+                    contentDescription = "Categorías",
+                    tint = Color(0xFFE67822),
+                )
+                Spacer(Modifier.width(3.dp))
+                Text(
+                    text = "Explora categorías",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black
+                )
+            }
+
             Icon(
-                painter = painterResource(id = R.drawable.ic_launcher_foreground), // Reemplaza con el icono de flecha
+                imageVector = Icons.Rounded.ArrowForwardIos, // Reemplaza con el icono de flecha
                 contentDescription = "Ver más categorías",
                 tint = Color.Gray,
                 modifier = Modifier.size(24.dp)
@@ -252,7 +265,9 @@ fun CategoryItem(name: String, iconRes: Int) {
         shape = RoundedCornerShape(12.dp)
     ) {
         Column(
-            modifier = Modifier.fillMaxSize().padding(8.dp),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(8.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
@@ -273,17 +288,94 @@ fun TopRatedTigersSection(
     professionals: List<com.thecodefather.untigrito.domain.model.Professional>,
     onTigerClick: () -> Unit
 ) {
-    Column(modifier = Modifier.fillMaxWidth()) {
-        Text(
-            text = "Tigres mejor calificados",
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold,
-            color = Color.Black,
-            modifier = Modifier.padding(horizontal = 24.dp)
+    val testProfessionals = listOf(
+        com.thecodefather.untigrito.domain.model.Professional(
+            id = "1",
+            userId = "Carlos Méndez",
+            bio = "Electricista certificado con 10 años de experiencia",
+            rating = 4.9,
+            totalReviews = 127,
+            yearsOfExperience = 10,
+            specialties = listOf("Electricidad", "Instalaciones"),
+            responseTime = 2,
+            completionRate = 98.5,
+            hourlyRate = 25.0,
+            isVerified = true
+        ),
+        com.thecodefather.untigrito.domain.model.Professional(
+            id = "2",
+            userId = "María González",
+            bio = "Plomera profesional especializada en sistemas modernos",
+            rating = 4.8,
+            totalReviews = 89,
+            yearsOfExperience = 8,
+            specialties = listOf("Plomería", "Reparaciones"),
+            responseTime = 3,
+            completionRate = 96.0,
+            hourlyRate = 22.0,
+            isVerified = true
+        ),
+        com.thecodefather.untigrito.domain.model.Professional(
+            id = "3",
+            userId = "José Ramírez",
+            bio = "Carpintero experto en muebles a medida",
+            rating = 5.0,
+            totalReviews = 156,
+            yearsOfExperience = 15,
+            specialties = listOf("Carpintería", "Muebles"),
+            responseTime = 4,
+            completionRate = 99.2,
+            hourlyRate = 30.0,
+            isVerified = true
+        ),
+        com.thecodefather.untigrito.domain.model.Professional(
+            id = "4",
+            userId = "Ana Rodríguez",
+            bio = "Pintora profesional con ojo para el detalle",
+            rating = 4.7,
+            totalReviews = 73,
+            yearsOfExperience = 6,
+            specialties = listOf("Pintura", "Decoración"),
+            responseTime = 5,
+            completionRate = 94.5,
+            hourlyRate = 20.0,
+            isVerified = true
+        ),
+        com.thecodefather.untigrito.domain.model.Professional(
+            id = "5",
+            userId = "Pedro Martínez",
+            bio = "Técnico en refrigeración y aires acondicionados",
+            rating = 4.9,
+            totalReviews = 112,
+            yearsOfExperience = 12,
+            specialties = listOf("Refrigeración", "Aires acondicionados"),
+            responseTime = 2,
+            completionRate = 97.8,
+            hourlyRate = 28.0,
+            isVerified = true
         )
+    )
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier.padding(horizontal = 24.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ){
+            Icon(
+                painter = painterResource(R.drawable.medal_star),
+                contentDescription = "Categorías",
+                tint = Color(0xFFE67822),
+            )
+            Spacer(Modifier.width(3.dp))
+            Text(
+                text = "Tigres mejor calificados",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = Color.Black
+            )
+        }
         Spacer(modifier = Modifier.height(16.dp))
         
-        if (professionals.isEmpty()) {
+        if (testProfessionals.isEmpty()) {
             Text(
                 text = "No hay profesionales disponibles",
                 modifier = Modifier.padding(horizontal = 24.dp),
@@ -295,8 +387,8 @@ fun TopRatedTigersSection(
                 contentPadding = PaddingValues(horizontal = 24.dp),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                items(professionals.size) { index ->
-                    val prof = professionals[index]
+                items(testProfessionals.size) { index ->
+                    val prof = testProfessionals[index]
                     TopRatedTigerItem(
                         name = prof.userId,
                         rating = prof.rating?.toFloat() ?: 0f,
@@ -353,30 +445,98 @@ fun TopRatedTigerItem(
 
 @Composable
 fun PublishRequestCard(onNavigateToRequestService: () -> Unit) {
-    Card(
+
+    RequestServiceCard(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 24.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-        shape = RoundedCornerShape(12.dp)
-    ) {
-        RequestServiceCard(onPublishServiceClick = onNavigateToRequestService)
-    }
+        onPublishServiceClick = onNavigateToRequestService)
 }
 
 @Composable
 fun ServicesSection(services: List<com.thecodefather.untigrito.domain.model.ProfessionalService>) {
-    Column(modifier = Modifier.fillMaxWidth()) {
-        Text(
-            text = "Servicios",
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold,
-            color = Color.Black,
-            modifier = Modifier.padding(horizontal = 24.dp)
+    // Datos de prueba para servicios
+    val testServices = listOf(
+        com.thecodefather.untigrito.domain.model.ProfessionalService(
+            id = "1",
+            professionalId = "Carlos Méndez",
+            title = "Instalación Eléctrica Completa",
+            description = "Instalación de circuitos eléctricos residenciales con garantía",
+            price = 150.0,
+            categoryId = "electricidad",
+            isActive = true
+        ),
+        com.thecodefather.untigrito.domain.model.ProfessionalService(
+            id = "2",
+            professionalId = "María González",
+            title = "Reparación de Tuberías",
+            description = "Detección y reparación de fugas, cambio de tuberías",
+            price = 80.0,
+            categoryId = "plomeria",
+            isActive = true
+        ),
+        com.thecodefather.untigrito.domain.model.ProfessionalService(
+            id = "3",
+            professionalId = "José Ramírez",
+            title = "Muebles a Medida",
+            description = "Diseño y fabricación de muebles personalizados en madera",
+            price = 300.0,
+            categoryId = "carpinteria",
+            isActive = true
+        ),
+        com.thecodefather.untigrito.domain.model.ProfessionalService(
+            id = "4",
+            professionalId = "Ana Rodríguez",
+            title = "Pintura de Interiores",
+            description = "Pintura profesional de espacios interiores con acabado premium",
+            price = 120.0,
+            categoryId = "pintura",
+            isActive = true
+        ),
+        com.thecodefather.untigrito.domain.model.ProfessionalService(
+            id = "5",
+            professionalId = "Pedro Martínez",
+            title = "Mantenimiento de Aires",
+            description = "Limpieza y mantenimiento preventivo de aires acondicionados",
+            price = 60.0,
+            categoryId = "refrigeracion",
+            isActive = true
+        ),
+        com.thecodefather.untigrito.domain.model.ProfessionalService(
+            id = "6",
+            professionalId = "Carlos Méndez",
+            title = "Revisión Eléctrica General",
+            description = "Inspección completa del sistema eléctrico del hogar",
+            price = 50.0,
+            categoryId = "electricidad",
+            isActive = true
         )
+    )
+
+    // Usar datos de prueba si no hay servicios del ViewModel
+    val displayServices = if (services.isEmpty()) testServices else services
+    
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier.padding(horizontal = 24.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ){
+            Icon(
+                painter = painterResource(R.drawable.briefcase),
+                contentDescription = "Servicios",
+                tint = Color(0xFFE67822),
+            )
+            Spacer(Modifier.width(3.dp))
+            Text(
+                text = "Servicios",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = Color.Black
+            )
+        }
         Spacer(modifier = Modifier.height(16.dp))
         
-        if (services.isEmpty()) {
+        if (displayServices.isEmpty()) {
             Text(
                 text = "No hay servicios disponibles",
                 modifier = Modifier.padding(horizontal = 24.dp),
@@ -384,17 +544,19 @@ fun ServicesSection(services: List<com.thecodefather.untigrito.domain.model.Prof
             )
         } else {
             Column(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                services.take(4).forEach { service ->
+                displayServices.take(4).forEach { service ->
                     ServiceItem(
                         title = service.title,
                         description = service.description,
                         provider = service.professionalId,
-                        rating = 4.8f, // TODO: Get rating from professional
-                        reviews = 0,
-                        price = "$${service.price}"
+                        rating = (4.5f + (Math.random() * 0.5f).toFloat()), // Rating aleatorio entre 4.5 y 5.0
+                        reviews = (50 + (Math.random() * 100).toInt()),
+                        price = "$${String.format("%.2f", service.price)}"
                     )
                 }
             }
@@ -453,4 +615,98 @@ fun PreviewHomeScreen() {
     )
 }
 
+@Preview(showBackground = true, name = "Servicios Preview")
+@Composable
+fun PreviewServicesSection() {
+    val testServices = listOf(
+        com.thecodefather.untigrito.domain.model.ProfessionalService(
+            id = "1",
+            professionalId = "Carlos Méndez",
+            title = "Instalación Eléctrica Completa",
+            description = "Instalación de circuitos eléctricos residenciales con garantía",
+            price = 150.0,
+            categoryId = "electricidad",
+            isActive = true
+        ),
+        com.thecodefather.untigrito.domain.model.ProfessionalService(
+            id = "2",
+            professionalId = "María González",
+            title = "Reparación de Tuberías",
+            description = "Detección y reparación de fugas, cambio de tuberías",
+            price = 80.0,
+            categoryId = "plomeria",
+            isActive = true
+        ),
+        com.thecodefather.untigrito.domain.model.ProfessionalService(
+            id = "3",
+            professionalId = "José Ramírez",
+            title = "Muebles a Medida",
+            description = "Diseño y fabricación de muebles personalizados en madera",
+            price = 300.0,
+            categoryId = "carpinteria",
+            isActive = true
+        ),
+        com.thecodefather.untigrito.domain.model.ProfessionalService(
+            id = "4",
+            professionalId = "Ana Rodríguez",
+            title = "Pintura de Interiores",
+            description = "Pintura profesional de espacios interiores con acabado premium",
+            price = 120.0,
+            categoryId = "pintura",
+            isActive = true
+        )
+    )
 
+    ServicesSection(services = testServices)
+}
+
+@Preview(showBackground = true, name = "Top Tigers Preview")
+@Composable
+fun PreviewTopRatedTigersSection() {
+    val testProfessionals = listOf(
+        com.thecodefather.untigrito.domain.model.Professional(
+            id = "1",
+            userId = "Carlos Méndez",
+            bio = "Electricista certificado con 10 años de experiencia",
+            rating = 4.9,
+            totalReviews = 127,
+            yearsOfExperience = 10,
+            specialties = listOf("Electricidad", "Instalaciones"),
+            responseTime = 2,
+            completionRate = 98.5,
+            hourlyRate = 25.0,
+            isVerified = true
+        ),
+        com.thecodefather.untigrito.domain.model.Professional(
+            id = "2",
+            userId = "María González",
+            bio = "Plomera profesional especializada en sistemas modernos",
+            rating = 4.8,
+            totalReviews = 89,
+            yearsOfExperience = 8,
+            specialties = listOf("Plomería", "Reparaciones"),
+            responseTime = 3,
+            completionRate = 96.0,
+            hourlyRate = 22.0,
+            isVerified = true
+        ),
+        com.thecodefather.untigrito.domain.model.Professional(
+            id = "3",
+            userId = "José Ramírez",
+            bio = "Carpintero experto en muebles a medida",
+            rating = 5.0,
+            totalReviews = 156,
+            yearsOfExperience = 15,
+            specialties = listOf("Carpintería", "Muebles"),
+            responseTime = 4,
+            completionRate = 99.2,
+            hourlyRate = 30.0,
+            isVerified = true
+        )
+    )
+
+    TopRatedTigersSection(
+        professionals = testProfessionals,
+        onTigerClick = {}
+    )
+}
