@@ -22,7 +22,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -45,15 +44,11 @@ import com.thecodefather.untigrito.presentation.screens.client.components.Servic
 import com.thecodefather.untigrito.presentation.screens.client.components.ProfessionalCard
 import com.thecodefather.untigrito.presentation.screens.client.components.CategoryChip
 import com.thecodefather.untigrito.presentation.viewmodel.ServicesViewModel
-import com.thecodefather.untigrito.utils.LocationUtils
 import com.thecodefather.untigrito.utils.ServiceHelper
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.ui.draw.clip
-import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
-import androidx.compose.runtime.rememberCoroutineScope
-import kotlinx.coroutines.launch
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import com.thecodefather.untigrito.domain.model.toProfessionalService
@@ -75,7 +70,6 @@ fun ServicesScreen(
 
     // Pull-to-refresh state
     val pullToRefreshState = rememberPullToRefreshState()
-    val coroutineScope = rememberCoroutineScope()
 
     // Cargar datos al inicializar
     LaunchedEffect(Unit) {
