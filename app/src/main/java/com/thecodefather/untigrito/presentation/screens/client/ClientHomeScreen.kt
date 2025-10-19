@@ -26,6 +26,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -433,7 +434,10 @@ fun TopRatedTigerItem(
             Spacer(modifier = Modifier.width(12.dp))
             Column {
                 Text(text = name, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, color = Color.Black)
-                Text(text = "$profession | $location", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+                Text(text = "$profession | $location", style = MaterialTheme.typography.bodySmall, color = Color.Gray
+                , overflow = TextOverflow.Ellipsis,
+                    maxLines = 1
+                )
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Default.Star, "Rating", tint = Color(0xFFFFC107), modifier = Modifier.size(16.dp))
                     Text(text = "$rating ($reviews)", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
@@ -455,67 +459,11 @@ fun PublishRequestCard(onNavigateToRequestService: () -> Unit) {
 
 @Composable
 fun ServicesSection(services: List<com.thecodefather.untigrito.domain.model.ProfessionalService>) {
-    // Datos de prueba para servicios
-    val testServices = listOf(
-        com.thecodefather.untigrito.domain.model.ProfessionalService(
-            id = "1",
-            professionalId = "Carlos Méndez",
-            title = "Instalación Eléctrica Completa",
-            description = "Instalación de circuitos eléctricos residenciales con garantía",
-            price = 150.0,
-            categoryId = "electricidad",
-            isActive = true
-        ),
-        com.thecodefather.untigrito.domain.model.ProfessionalService(
-            id = "2",
-            professionalId = "María González",
-            title = "Reparación de Tuberías",
-            description = "Detección y reparación de fugas, cambio de tuberías",
-            price = 80.0,
-            categoryId = "plomeria",
-            isActive = true
-        ),
-        com.thecodefather.untigrito.domain.model.ProfessionalService(
-            id = "3",
-            professionalId = "José Ramírez",
-            title = "Muebles a Medida",
-            description = "Diseño y fabricación de muebles personalizados en madera",
-            price = 300.0,
-            categoryId = "carpinteria",
-            isActive = true
-        ),
-        com.thecodefather.untigrito.domain.model.ProfessionalService(
-            id = "4",
-            professionalId = "Ana Rodríguez",
-            title = "Pintura de Interiores",
-            description = "Pintura profesional de espacios interiores con acabado premium",
-            price = 120.0,
-            categoryId = "pintura",
-            isActive = true
-        ),
-        com.thecodefather.untigrito.domain.model.ProfessionalService(
-            id = "5",
-            professionalId = "Pedro Martínez",
-            title = "Mantenimiento de Aires",
-            description = "Limpieza y mantenimiento preventivo de aires acondicionados",
-            price = 60.0,
-            categoryId = "refrigeracion",
-            isActive = true
-        ),
-        com.thecodefather.untigrito.domain.model.ProfessionalService(
-            id = "6",
-            professionalId = "Carlos Méndez",
-            title = "Revisión Eléctrica General",
-            description = "Inspección completa del sistema eléctrico del hogar",
-            price = 50.0,
-            categoryId = "electricidad",
-            isActive = true
-        )
-    )
 
     // Usar datos de prueba si no hay servicios del ViewModel
-    val displayServices = if (services.isEmpty()) testServices else services
-    
+//    val displayServices = if (services.isEmpty()) testServices else services
+    val displayServices = services
+
     Column(modifier = Modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier.padding(horizontal = 24.dp),

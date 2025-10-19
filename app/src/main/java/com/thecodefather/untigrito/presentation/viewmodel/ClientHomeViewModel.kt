@@ -147,8 +147,17 @@ class ClientHomeViewModel @Inject constructor(
                 result.onSuccess { supabaseUser ->
                     if (supabaseUser != null) {
                         // Convert SupabaseUser to ClientUser
-                        var clientUser = supabaseUser.toClientUser()
+                        val clientUser = supabaseUser.toClientUser()
                         _user.value = clientUser
+
+                        // Guardar clientUser en la base de datos local
+                        Timber.d("💾 Saving clientUser to local database...")
+                        try {
+                            repository.saveUser(clientUser)
+                            Timber.d("✅ ClientUser saved to local database successfully")
+                        } catch (e: Exception) {
+                            Timber.e(e, "❌ Error saving clientUser to local database")
+                        }
 
                         Timber.d("✅ User loaded successfully: ${clientUser.name} (${clientUser.email})")
                         Timber.d("   Balance: ${clientUser.balance}")
