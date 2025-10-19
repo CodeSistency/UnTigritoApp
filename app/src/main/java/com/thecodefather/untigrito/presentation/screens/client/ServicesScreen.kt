@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -39,7 +40,12 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.thecodefather.untigrito.presentation.navigation.Routes
 import com.thecodefather.untigrito.presentation.screens.client.components.HomeHeader
+import com.thecodefather.untigrito.presentation.screens.client.components.ServiceCard
+import com.thecodefather.untigrito.presentation.screens.client.components.ProfessionalCard
+import com.thecodefather.untigrito.presentation.screens.client.components.CategoryChip
 import com.thecodefather.untigrito.presentation.viewmodel.ServicesViewModel
+import com.thecodefather.untigrito.utils.LocationUtils
+import com.thecodefather.untigrito.utils.ServiceHelper
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.ui.draw.clip
@@ -48,6 +54,7 @@ import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.launch
 import androidx.compose.material3.ExperimentalMaterial3Api
+import com.thecodefather.untigrito.domain.model.toProfessionalService
 
 /**
  * Services/Professionals Screen
@@ -60,6 +67,7 @@ fun ServicesScreen(
     viewModel: ServicesViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val servicesWithProfessionals by viewModel.servicesWithProfessionals.collectAsState()
     var selectedContentTypeIndex by remember { mutableStateOf(0) }
     val contentTypeTabs = listOf("Servicios", "Profesionales")
     
@@ -69,6 +77,7 @@ fun ServicesScreen(
 
     // Cargar datos al inicializar
     LaunchedEffect(Unit) {
+        viewModel.loadCategories()
         if (selectedContentTypeIndex == 0) {
             viewModel.loadServices()
         } else {
@@ -147,6 +156,23 @@ fun ServicesScreen(
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.padding(bottom = 12.dp)
                     )
+                    
+                    // LazyRow de categorías
+                    LazyRow(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        contentPadding = PaddingValues(horizontal = 0.dp)
+                    ) {
+                        items(uiState.categories) { category ->
+                            CategoryChip(
+                                category = category,
+                                isSelected = uiState.selectedCategory == category.id,
+                                onClick = { 
+                                    viewModel.filterByCategory(category.id)
+                                }
+                            )
+                        }
+                    }
+                    
                     Spacer(modifier = Modifier.height(16.dp))
                 }
 
@@ -223,7 +249,25 @@ fun ServicesScreen(
                             }
                         } else {
                             items(uiState.services) { service ->
-                                Spacer(modifier = Modifier.height(12.dp))
+                                // Buscar datos del profesional para este servicio
+                                val serviceWithProf = servicesWithProfessionals.find { it.id == service.id }
+                                val professionalName = ServiceHelper.getProfessionalName(serviceWithProf)
+                                val distance = ServiceHelper.calculateServiceDistance(
+                                    userLat = null, // TODO: Obtener ubicación del usuario
+                                    userLng = null,
+                                    serviceWithProf = serviceWithProf
+                                )
+                                
+                                ServiceCard(
+                                    service = service.toProfessionalService(),
+                                    professionalName = professionalName,
+                                    distance = distance,
+                                    rating = service.rating,
+                                    reviewCount = service.reviewCount,
+                                    onClick = {
+                                        navController.navigate("service_detail/${service.id}")
+                                    }
+                                )
                             }
                         }
                     } else { // Pestaña de Profesionales
@@ -238,7 +282,12 @@ fun ServicesScreen(
                             }
                         } else {
                             items(uiState.professional) { professional ->
-                                Spacer(modifier = Modifier.height(12.dp))
+                                ProfessionalCard(
+                                    professional = professional,
+                                    onClick = {
+                                        navController.navigate("professional_profile/${professional.id}")
+                                    }
+                                )
                             }
                         }
                     }

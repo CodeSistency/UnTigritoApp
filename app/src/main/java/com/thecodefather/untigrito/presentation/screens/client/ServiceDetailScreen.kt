@@ -25,6 +25,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -66,23 +67,43 @@ fun ServiceDetailScreen(
     onContactClick: () -> Unit = {},
     viewModel: ServiceDetailViewModel = hiltViewModel()
 ) {
-    // val uiState by viewModel.uiState.collectAsState()
-    
     // Cargar datos del servicio al inicializar
-    // LaunchedEffect(serviceId) {
-    //     viewModel.loadService(serviceId)
-    // }
+    LaunchedEffect(serviceId) {
+        viewModel.loadServiceDetail(serviceId)
+    }
     
-    // Datos de ejemplo para demostración
-    val service = ProfessionalService(
-        id = serviceId,
-        professionalId = "prof-123",
-        title = "Reparación de Tuberías",
-        description = "Servicio profesional de reparación de tuberías con garantía. Especialista en plomería con 5 años de experiencia.",
-        price = 150.0,
-        categoryId = "PLOMERIA",
-        isActive = true
-    )
+    // Usar datos reales del ViewModel
+    val service by viewModel.service.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
+    
+    // Mostrar loading mientras se cargan los datos
+    if (isLoading) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator()
+        }
+        return
+    }
+    
+    // Mostrar error si no se pudo cargar el servicio
+    if (service == null) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text("Error al cargar el servicio")
+                TextButton(onClick = onBackClick) {
+                    Text("Volver")
+                }
+            }
+        }
+        return
+    }
     
     Scaffold(
         topBar = {
@@ -115,7 +136,7 @@ fun ServiceDetailScreen(
                     modifier = Modifier.padding(16.dp)
                 ) {
                     Text(
-                        text = service.title,
+                        text = service!!.title,
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold
                     )
@@ -123,7 +144,7 @@ fun ServiceDetailScreen(
                     Spacer(modifier = Modifier.height(8.dp))
                     
                     Text(
-                        text = service.description,
+                        text = service!!.description,
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -139,7 +160,7 @@ fun ServiceDetailScreen(
                             style = MaterialTheme.typography.bodyMedium
                         )
                         Text(
-                            text = "Bs. ${String.format("%.2f", service.price)}",
+                            text = "Bs. ${String.format("%.2f", service!!.price)}",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.primary
@@ -155,9 +176,9 @@ fun ServiceDetailScreen(
                 onClick = {
                     val params = PaymentParams.ServicePayment(
                         clientId = "current-user-id", // TODO: Obtener del AuthStateManager
-                        professionalId = service.professionalId,
-                        serviceId = service.id,
-                        amount = service.price
+                        professionalId = service!!.professionalId,
+                        serviceId = service!!.id,
+                        amount = service!!.price
                     )
                     // Navegar a la pantalla de pago
                     navController.currentBackStackEntry?.savedStateHandle?.set("paymentParams", params)

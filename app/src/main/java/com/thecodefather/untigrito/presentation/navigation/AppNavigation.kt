@@ -16,6 +16,7 @@ import com.thecodefather.untigrito.presentation.screens.auth.login.AuthViewModel
 import com.thecodefather.untigrito.presentation.screens.client.ClientProfileScreen
 import com.thecodefather.untigrito.presentation.screens.client.RequestsScreen
 import com.thecodefather.untigrito.presentation.screens.client.ServicesScreen
+import com.thecodefather.untigrito.presentation.screens.client.ServiceDetailScreen
 import com.thecodefather.untigrito.presentation.screens.client.ClientMainScreen
 import com.thecodefather.untigrito.presentation.screens.professional.messages.ChatScreen
 import com.thecodefather.untigrito.presentation.screens.professionals.profile.ProfessionalProfileScreen
@@ -153,6 +154,17 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
             ServicesScreen(navController = navController)
         }
 
+        // Service Detail Screen
+        composable(ClientRoutes.SERVICE_DETAIL) { backStackEntry ->
+            val serviceId = backStackEntry.arguments?.getString("serviceId") ?: ""
+            ServiceDetailScreen(
+                serviceId = serviceId,
+                navController = navController,
+                onBackClick = { navController.popBackStack() },
+                onContactClick = { /* TODO: Implement contact */ }
+            )
+        }
+
         composable(Routes.CLIENT_PROFILE) {
             ClientProfileScreen(navController = navController)
         }
@@ -205,9 +217,10 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
             )
         }
 
-        composable(Routes.PROFESSIONAL_PROFILE) {
+        composable(Routes.PROFESSIONAL_PROFILE) { backStackEntry ->
+            val professionalId = backStackEntry.arguments?.getString("professionalId") ?: ""
             ProfessionalProfileScreen(
-                professionalId = "default-id",
+                professionalId = professionalId,
                 onBackClick = { navController.popBackStack() }
             )
         }
