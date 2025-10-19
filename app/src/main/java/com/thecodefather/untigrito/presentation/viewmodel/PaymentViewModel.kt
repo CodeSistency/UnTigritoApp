@@ -190,7 +190,7 @@ class PaymentViewModel @Inject constructor(
 // Extension functions para convertir modelos de Supabase a modelos de dominio
 private fun SupabaseUser.toClientUser(): ClientUser {
     return ClientUser(
-        id = this.id,
+        id = this.id.orEmpty(),
         name = this.name ?: "",
         email = this.email ?: "",
         phone = this.phone ?: "",

@@ -21,9 +21,10 @@ fun NavGraphBuilder.professionalNavigation(
     onNavigateBack: () -> Unit
 ) {
     composable(ProfessionalNavigation.PROFESSIONAL_MAIN) {
-        ProfessionalMainScreen(
-            onNavigateBack = onNavigateBack
-        )
+//        ProfessionalMainScreen(
+//            navigationFather = navController,
+//            onNavigateBack = onNavigateBack
+//        )
     }
 }
 

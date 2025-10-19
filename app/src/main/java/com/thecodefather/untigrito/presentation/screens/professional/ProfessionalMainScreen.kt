@@ -1,24 +1,19 @@
 package com.thecodefather.untigrito.presentation.screens.professional
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
+import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.res.painterResource
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.thecodefather.untigrito.R
 import com.thecodefather.untigrito.presentation.screens.professional.jobs.*
 import com.thecodefather.untigrito.presentation.screens.professional.proposals.*
 import com.thecodefather.untigrito.presentation.screens.professional.messages.*
@@ -33,7 +28,30 @@ fun ProfessionalMainScreen(
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
     var isClient by remember { mutableStateOf(false) } // Estado para el switch "Soy un cliente"
+    var showMenu by remember { mutableStateOf(false) } // Estado para el menú
 
+    val items = listOf(
+        ProfessionalNavigationItem(
+            route = ProfessionalRoutes.JOBS,
+            label = "Trabajos",
+            icon = painterResource(R.drawable.search_normal)
+        ),
+        ProfessionalNavigationItem(
+            route = ProfessionalRoutes.PROPOSALS,
+            label = "Propuestas",
+            icon = painterResource(R.drawable.document)
+        ),
+        ProfessionalNavigationItem(
+            route = ProfessionalRoutes.MESSAGES,
+            label = "Mensajes",
+            icon = painterResource(R.drawable.sms)
+        ),
+        ProfessionalNavigationItem(
+            route = ProfessionalRoutes.SERVICES,
+            label = "Mis Servicios",
+            icon = painterResource(R.drawable.message_edit)
+        )
+    )
     // Navegar al cliente cuando el switch esté en true
     LaunchedEffect(isClient) {
         if (isClient) {
@@ -43,41 +61,23 @@ fun ProfessionalMainScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("Módulo Profesional") },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color(0xFFE67822),
-                    titleContentColor = Color.White
-                ),
-                actions = {
-                    // Switch "Soy un cliente"
-                    Card(
-                        modifier = Modifier
-                            .padding(end = 16.dp)
-                            .fillMaxHeight(),
-                        colors = CardDefaults.cardColors(containerColor = Color.White),
-                        shape = RoundedCornerShape(8.dp)
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .padding(horizontal = 12.dp, vertical = 8.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Text(
-                                text = "Soy un cliente",
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Normal,
-                                color = Color.Black
-                            )
-                            Switch(
-                                checked = isClient,
-                                onCheckedChange = { isClient = it }
+            if(isMainScreen(currentRoute)) {
+                CenterAlignedTopAppBar(
+                    title = { Text(items.firstOrNull { currentRoute == it.route }?.label ?: "Untigrito", maxLines = 1 ) },
+                    navigationIcon = {
+                        IconButton(onClick = { showMenu = !showMenu }) {
+                            Icon(
+                                imageVector = Icons.Default.Menu,
+                                contentDescription = "Menú"
                             )
                         }
-                    }
-                }
-            )
+                    },
+                    colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.background,
+                        titleContentColor = MaterialTheme.colorScheme.onBackground
+                    )
+                )
+            }
         },
         bottomBar = {
             if (isMainScreen(currentRoute)) {
@@ -91,7 +91,8 @@ fun ProfessionalMainScreen(
                             launchSingleTop = true
                             restoreState = true
                         }
-                    }
+                    },
+                    list= items
                 )
             }
         }
@@ -99,7 +100,15 @@ fun ProfessionalMainScreen(
         NavHost(
             navController = navController,
             startDestination = ProfessionalRoutes.JOBS,
-            modifier = Modifier.padding(paddingValues)
+            modifier = Modifier
+                .then(
+                    if(isMainScreen(currentRoute)) {
+                        Modifier.padding(paddingValues)
+                    } else {
+//                        Modifier.consumeWindowInsets(paddingValues)
+                        Modifier
+                    }
+                )
         ) {
             // Subflujo de Trabajos
             composable(ProfessionalRoutes.JOBS) {
@@ -223,38 +232,25 @@ fun ProfessionalMainScreen(
 @Composable
 fun ProfessionalBottomNavigation(
     currentRoute: String,
-    onNavigate: (String) -> Unit
+    onNavigate: (String) -> Unit,
+    list: List<ProfessionalNavigationItem>
 ) {
-    NavigationBar {
-        val items = listOf(
-            ProfessionalNavigationItem(
-                route = ProfessionalRoutes.JOBS,
-                label = "Trabajos",
-                icon = Icons.Default.Work
-            ),
-            ProfessionalNavigationItem(
-                route = ProfessionalRoutes.PROPOSALS,
-                label = "Propuestas",
-                icon = Icons.Default.Assignment
-            ),
-            ProfessionalNavigationItem(
-                route = ProfessionalRoutes.MESSAGES,
-                label = "Mensajes",
-                icon = Icons.Default.Chat
-            ),
-            ProfessionalNavigationItem(
-                route = ProfessionalRoutes.SERVICES,
-                label = "Mis Servicios",
-                icon = Icons.Default.Business
-            )
-        )
-
-        items.forEach { item ->
+    NavigationBar(
+        containerColor = MaterialTheme.colorScheme.surface
+    ) {
+        list.forEach { item ->
             NavigationBarItem(
-                icon = { Icon(item.icon, contentDescription = item.label) },
+                icon = { Icon(painter = item.icon, contentDescription = item.label) },
                 label = { Text(item.label) },
                 selected = currentRoute == item.route,
-                onClick = { onNavigate(item.route) }
+                onClick = { onNavigate(item.route) },
+                colors = NavigationBarItemDefaults.colors(
+                    selectedIconColor = Color.White,
+                    selectedTextColor = MaterialTheme.colorScheme.primary,
+                    unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    indicatorColor = MaterialTheme.colorScheme.primary
+                )
             )
         }
     }
@@ -263,7 +259,7 @@ fun ProfessionalBottomNavigation(
 data class ProfessionalNavigationItem(
     val route: String,
     val label: String,
-    val icon: ImageVector
+    val icon: Painter
 )
 
 object ProfessionalRoutes {

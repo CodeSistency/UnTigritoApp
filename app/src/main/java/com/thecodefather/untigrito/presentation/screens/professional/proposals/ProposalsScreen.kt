@@ -13,11 +13,13 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.thecodefather.untigrito.domain.model.ProposalFilter
 import com.thecodefather.untigrito.presentation.components.FilterTabs
 import com.thecodefather.untigrito.presentation.components.ProposalCard
+import com.thecodefather.untigrito.presentation.components.SearchBar
+import com.thecodefather.untigrito.presentation.viewmodel.ProposalsViewModel
 
 @Composable
 fun ProposalsScreen(
     onProposalClick: (String) -> Unit,
-    viewModel: com.thecodefather.untigrito.presentation.viewmodel.ProposalsViewModel = hiltViewModel()
+    viewModel: ProposalsViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
     
@@ -28,16 +30,16 @@ fun ProposalsScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
+            .padding(horizontal = 16.dp)
     ) {
-        // Título
-        Text(
-            text = "Mis Propuestas",
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 16.dp)
+        SearchBar(
+            placeholder = "Busca servicios o profesionales...",
+            query = uiState.searchQuery,
+            onQueryChange = viewModel::loadProposal,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp)
         )
-
         // Filtros
         FilterTabs(
             selectedFilter = uiState.selectedFilter,
@@ -47,7 +49,7 @@ fun ProposalsScreen(
                 ProposalFilter.IN_PROGRESS to "En Curso",
                 ProposalFilter.HISTORY to "Historial"
             ),
-            modifier = Modifier.padding(bottom = 16.dp)
+            modifier = Modifier.padding(bottom = 5.dp)
         )
 
         // Lista de propuestas

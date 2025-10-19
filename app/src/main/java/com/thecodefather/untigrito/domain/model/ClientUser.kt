@@ -30,7 +30,7 @@ data class ClientUser(
  */
 fun SupabaseUser.toClientUser(): ClientUser {
     return ClientUser(
-        id = this.id,
+        id = this.id.orEmpty(),
         email = this.email,
         phone = this.phone,
         name = this.name,

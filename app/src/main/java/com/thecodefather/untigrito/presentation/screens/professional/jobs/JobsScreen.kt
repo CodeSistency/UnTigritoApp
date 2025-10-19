@@ -35,16 +35,8 @@ fun JobsScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
+            .padding(horizontal = 16.dp)
     ) {
-        // Título
-        Text(
-            text = "Trabajos Disponibles",
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
-
         // Barra de búsqueda
         SearchBar(
             query = uiState.searchQuery,
@@ -63,7 +55,7 @@ fun JobsScreen(
                 JobFilter.RECOMMENDED to "Recomendados",
                 JobFilter.FAVORITES to "Favoritos"
             ),
-            modifier = Modifier.padding(bottom = 16.dp)
+            modifier = Modifier.padding(bottom = 5.dp)
         )
 
         // Lista de trabajos

@@ -128,11 +128,17 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
 
         // Home Screen
         composable(Routes.HOME) {
-            ClientMainScreen(mainNavController = navController) // Cambiado
+//            ClientMainScreen(mainNavController = navController) // Cambiado
+            ProfessionalMainScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
         }
 
         composable(Routes.CLIENT_MAIN) { // Nueva pantalla principal del cliente
-            ClientMainScreen(mainNavController = navController)
+//            ClientMainScreen(mainNavController = navController)
+            ProfessionalMainScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
         }
 
         composable(Routes.CLIENT_SERVICES) {

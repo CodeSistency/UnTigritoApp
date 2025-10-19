@@ -1,6 +1,7 @@
 package com.thecodefather.untigrito.presentation.components
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
@@ -28,6 +29,6 @@ fun SearchBar(
             )
         },
         singleLine = true,
-        shape = MaterialTheme.shapes.medium
+        shape = CircleShape
     )
 }
