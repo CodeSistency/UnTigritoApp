@@ -135,10 +135,7 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
         }
 
         composable(Routes.CLIENT_MAIN) { // Nueva pantalla principal del cliente
-//            ClientMainScreen(mainNavController = navController)
-            ProfessionalMainScreen(
-                onNavigateBack = { navController.popBackStack() }
-            )
+            ClientMainScreen(mainNavController = navController)
         }
 
         composable(Routes.CLIENT_SERVICES) {
@@ -167,7 +164,17 @@ fun AppNavigation(navController: NavHostController = rememberNavController()) {
         // Ruta para el módulo profesional
         composable(ProfessionalNavigation.PROFESSIONAL_MAIN) {
             ProfessionalMainScreen(
-                onNavigateBack = { navController.popBackStack() }
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToClient = { 
+                    navController.navigate(Routes.CLIENT_MAIN) {
+                        popUpTo(ProfessionalNavigation.PROFESSIONAL_MAIN) { inclusive = true }
+                    }
+                },
+                onNavigateToLogin = { 
+                    navController.navigate(Routes.LOGIN) {
+                        popUpTo(ProfessionalNavigation.PROFESSIONAL_MAIN) { inclusive = true }
+                    }
+                }
             )
         }
     }

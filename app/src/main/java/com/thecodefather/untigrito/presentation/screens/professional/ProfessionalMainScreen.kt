@@ -13,22 +13,56 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.compose.runtime.collectAsState
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.filled.AccountBalanceWallet
+import androidx.compose.material.icons.filled.ExitToApp
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.SwitchAccount
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.thecodefather.untigrito.R
 import com.thecodefather.untigrito.presentation.screens.professional.jobs.*
 import com.thecodefather.untigrito.presentation.screens.professional.proposals.*
 import com.thecodefather.untigrito.presentation.screens.professional.messages.*
 import com.thecodefather.untigrito.presentation.screens.professional.services.*
+import com.thecodefather.untigrito.presentation.screens.professional.profile.*
+import com.thecodefather.untigrito.presentation.viewmodel.ProfessionalViewModel
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfessionalMainScreen(
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
+    onNavigateToClient: () -> Unit = onNavigateBack,
+    onNavigateToLogin: () -> Unit = onNavigateBack
 ) {
+    val viewModel: ProfessionalViewModel = hiltViewModel()
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
+    
+    // Estados del ViewModel
+    val currentUser by viewModel.currentUser.collectAsState()
+    val balance by viewModel.balance.collectAsState()
+    val logoutSuccess by viewModel.logoutSuccess.collectAsState()
+    
+    // Estados locales
     var isClient by remember { mutableStateOf(false) } // Estado para el switch "Soy un cliente"
-    var showMenu by remember { mutableStateOf(false) } // Estado para el menú
+    val drawerState = rememberDrawerState(DrawerValue.Closed)
+    val scope = rememberCoroutineScope()
+    
+    // Asegurar que el drawer esté cerrado al inicio
+    LaunchedEffect(Unit) {
+        drawerState.close()
+    }
 
     val items = listOf(
         ProfessionalNavigationItem(
@@ -52,20 +86,62 @@ fun ProfessionalMainScreen(
             icon = painterResource(R.drawable.message_edit)
         )
     )
+    
     // Navegar al cliente cuando el switch esté en true
     LaunchedEffect(isClient) {
         if (isClient) {
-            onNavigateBack() // Navegar de vuelta al cliente
+            onNavigateToClient() // Navegar al cliente
+        }
+    }
+    
+    // Manejar logout exitoso
+    LaunchedEffect(logoutSuccess) {
+        if (logoutSuccess) {
+            // Resetear el estado de logout
+            viewModel.resetLogoutSuccess()
+            // Navegar al login
+            onNavigateToLogin()
         }
     }
 
-    Scaffold(
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        drawerContent = { 
+            ProfessionalDrawerContent(
+                user = currentUser,
+                balance = balance,
+                onProfileClick = { 
+                    scope.launch { 
+                        drawerState.close()
+                        navController.navigate(ProfessionalRoutes.OWN_PROFILE)
+                    }
+                },
+                onSwitchToClient = { 
+                    scope.launch { 
+                        drawerState.close()
+                    }
+                    isClient = true 
+                },
+                onLogout = { 
+                    scope.launch { 
+                        drawerState.close()
+                    }
+                    viewModel.logout() 
+                }
+            )
+        }
+    ) {
+        Scaffold(
         topBar = {
             if(isMainScreen(currentRoute)) {
                 CenterAlignedTopAppBar(
                     title = { Text(items.firstOrNull { currentRoute == it.route }?.label ?: "Untigrito", maxLines = 1 ) },
                     navigationIcon = {
-                        IconButton(onClick = { showMenu = !showMenu }) {
+                        IconButton(onClick = { 
+                            scope.launch { 
+                                drawerState.open() 
+                            } 
+                        }) {
                             Icon(
                                 imageVector = Icons.Default.Menu,
                                 contentDescription = "Menú"
@@ -225,7 +301,26 @@ fun ProfessionalMainScreen(
                     Text("Detalle del Servicio: $serviceId")
                 }
             }
+            
+            // Rutas de Perfil
+            composable(ProfessionalRoutes.OWN_PROFILE) {
+                ProfessionalOwnProfileScreen(
+                    onNavigateBack = { navController.popBackStack() },
+                    onEditService = { serviceId ->
+                        navController.navigate("${ProfessionalRoutes.EDIT_SERVICE}/$serviceId")
+                    }
+                )
+            }
+            
+            composable("${ProfessionalRoutes.PUBLIC_PROFILE}/{professionalId}") { backStackEntry ->
+                val professionalId = backStackEntry.arguments?.getString("professionalId") ?: ""
+                ProfessionalPublicProfileScreen(
+                    professionalId = professionalId,
+                    onNavigateBack = { navController.popBackStack() }
+                )
+            }
         }
+    }
     }
 }
 
@@ -274,6 +369,8 @@ object ProfessionalRoutes {
     const val SERVICE_DETAIL = "professional/services/detail"
     const val CREATE_SERVICE = "professional/services/create"
     const val EDIT_SERVICE = "professional/services/edit"
+    const val OWN_PROFILE = "professional/profile/own"
+    const val PUBLIC_PROFILE = "professional/profile/public"
 }
 
 private fun isMainScreen(route: String?): Boolean {
@@ -283,4 +380,190 @@ private fun isMainScreen(route: String?): Boolean {
         ProfessionalRoutes.MESSAGES,
         ProfessionalRoutes.SERVICES
     )
+}
+
+@Composable
+fun ProfessionalDrawerContent(
+    user: com.thecodefather.untigrito.domain.model.User?,
+    balance: Double,
+    onProfileClick: () -> Unit,
+    onSwitchToClient: () -> Unit,
+    onLogout: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFFF5F5F5))
+            .padding(16.dp)
+    ) {
+        // Header con información del usuario
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp),
+            colors = CardDefaults.cardColors(containerColor = Color.White),
+            shape = RoundedCornerShape(12.dp)
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                // Foto de perfil (placeholder)
+                Box(
+                    modifier = Modifier
+                        .size(80.dp)
+                        .clip(CircleShape)
+                        .background(Color(0xFFE67822)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Person,
+                        contentDescription = "Foto de perfil",
+                        tint = Color.White,
+                        modifier = Modifier.size(40.dp)
+                    )
+                }
+                
+                Spacer(modifier = Modifier.height(12.dp))
+                
+                Text(
+                    text = user?.name ?: "Usuario",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black
+                )
+                
+                Text(
+                    text = user?.email ?: "email@ejemplo.com",
+                    fontSize = 14.sp,
+                    color = Color.Gray
+                )
+            }
+        }
+        
+        // Saldo
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp),
+            colors = CardDefaults.cardColors(containerColor = Color(0xFFE8F5E8)),
+            shape = RoundedCornerShape(12.dp)
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Default.AccountBalanceWallet,
+                    contentDescription = "Saldo",
+                    tint = Color(0xFF4CAF50),
+                    modifier = Modifier.size(24.dp)
+                )
+                
+                Spacer(modifier = Modifier.width(12.dp))
+                
+                Column {
+                    Text(
+                        text = "Saldo Disponible",
+                        fontSize = 14.sp,
+                        color = Color.Gray
+                    )
+                    Text(
+                        text = "Bs. ${String.format("%.2f", balance)}",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF4CAF50)
+                    )
+                }
+            }
+        }
+        
+        // Opciones
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp),
+            colors = CardDefaults.cardColors(containerColor = Color.White),
+            shape = RoundedCornerShape(12.dp)
+        ) {
+            Column {
+                // Ver mi Perfil
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { onProfileClick() }
+                        .padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Person,
+                        contentDescription = "Perfil",
+                        tint = Color(0xFFE67822),
+                        modifier = Modifier.size(24.dp)
+                    )
+                    
+                    Spacer(modifier = Modifier.width(12.dp))
+                    
+                    Text(
+                        text = "Ver mi Perfil",
+                        fontSize = 16.sp,
+                        color = Color.Black
+                    )
+                }
+                
+                Divider(color = Color(0xFFE0E0E0), thickness = 1.dp)
+                
+                // Soy un Cliente
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { onSwitchToClient() }
+                        .padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.SwitchAccount,
+                        contentDescription = "Cambiar a Cliente",
+                        tint = Color(0xFFE67822),
+                        modifier = Modifier.size(24.dp)
+                    )
+                    
+                    Spacer(modifier = Modifier.width(12.dp))
+                    
+                    Text(
+                        text = "Soy un Cliente",
+                        fontSize = 16.sp,
+                        color = Color.Black
+                    )
+                }
+            }
+        }
+        
+        Spacer(modifier = Modifier.weight(1f))
+        
+        // Botón de Cerrar Sesión
+        Button(
+            onClick = onLogout,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(48.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE67822)),
+            shape = RoundedCornerShape(8.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.ExitToApp,
+                contentDescription = "Cerrar Sesión",
+                tint = Color.White,
+                modifier = Modifier.padding(end = 8.dp)
+            )
+            Text(
+                "Cerrar Sesión",
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.White
+            )
+        }
+    }
 }
